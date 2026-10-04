@@ -91,6 +91,8 @@ body.bg-nebula{background:linear-gradient(180deg,#1a0a2e 0%,#2a1050 50%,#0a0518 
 @keyframes maxPulse{0%,100%{box-shadow:0 4px 0 #c78e10,0 0 18px rgba(255,235,59,.5)}50%{box-shadow:0 4px 0 #c78e10,0 0 30px rgba(255,235,59,.8)}}
 #profile-side-btn{position:fixed;left:15px;top:15px;width:50px;height:50px;border-radius:12px;border:none;background:linear-gradient(135deg,#e0c25a,#d97a1a);color:#1a1a2e;font-size:26px;cursor:pointer;box-shadow:0 4px 0 #9a5310;transition:transform .05s;outline:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:100;touch-action:manipulation}
 #profile-side-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #9a5310}
+body.boost-active #profile-side-btn,body.super-storm #profile-side-btn{top:48px}
+body.boost-active .save-indicator,body.super-storm .save-indicator{top:48px}
 .save-indicator{position:fixed;top:15px;right:75px;font-size:20px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .save-indicator.show{opacity:.9}
 
@@ -460,7 +462,7 @@ body.boost-active #event-banner{top:28px}
 .krohlupic-bubble.show{opacity:1;transform:translateY(0) scale(1)}
 .krohlupic-bubble .krohlupic-avatar{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9a0d8,#8a4f9e);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;overflow:hidden;border:2px solid #ffd54f}
 .krohlupic-bubble .krohlupic-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.krohlupic-bubble .krohlupic-text{font-size:15px;color:#fff8e1;line-height:1.45;text-align:left;font-weight:600}
+.krohlupic-bubble .krohlupic-text{font-size:15px;color:#fff8e1;line-height:1.45;text-align:left;font-weight:600;min-width:0}
 
 /* === ПИТОМЦЫ === */
 #pets-page{max-width:500px;margin:0 auto;padding:15px;text-align:left}
@@ -500,6 +502,7 @@ body.boost-active #event-banner{top:28px}
 #active-pet-card{background:linear-gradient(135deg,#16213e,#1e2d54);border:2px solid #ffd54f;border-radius:12px;padding:14px}
 .active-pet-header{display:flex;gap:12px;align-items:center;margin-bottom:12px}
 .active-pet-emoji{font-size:52px;flex-shrink:0}
+.active-pet-info{min-width:0;flex:1}
 .active-pet-name{font-size:18px;color:#fff;font-weight:bold;margin-bottom:2px}
 .active-pet-rarity{font-size:12px;color:#ffd54f;font-weight:600;margin-bottom:4px}
 .active-pet-bonus{font-size:13px;color:#4caf50;font-weight:bold}
@@ -541,7 +544,7 @@ body.boost-active #event-banner{top:28px}
 .pet-info-list{display:flex;flex-direction:column;gap:8px}
 .pet-info-item{background:#16213e;border:1px solid #253a5c;border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center}
 .pet-info-emoji{font-size:30px;flex-shrink:0}
-.pet-info-text{flex:1;font-size:12px;color:#b8b8b8;line-height:1.5}
+.pet-info-text{flex:1;font-size:12px;color:#b8b8b8;line-height:1.5;min-width:0}
 .pet-info-text b{color:#e0c25a}
 .pet-info-chance{font-size:11px;color:#7fb8e6;font-weight:600}
 #active-pet-indicator{position:absolute;right:-58px;top:-45px;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:5;cursor:pointer;touch-action:manipulation}
@@ -578,6 +581,62 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 @keyframes superTitlePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 .super-event-sub{font-size:15px;color:#fff;font-weight:600;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 
+/* === ФИКС ПЕРЕПОЛНЕНИЯ ТЕКСТА === */
+html,body{overflow-wrap:anywhere;word-break:break-word}
+.item .info,
+.item-card .item-info,
+.pet-card-info,
+.booster-info,
+.leader-name,
+.contact-text,
+.quest-name,
+.active-pet-info,
+.note-list-info,
+.krohlupic-text{min-width:0}
+.item .right{flex-shrink:1;min-width:0}
+.buy-wrap{min-width:0}
+.mult-btn{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.item-card{flex-wrap:wrap}
+.item-card .item-info{flex:1 1 100%;min-width:0}
+.item-card .item-buy{flex:0 0 auto;max-width:100%}
+.modal-box,.offline-box,.fortune-popup,.krohlupic-bubble{overflow-wrap:anywhere;word-break:break-word}
+#offline-amount,#promo-result,#import-result,.save-result{overflow-wrap:anywhere;word-break:break-word}
+.achievement .title,.quest-name,.quest-progress-text{overflow-wrap:anywhere;word-break:break-word}
+@media (max-width:480px){
+  .tab-btn{padding:6px 9px;font-size:12px}
+  #topbar{gap:5px}
+}
+@media (max-width:380px){
+  body{padding:10px}
+  #topbar{gap:4px}
+  .tab-btn{padding:5px 8px;font-size:11px}
+  .item{padding:8px 10px;gap:6px}
+  .name{font-size:14px}
+  .desc,.owned{font-size:11px}
+  .buy{padding:5px 9px;font-size:12px}
+  .mult-btn{font-size:10px;padding:3px 2px}
+  .item-card{padding:10px 12px;gap:8px}
+  .item-card .item-icon{font-size:26px}
+  .item-card .item-buy{padding:6px 10px;font-size:12px}
+  .leader-row{padding:8px 10px;gap:8px}
+  .leader-name{font-size:13px}
+  .leader-score{font-size:13px}
+  .contact-link{padding:10px 12px;gap:9px}
+  .contact-label{font-size:13px}
+  .contact-url{font-size:11px}
+  .note-paper{padding:18px 15px}
+  .note-text{font-size:15px}
+  .quest-name{font-size:14px}
+  .active-pet-name{font-size:16px}
+  .active-pet-bonus{font-size:12px}
+  #counter{font-size:26px}
+  #click-btn{width:150px;height:150px}
+  #click-btn.has-emoji{min-width:150px}
+  #click-btn .emoji-skin-display{font-size:120px}
+  #active-pet-indicator{right:-42px;top:-38px}
+  #deposit-side-btn{left:-48px;top:-42px;width:52px;height:52px;font-size:26px}
+}
+
 /* === ЭКОНОМИЯ БАТАРЕИ === */
 body.low-particles #hungry-info,
 body.low-particles #gulau-info,
@@ -593,7 +652,7 @@ body.low-particles #click-btn.golden-tap,
 body.low-particles #click-btn.skin-gennadii.tap-ready,
 body.low-particles #click-btn.has-emoji.tap-ready .emoji-skin-display,
 body.low-particles #super-event-banner,
-body.low-particles body.super-storm #click-btn:not(.has-emoji){
+body.low-particles #click-btn:not(.has-emoji){
 animation:none!important
 }
 body.low-particles #bg-canvas{display:none!important}
@@ -604,34 +663,4 @@ animation-duration:.01ms!important;
 animation-iteration-count:1!important;
 transition-duration:.01ms!important
 }
-}
-
-@media (max-width:380px){
-#pets-page{padding:10px}
-#pets-title{font-size:22px}
-.pets-top-bar{font-size:13px;padding:8px 10px}
-.pets-stat-value{font-size:15px}
-.pets-food-item{font-size:12px;padding:3px 6px}
-.pets-food-shop{gap:6px}
-.food-emoji{font-size:28px}
-.food-effect,.food-price{font-size:11px}
-.active-pet-emoji{font-size:44px}
-.active-pet-name{font-size:16px}
-.feed-btn{font-size:13px;padding:10px 6px}
-.pet-card-emoji{font-size:34px}
-.pet-card-name{font-size:14px}
-.pet-card-btn{font-size:11px;padding:6px 8px}
-#active-pet-indicator{right:-48px;top:-42px}
-#active-pet-emoji-small{font-size:30px}
-#active-pet-hunger-bar-small{width:40px}
-#almanac-btn{width:48px;height:48px;font-size:22px;right:10px;bottom:10px}
-#click-btn{width:150px;height:150px}
-#click-btn.has-emoji{min-width:150px}
-#click-btn .emoji-skin-display{font-size:120px}
-#counter{font-size:26px}
-.tab-btn{padding:6px 10px;font-size:12px}
-#minigame-tap-btn{width:150px;height:150px;font-size:28px}
-#minigame-timer{font-size:38px}
-.mult-btn{font-size:10px;padding:4px 3px}
-.buy-wrap{min-width:95px}
-                                                                                                                                     }
+  }
