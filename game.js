@@ -318,7 +318,7 @@ var PROFILE_KEY="clicker-profile";
 var firebaseConfig={databaseURL:"https://clickerup-80939-default-rtdb.firebaseio.com/"};
 var db=null;
 
-// === ЗАПИСКИ (расширено до 7) ===
+// === ЗАПИСКИ ===
 var NOTES_DATA={
 note4:{icon:"📜",title:"Записка №4",preview:"«Я соглашаюсь с условиями и вступаю в компанию…»",text:"«Я {NICK} соглашаюсь с условиями и вступаю в компанию Krochlupic-Up!»",sign:"— Контракт",unlocked:false},
 note1:{icon:"📜",title:"Записка №1",preview:"«Он заставляет меня нажимать эту чёртову кнопку…»",text:"«Он заставляет меня нажимать эту чёртову кнопку. Я устал. Сутки напролёт я сижу здесь и нажимаю её — ради денег. Лишь это поможет…»",sign:"— ???",unlocked:false},
@@ -438,15 +438,8 @@ document.body.appendChild(popup);
 setTimeout(function(){popup.remove();},3500);}
 
 // === СОХРАНЕНИЕ ===
-var _saveIndicatorTimer=null;
 function saveGame(){
 if(window.__resetting)return;
-var _si=document.getElementById("save-indicator");
-if(_si){
-_si.classList.add("show");
-if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);
-_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);
-}
 var data={coins:coins,coinsPerClick:coinsPerClick,totalEarned:totalEarned,totalShardsEarned:totalShardsEarned,totalTaps:totalTaps,totalPlayTime:totalPlayTime,buyMultiplier:buyMultiplier,crystals:crystals,chestsOpened:chestsOpened,personalBestCoins:personalBestCoins,lastTheftKey:lastTheftKey,unlocked:unlocked,lastTime:Date.now(),shards:shards,eventMultiplier:eventMultiplier,eventTimer:eventTimer,eventName:eventName,currentEventKey:currentEventKey,crystalBoostMultiplier:crystalBoostMultiplier,crystalBoostTimer:crystalBoostTimer,crystalBoostName:crystalBoostName,usedPromos:usedPromos,ownedItems:ownedItems,secretUnlocked:secretUnlocked,secretAutoClicker:secretAutoClicker,secretAutoClickerTimer:secretAutoClickerTimer,depositUnlocked:depositUnlocked,depositLevel:depositLevel,lastDepositTimeKey:lastDepositTimeKey,generatorLevel:generatorLevel,generatorTimer:generatorTimer,smileSkinUnlocked:smileSkinUnlocked,smileSkinActive:smileSkinActive,gulauActive:gulauActive,gulauTimer:gulauTimer,rewardClaimed:rewardClaimed,bossRewardClaimed:bossRewardClaimed,noteShown:noteShown,notesUnlocked:notesUnlocked,note4Shown:note4Shown,note5Shown:note5Shown,note6Shown:note6Shown,note7Shown:note7Shown,pahanUnlocked:pahanUnlocked,quests:quests,questsDate:questsDate,questsClaimed:questsClaimed,questProgress:questProgress,boostersStorage:{},upgrades:{},globalUpgrades:{},wheelState:{freeUsed:wheelFreeUsed,paidUsed:wheelPaidUsed,lastResetDay:wheelLastResetDay},activeBg:activeBg,bgOwned:{},emojiSkinsOwned:{},dailyLastUsed:dailyLastUsed,minigameBest:minigameBest,minigameLastUsed:minigameLastUsed,skinsOwned:{},activeSkin:activeSkin,activeEmojiSkin:activeEmojiSkin};
 for(var bid in BOOSTERS){data.boostersStorage[bid]=BOOSTERS[bid].storage;}
 for(var id in upgrades){data.upgrades[id]={count:upgrades[id].count,unlocked10:!!upgrades[id].unlocked10,unlocked25:!!upgrades[id].unlocked25};}
@@ -616,7 +609,8 @@ note1Shown=true;unlockNote("note1");noteShown=true;
 showNotePopup("📜 Странная записка появилась в игре...");
 playSound("achievement");saveGame();
 }
-if(!note2Shown&&coins>=1000000000000000000000){
+// ФИКС: note2 — 1 Sp (1e24)
+if(!note2Shown&&coins>=1000000000000000000000000){
 note2Shown=true;unlockNote("note2");
 showNotePopup("📜 Ещё одна записка появилась в игре...");
 playSound("achievement");saveGame();
@@ -1239,7 +1233,9 @@ if(upgrades.clicker.count>=228){
 if(!rewardTabShown){tab.classList.remove("hidden");rewardTabShown=true;var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="🏅 Ты прокачал Кликер до 228! Открой вкладку «Награда»!";document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);playSound("achievement");}}
 else{tab.classList.add("hidden");rewardTabShown=false;}}
 function claimReward(){
-if(rewardClaimed)return;addCrystals(25);rewardClaimed=true;
+if(rewardClaimed)return;
+shards+=25;
+rewardClaimed=true;
 var res=$("reward-result");if(res){res.textContent="🎉 Ты получил +25 🌑 кровавых осколков!";res.style.color="#4caf50";}
 var btn=$("reward-claim");if(btn){btn.disabled=true;btn.textContent="✅ Получено";}
 playSound("achievement");vibrate(20);updateUI();saveGame();
@@ -1802,6 +1798,7 @@ function showShardDrop(x,y){var el=document.createElement("div");el.className="s
 
 // === ДОСТИЖЕНИЯ ===
 var achFilter="all";
+function isAchievementKey(key){return key.charAt(0)!=="_";}
 function renderAchievements(){
 var list=$("achievements-list");if(!list)return;list.innerHTML="";
 var counts={bronze:0,silver:0,gold:0,none:0,ub:0,us:0,ug:0,un:0};
@@ -1820,10 +1817,22 @@ var reward=a.tier==="gold"?5:a.tier==="silver"?3:1;
 div.innerHTML='<div class="icon">'+a.icon+'</div>'+'<div class="info">'+'<div class="title">'+(tierBadge?tierBadge+" ":"")+a.title+'</div>'+'<div class="desc">'+a.desc+' · +'+reward+' 💎</div>'+'</div>';
 list.appendChild(div);});}
 function setupAchFilters(){var btns=document.querySelectorAll(".ach-filter");btns.forEach(function(btn){btn.onclick=function(){btns.forEach(function(b){b.classList.remove("active");});btn.classList.add("active");achFilter=btn.dataset.tier||"all";renderAchievements();};});}
-function checkAchievements(){achievements.forEach(function(a){if(!unlocked[a.id]&&a.check()){unlocked[a.id]=true;var reward=a.tier==="gold"?5:a.tier==="silver"?3:1;addCrystals(reward);showAchievementPopup(a,reward);saveGame();}});}
+function checkAchievements(){
+var didUnlock=false;
+achievements.forEach(function(a){
+if(!unlocked[a.id]&&a.check()){
+unlocked[a.id]=true;
+var reward=a.tier==="gold"?5:a.tier==="silver"?3:1;
+addCrystals(reward);
+showAchievementPopup(a,reward);
+didUnlock=true;
+}
+});
+if(didUnlock)saveGame();
+}
 function showAchievementPopup(a,reward){var tierIcon=a.tier==="gold"?"🥇":a.tier==="silver"?"🥈":a.tier==="bronze"?"🥉":"";var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent=(tierIcon?tierIcon+" ":"")+a.icon+" "+a.title+" (+"+reward+" 💎)";document.body.appendChild(popup);playSound("achievement");vibrate(20);setTimeout(function(){popup.remove();},2500);}
 
-// === МАГАЗИН (С ЦЕНОЙ РЯДОМ С ПРОГРЕССОМ) ===
+// === МАГАЗИН ===
 function buildCpsLine(up){
 var unit=(up.effect==="click")?"/тап":"/сек";
 var current=up.count*up.amount;
@@ -1894,7 +1903,8 @@ $("stat-coins").textContent=formatNumber(coins);$("stat-earned").textContent=for
 var statShards=$("stat-shards");if(statShards)statShards.textContent=shards;
 var statShardsTotal=$("stat-shards-total");if(statShardsTotal)statShardsTotal.textContent=formatNumber(totalShardsEarned);
 var statTime=$("stat-time");if(statTime)statTime.textContent=formatTime(totalPlayTime);
-var achCount=0;for(var id in unlocked){if(unlocked[id])achCount++;}
+var achCount=0;
+for(var id in unlocked){if(!isAchievementKey(id))continue;if(unlocked[id])achCount++;}
 $("stat-ach").textContent=achCount;
 var totalEl=$("stat-ach-total");if(totalEl)totalEl.textContent=achievements.length;
 var recEl=$("stat-record");if(recEl)recEl.textContent=formatNumber(personalBestCoins);
@@ -1922,7 +1932,8 @@ $("click-btn").onclick=function(e){
 if(!checkTapLimit())return;
 var cd=getGeneratorCooldownMs();
 var now=Date.now();
-if(cd>50&&now-lastClickTime<cd)return;
+// ФИКС: при генераторе >= 20 кулдаун отключён
+if(generatorLevel<20 && cd>50 && now-lastClickTime<cd)return;
 lastClickTime=now;
 $("click-btn").classList.remove("tap-ready");
 if(goldenSecretActive){onGoldenSecretTap();}
@@ -2008,7 +2019,7 @@ if(modal){if(tab==="stats")updateStats();if(tab==="skins"){renderSkins();renderE
 document.querySelectorAll(".modal-close").forEach(function(btn){btn.onclick=function(){playSound("ui");var id=btn.dataset.close;var el=$(id);if(el)el.classList.add("hidden");syncScrollLock();};});
 document.querySelectorAll(".modal").forEach(function(modal){modal.onclick=function(e){if(e.target===modal){modal.classList.add("hidden");syncScrollLock();}};});
 
-// === ПЕРЕКЛЮЧАТЕЛЬ МАГАЗИНА (ФИКС) ===
+// === ПЕРЕКЛЮЧАТЕЛЬ МАГАЗИНА ===
 document.querySelectorAll(".items-tab").forEach(function(btn){
 btn.onclick=function(){
 document.querySelectorAll(".items-tab").forEach(function(b){b.classList.remove("active");});
@@ -2108,9 +2119,16 @@ setTimeout(function(){alert("✅ Прогресс полностью сброш�
 
 // === СТРАНИЦЫ ===
 var currentPage=1,totalPages=2;
-function showPage(n){if(n<1)n=totalPages;if(n>totalPages)n=1;currentPage=n;
+function showPage(n){
+if(n<1)n=totalPages;if(n>totalPages)n=1;currentPage=n;
 document.querySelectorAll(".page").forEach(function(page,i){if(i+1===n)page.classList.add("page-active");else page.classList.remove("page-active");});
 document.querySelectorAll(".page-dot").forEach(function(dot){if(parseInt(dot.dataset.page)===n)dot.classList.add("active");else dot.classList.remove("active");});
+// ФИКС: Альманах только на 2-й странице
+var almBtn=$("almanac-btn");
+if(almBtn){
+if(n===2)almBtn.classList.remove("hidden");
+else almBtn.classList.add("hidden");
+}
 if(bgCanvas)resizeBgCanvas();window.scrollTo({top:0,behavior:"smooth"});}
 function nextPage(){showPage(currentPage+1);}
 function prevPage(){showPage(currentPage-1);}
@@ -2154,7 +2172,8 @@ for(var i=tapPairs.length-1;i>=0;i--){if(totalTaps>=tapPairs[i][1]&&!khrState.sh
 if(totalTaps>=10&&!khrState.shownProgress.taps_10)pool.push({key:"taps_10",w:2});
 var upPairs=[["up_farm","farm"],["up_factory","factory"],["up_bank","bank"],["up_space","space"],["up_galaxy","galaxy"],["up_genesis","genesis"]];
 for(var i=0;i<upPairs.length;i++){if(upgrades[upPairs[i][1]]&&upgrades[upPairs[i][1]].count>0&&!khrState.shownProgress[upPairs[i][0]])pool.push({key:upPairs[i][0],w:3});}
-var ac=0;for(var k in unlocked)if(unlocked[k])ac++;
+// ФИКС: не считаем служебные ключи как ачивки
+var ac=0;for(var k in unlocked){if(!isAchievementKey(k))continue;if(unlocked[k])ac++;}
 if(ac>=1&&!khrState.shownProgress.ach_first)pool.push({key:"ach_first",w:3});
 if(ac>=50&&!khrState.shownProgress.ach_50)pool.push({key:"ach_50",w:4});
 if(ac>=achievements.length-2&&!khrState.shownProgress.ach_all)pool.push({key:"ach_all",w:5});
@@ -2407,7 +2426,12 @@ data._petsNest=petsState.nest;
 data._petsHunger=petsState.hunger;
 data._petsHungerLastTick=petsState.hungerLastTick;
 data._petsXpLastTick=petsState.xpLastTick;}
-setInterval(function(){petProcessNest();petTickHunger();petTickXP();petRenderNest();petRenderActive();petRenderIndicator();},1000);
+// ФИКС: питомцы рендерятся только на 2-й странице
+setInterval(function(){
+petProcessNest();petTickHunger();petTickXP();
+if(currentPage===2){petRenderNest();petRenderActive();}
+petRenderIndicator();
+},1000);
 setTimeout(function(){petInitUI();},3000);
 
 // === ИНТЕРВАЛЫ ===
@@ -2430,6 +2454,15 @@ var _lastGoldenMinute=-1;
 setInterval(function(){var d=new Date();var m=d.getMinutes();if(m%2===0&&m!==_lastGoldenMinute){_lastGoldenMinute=m;spawnGoldenCoin();}},5000);
 setInterval(function(){if(goldenTimer>0){goldenTimer--;if(goldenTimer===0){goldenMultiplier=1;var b=$("golden-bonus");if(b)b.remove();}}},1000);
 setInterval(function(){if(shards>lastShardsForTracking)totalShardsEarned+=(shards-lastShardsForTracking);lastShardsForTracking=shards;},500);
+// ФИКС: дискета мигает раз в 5 минут
+var _saveIndicatorTimer=null;
+setInterval(function(){
+var _si=document.getElementById("save-indicator");
+if(!_si)return;
+_si.classList.add("show");
+if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);
+_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);
+},5*60*1000);
 
 // === СТАРТ ===
 initFirebase();
@@ -2472,6 +2505,12 @@ renderBackgrounds();
 renderNoteList();
 startCooldownUI();
 startGoldenSecretSchedule();
+
+// ФИКС: Альманах скрыт на первой странице
+(function(){
+var almBtn=$("almanac-btn");
+if(almBtn)almBtn.classList.add("hidden");
+})();
 
 // === ПРОФИЛЬ И ОБУЧЕНИЕ ===
 if(!hasProfile()){
