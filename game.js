@@ -18,7 +18,6 @@ var GENERATOR_MAX_LEVEL=50,GENERATOR_BASE_COST=100,GENERATOR_COST_MULT=1.5,GENER
 var smileSkinUnlocked=false,smileSkinActive=false;
 var lastDisplayedCoins=0;
 var lastShopUpdate=0;
-var buyMultiplier=1;
 var BUY_UNLOCK_10=25;
 var BUY_UNLOCK_25=100;
 var chestsOpened=0;
@@ -210,6 +209,7 @@ genesis:{name:"💠 Генезис",desc:"+500Qi монет в секунду",c
 for(var _uid in upgrades){
 if(typeof upgrades[_uid].unlocked10==="undefined")upgrades[_uid].unlocked10=false;
 if(typeof upgrades[_uid].unlocked25==="undefined")upgrades[_uid].unlocked25=false;
+if(typeof upgrades[_uid].buyMult==="undefined")upgrades[_uid].buyMult=1;
 }
 
 // === ДОСТИЖЕНИЯ ===
@@ -440,9 +440,9 @@ setTimeout(function(){popup.remove();},3500);}
 // === СОХРАНЕНИЕ ===
 function saveGame(){
 if(window.__resetting)return;
-var data={coins:coins,coinsPerClick:coinsPerClick,totalEarned:totalEarned,totalShardsEarned:totalShardsEarned,totalTaps:totalTaps,totalPlayTime:totalPlayTime,buyMultiplier:buyMultiplier,crystals:crystals,chestsOpened:chestsOpened,personalBestCoins:personalBestCoins,lastTheftKey:lastTheftKey,unlocked:unlocked,lastTime:Date.now(),shards:shards,eventMultiplier:eventMultiplier,eventTimer:eventTimer,eventName:eventName,currentEventKey:currentEventKey,crystalBoostMultiplier:crystalBoostMultiplier,crystalBoostTimer:crystalBoostTimer,crystalBoostName:crystalBoostName,usedPromos:usedPromos,ownedItems:ownedItems,secretUnlocked:secretUnlocked,secretAutoClicker:secretAutoClicker,secretAutoClickerTimer:secretAutoClickerTimer,depositUnlocked:depositUnlocked,depositLevel:depositLevel,lastDepositTimeKey:lastDepositTimeKey,generatorLevel:generatorLevel,generatorTimer:generatorTimer,smileSkinUnlocked:smileSkinUnlocked,smileSkinActive:smileSkinActive,gulauActive:gulauActive,gulauTimer:gulauTimer,rewardClaimed:rewardClaimed,bossRewardClaimed:bossRewardClaimed,noteShown:noteShown,notesUnlocked:notesUnlocked,note4Shown:note4Shown,note5Shown:note5Shown,note6Shown:note6Shown,note7Shown:note7Shown,pahanUnlocked:pahanUnlocked,quests:quests,questsDate:questsDate,questsClaimed:questsClaimed,questProgress:questProgress,boostersStorage:{},upgrades:{},globalUpgrades:{},wheelState:{freeUsed:wheelFreeUsed,paidUsed:wheelPaidUsed,lastResetDay:wheelLastResetDay},activeBg:activeBg,bgOwned:{},emojiSkinsOwned:{},dailyLastUsed:dailyLastUsed,minigameBest:minigameBest,minigameLastUsed:minigameLastUsed,skinsOwned:{},activeSkin:activeSkin,activeEmojiSkin:activeEmojiSkin};
+var data={coins:coins,coinsPerClick:coinsPerClick,totalEarned:totalEarned,totalShardsEarned:totalShardsEarned,totalTaps:totalTaps,totalPlayTime:totalPlayTime,crystals:crystals,chestsOpened:chestsOpened,personalBestCoins:personalBestCoins,lastTheftKey:lastTheftKey,unlocked:unlocked,lastTime:Date.now(),shards:shards,eventMultiplier:eventMultiplier,eventTimer:eventTimer,eventName:eventName,currentEventKey:currentEventKey,crystalBoostMultiplier:crystalBoostMultiplier,crystalBoostTimer:crystalBoostTimer,crystalBoostName:crystalBoostName,usedPromos:usedPromos,ownedItems:ownedItems,secretUnlocked:secretUnlocked,secretAutoClicker:secretAutoClicker,secretAutoClickerTimer:secretAutoClickerTimer,depositUnlocked:depositUnlocked,depositLevel:depositLevel,lastDepositTimeKey:lastDepositTimeKey,generatorLevel:generatorLevel,generatorTimer:generatorTimer,smileSkinUnlocked:smileSkinUnlocked,smileSkinActive:smileSkinActive,gulauActive:gulauActive,gulauTimer:gulauTimer,rewardClaimed:rewardClaimed,bossRewardClaimed:bossRewardClaimed,noteShown:noteShown,notesUnlocked:notesUnlocked,note4Shown:note4Shown,note5Shown:note5Shown,note6Shown:note6Shown,note7Shown:note7Shown,pahanUnlocked:pahanUnlocked,quests:quests,questsDate:questsDate,questsClaimed:questsClaimed,questProgress:questProgress,boostersStorage:{},upgrades:{},globalUpgrades:{},wheelState:{freeUsed:wheelFreeUsed,paidUsed:wheelPaidUsed,lastResetDay:wheelLastResetDay},activeBg:activeBg,bgOwned:{},emojiSkinsOwned:{},dailyLastUsed:dailyLastUsed,minigameBest:minigameBest,minigameLastUsed:minigameLastUsed,skinsOwned:{},activeSkin:activeSkin,activeEmojiSkin:activeEmojiSkin};
 for(var bid in BOOSTERS){data.boostersStorage[bid]=BOOSTERS[bid].storage;}
-for(var id in upgrades){data.upgrades[id]={count:upgrades[id].count,unlocked10:!!upgrades[id].unlocked10,unlocked25:!!upgrades[id].unlocked25};}
+for(var id in upgrades){data.upgrades[id]={count:upgrades[id].count,unlocked10:!!upgrades[id].unlocked10,unlocked25:!!upgrades[id].unlocked25,buyMult:upgrades[id].buyMult||1};}
 for(var gid in globalUpgrades){data.globalUpgrades[gid]={count:globalUpgrades[gid].count};}
 for(var bgid in BACKGROUNDS){data.bgOwned[bgid]=BACKGROUNDS[bgid].owned;}
 for(var esid in EMOJI_SKINS){data.emojiSkinsOwned[esid]=EMOJI_SKINS[esid].owned;}
@@ -609,7 +609,6 @@ note1Shown=true;unlockNote("note1");noteShown=true;
 showNotePopup("📜 Странная записка появилась в игре...");
 playSound("achievement");saveGame();
 }
-// ФИКС: note2 — 1 Sp (1e24)
 if(!note2Shown&&coins>=1000000000000000000000000){
 note2Shown=true;unlockNote("note2");
 showNotePopup("📜 Ещё одна записка появилась в игре...");
@@ -635,7 +634,6 @@ var data=JSON.parse(raw);
 coins=data.coins||0;coinsPerClick=data.coinsPerClick||1;totalEarned=data.totalEarned||0;
 totalShardsEarned=data.totalShardsEarned||0;
 totalTaps=data.totalTaps||0;totalPlayTime=data.totalPlayTime||0;
-buyMultiplier=data.buyMultiplier||1;
 lastDisplayedCoins=coins;
 chestsOpened=data.chestsOpened||0;
 personalBestCoins=data.personalBestCoins||coins;
@@ -649,9 +647,10 @@ var overflow=loadedCrystals-crystalsMax;var conv=overflow*1e15;coins+=conv;total
 setTimeout(function(){var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="💎 Лимит 1000! Излишек "+overflow+" 💎 → "+formatNumber(conv)+" монет";document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);},2000);
 }else{crystals=loadedCrystals;}
 if(data.unlocked){for(var u in data.unlocked)unlocked[u]=data.unlocked[u];}
-if(data.upgrades){for(var id2 in data.upgrades){if(upgrades[id2]){upgrades[id2].count=data.upgrades[id2].count;upgrades[id2].unlocked10=!!data.upgrades[id2].unlocked10;upgrades[id2].unlocked25=!!data.upgrades[id2].unlocked25;}}}
+if(data.upgrades){for(var id2 in data.upgrades){if(upgrades[id2]){upgrades[id2].count=data.upgrades[id2].count;upgrades[id2].unlocked10=!!data.upgrades[id2].unlocked10;upgrades[id2].unlocked25=!!data.upgrades[id2].unlocked25;upgrades[id2].buyMult=data.upgrades[id2].buyMult||1;}}}
 for(var rid in upgrades){
 var ru=upgrades[rid];
+if(typeof ru.buyMult!=="number")ru.buyMult=1;
 if(ru.count>=UPGRADE_MAX_LEVEL){ru.count=UPGRADE_MAX_LEVEL;ru.cost=Infinity;}
 else{ru.cost=Math.floor(ru.baseCost*Math.pow(UPGRADE_COST_MULT,ru.count));}
 }
@@ -1847,21 +1846,22 @@ for(var id in upgrades){var up=upgrades[id];var div=document.createElement("div"
 var isMax=up.count>=UPGRADE_MAX_LEVEL;
 var milestoneHtml="";
 milestones.forEach(function(m){if(up.count>=m)milestoneHtml+='<span class="milestone-badge">🏅</span>';});
+var upMult=up.buyMult||1;
 var multButtons='<div class="mult-row">';
-multButtons+='<button class="mult-btn'+(buyMultiplier===1?" active":"")+'" data-mult="1" data-uid="'+id+'">×1</button>';
-if(up.unlocked10){multButtons+='<button class="mult-btn'+(buyMultiplier===10?" active":"")+'" data-mult="10" data-uid="'+id+'">×10</button>';}
+multButtons+='<button class="mult-btn'+(upMult===1?" active":"")+'" data-mult="1" data-uid="'+id+'">×1</button>';
+if(up.unlocked10){multButtons+='<button class="mult-btn'+(upMult===10?" active":"")+'" data-mult="10" data-uid="'+id+'">×10</button>';}
 else{multButtons+='<button class="mult-btn locked" data-unlock10="'+id+'">×10 🔒'+BUY_UNLOCK_10+'💎</button>';}
-if(up.unlocked25){multButtons+='<button class="mult-btn'+(buyMultiplier===25?" active":"")+'" data-mult="25" data-uid="'+id+'">×25</button>';}
+if(up.unlocked25){multButtons+='<button class="mult-btn'+(upMult===25?" active":"")+'" data-mult="25" data-uid="'+id+'">×25</button>';}
 else{multButtons+='<button class="mult-btn locked" data-unlock25="'+id+'">×25 🔒'+BUY_UNLOCK_25+'💎</button>';}
 multButtons+='</div>';
-var btnHtml=isMax?'<button class="buy" data-id="'+id+'" disabled style="background:#4caf50;color:#fff">✓ Максимум</button>':'<div class="buy-wrap">'+multButtons+'<button class="buy" data-id="'+id+'">Купить ×'+buyMultiplier+'</button></div>';
+var btnHtml=isMax?'<button class="buy" data-id="'+id+'" disabled style="background:#4caf50;color:#fff">✓ Максимум</button>':'<div class="buy-wrap">'+multButtons+'<button class="buy" data-id="'+id+'">Купить ×'+upMult+'</button></div>';
 var costLine=isMax?'':' • 💰 <span id="cost-'+id+'">'+formatNumber(up.cost)+'</span>';
 div.innerHTML='<div class="info">'+'<div class="name">'+up.name+' '+milestoneHtml+'</div>'+'<div class="desc">'+up.desc+'</div>'+'<div class="cps-info" id="cpsline-'+id+'">'+buildCpsLine(up)+'</div>'+'</div>'+'<div class="right">'+'<div class="owned">Куплено: <span id="owned-'+id+'">0</span> / '+UPGRADE_MAX_LEVEL+costLine+'</div>'+btnHtml+'</div>';
 list.appendChild(div);}
 document.querySelectorAll(".buy[data-id]").forEach(function(btn){btn.onclick=function(){
 var id=btn.dataset.id;var up=upgrades[id];if(!up)return;
 if(up.count>=UPGRADE_MAX_LEVEL)return;
-var maxToBuy=buyMultiplier;
+var maxToBuy=up.buyMult||1;
 if(up.count+maxToBuy>UPGRADE_MAX_LEVEL)maxToBuy=UPGRADE_MAX_LEVEL-up.count;
 var totalCost=0;
 for(var i=0;i<maxToBuy;i++){totalCost+=Math.floor(up.baseCost*Math.pow(UPGRADE_COST_MULT,up.count+i));}
@@ -1871,9 +1871,9 @@ for(var i=0;i<maxToBuy;i++){up.count++;if(up.effect==="click")coinsPerClick+=up.
 up.cost=up.count>=UPGRADE_MAX_LEVEL?Infinity:Math.floor(up.baseCost*Math.pow(UPGRADE_COST_MULT,up.count));
 addQuestProgress("upgrades",maxToBuy);playSound("ui");vibrate(10);updateUI();checkRewardTab();saveGame();
 };});
-document.querySelectorAll(".mult-btn[data-mult]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var m=parseInt(btn.dataset.mult);var id=btn.dataset.uid;var up=upgrades[id];if(!up)return;if(m===10&&!up.unlocked10)return;if(m===25&&!up.unlocked25)return;buyMultiplier=m;renderShop();saveGame();};});
-document.querySelectorAll(".mult-btn[data-unlock10]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var id=btn.dataset.unlock10;var up=upgrades[id];if(!up)return;if(up.unlocked10)return;if(crystals<BUY_UNLOCK_10){alert("Недостаточно кристаллов!\nНужно: "+BUY_UNLOCK_10+" 💎\nУ вас: "+crystals+" 💎");return;}if(!confirm("Разблокировать ×10 для «"+up.name+"» за "+BUY_UNLOCK_10+" 💎?"))return;crystals-=BUY_UNLOCK_10;up.unlocked10=true;buyMultiplier=10;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});
-document.querySelectorAll(".mult-btn[data-unlock25]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var id=btn.dataset.unlock25;var up=upgrades[id];if(!up)return;if(up.unlocked25)return;if(crystals<BUY_UNLOCK_25){alert("Недостаточно кристаллов!\nНужно: "+BUY_UNLOCK_25+" 💎\nУ вас: "+crystals+" 💎");return;}if(!confirm("Разблокировать ×25 для «"+up.name+"» за "+BUY_UNLOCK_25+" 💎?"))return;crystals-=BUY_UNLOCK_25;up.unlocked25=true;buyMultiplier=25;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});}
+document.querySelectorAll(".mult-btn[data-mult]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var m=parseInt(btn.dataset.mult);var id=btn.dataset.uid;var up=upgrades[id];if(!up)return;if(m===10&&!up.unlocked10)return;if(m===25&&!up.unlocked25)return;up.buyMult=m;renderShop();saveGame();};});
+document.querySelectorAll(".mult-btn[data-unlock10]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var id=btn.dataset.unlock10;var up=upgrades[id];if(!up)return;if(up.unlocked10)return;if(crystals<BUY_UNLOCK_10){alert("Недостаточно кристаллов!\nНужно: "+BUY_UNLOCK_10+" 💎\nУ вас: "+crystals+" 💎");return;}if(!confirm("Разблокировать ×10 для «"+up.name+"» за "+BUY_UNLOCK_10+" 💎?"))return;crystals-=BUY_UNLOCK_10;up.unlocked10=true;up.buyMult=10;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});
+document.querySelectorAll(".mult-btn[data-unlock25]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var id=btn.dataset.unlock25;var up=upgrades[id];if(!up)return;if(up.unlocked25)return;if(crystals<BUY_UNLOCK_25){alert("Недостаточно кристаллов!\nНужно: "+BUY_UNLOCK_25+" 💎\nУ вас: "+crystals+" 💎");return;}if(!confirm("Разблокировать ×25 для «"+up.name+"» за "+BUY_UNLOCK_25+" 💎?"))return;crystals-=BUY_UNLOCK_25;up.unlocked25=true;up.buyMult=25;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});}
 
 // === ЛИЧНЫЙ РЕКОРД ===
 function checkPersonalRecord(){var now=Date.now();if(now-lastRecordCheck<3000)return;lastRecordCheck=now;if(coins>personalBestCoins){personalBestCoins=coins;saveGame();}}
@@ -1932,7 +1932,6 @@ $("click-btn").onclick=function(e){
 if(!checkTapLimit())return;
 var cd=getGeneratorCooldownMs();
 var now=Date.now();
-// ФИКС: при генераторе >= 20 кулдаун отключён
 if(generatorLevel<20 && cd>50 && now-lastClickTime<cd)return;
 lastClickTime=now;
 $("click-btn").classList.remove("tap-ready");
@@ -2094,7 +2093,6 @@ theftActive=false;theftTimer=0;theftTotalLost=0;lastTheftKey="";
 wheelFreeUsed=false;wheelPaidUsed=false;wheelLastResetDay="";
 dailyLastUsed="";
 minigameBest=0;minigameLastUsed=0;
-buyMultiplier=1;
 goldenSecretActive=false;
 activeBg="base";
 for(var bid in BOOSTERS){BOOSTERS[bid].storage=0;}
@@ -2107,7 +2105,7 @@ if(pahanTimerInterval){clearInterval(pahanTimerInterval);pahanTimerInterval=null
 if(theftTickTimer){clearInterval(theftTickTimer);theftTickTimer=null;}
 if(minigameTimerInterval){clearInterval(minigameTimerInterval);minigameTimerInterval=null;}
 stopSecretAutoClicker();
-for(var id in upgrades){upgrades[id].count=0;upgrades[id].cost=upgrades[id].baseCost;upgrades[id].unlocked10=false;upgrades[id].unlocked25=false;}
+for(var id in upgrades){upgrades[id].count=0;upgrades[id].cost=upgrades[id].baseCost;upgrades[id].unlocked10=false;upgrades[id].unlocked25=false;upgrades[id].buyMult=1;}
 for(var gid in globalUpgrades){globalUpgrades[gid].count=0;globalUpgrades[gid].cost=globalUpgrades[gid].baseCost;}
 for(var sid in skins){skins[sid].owned=(sid==="gold");}
 activeSkin="gold";
@@ -2123,7 +2121,6 @@ function showPage(n){
 if(n<1)n=totalPages;if(n>totalPages)n=1;currentPage=n;
 document.querySelectorAll(".page").forEach(function(page,i){if(i+1===n)page.classList.add("page-active");else page.classList.remove("page-active");});
 document.querySelectorAll(".page-dot").forEach(function(dot){if(parseInt(dot.dataset.page)===n)dot.classList.add("active");else dot.classList.remove("active");});
-// ФИКС: Альманах только на 2-й странице
 var almBtn=$("almanac-btn");
 if(almBtn){
 if(n===2)almBtn.classList.remove("hidden");
@@ -2172,7 +2169,6 @@ for(var i=tapPairs.length-1;i>=0;i--){if(totalTaps>=tapPairs[i][1]&&!khrState.sh
 if(totalTaps>=10&&!khrState.shownProgress.taps_10)pool.push({key:"taps_10",w:2});
 var upPairs=[["up_farm","farm"],["up_factory","factory"],["up_bank","bank"],["up_space","space"],["up_galaxy","galaxy"],["up_genesis","genesis"]];
 for(var i=0;i<upPairs.length;i++){if(upgrades[upPairs[i][1]]&&upgrades[upPairs[i][1]].count>0&&!khrState.shownProgress[upPairs[i][0]])pool.push({key:upPairs[i][0],w:3});}
-// ФИКС: не считаем служебные ключи как ачивки
 var ac=0;for(var k in unlocked){if(!isAchievementKey(k))continue;if(unlocked[k])ac++;}
 if(ac>=1&&!khrState.shownProgress.ach_first)pool.push({key:"ach_first",w:3});
 if(ac>=50&&!khrState.shownProgress.ach_50)pool.push({key:"ach_50",w:4});
@@ -2426,7 +2422,6 @@ data._petsNest=petsState.nest;
 data._petsHunger=petsState.hunger;
 data._petsHungerLastTick=petsState.hungerLastTick;
 data._petsXpLastTick=petsState.xpLastTick;}
-// ФИКС: питомцы рендерятся только на 2-й странице
 setInterval(function(){
 petProcessNest();petTickHunger();petTickXP();
 if(currentPage===2){petRenderNest();petRenderActive();}
@@ -2454,7 +2449,6 @@ var _lastGoldenMinute=-1;
 setInterval(function(){var d=new Date();var m=d.getMinutes();if(m%2===0&&m!==_lastGoldenMinute){_lastGoldenMinute=m;spawnGoldenCoin();}},5000);
 setInterval(function(){if(goldenTimer>0){goldenTimer--;if(goldenTimer===0){goldenMultiplier=1;var b=$("golden-bonus");if(b)b.remove();}}},1000);
 setInterval(function(){if(shards>lastShardsForTracking)totalShardsEarned+=(shards-lastShardsForTracking);lastShardsForTracking=shards;},500);
-// ФИКС: дискета мигает раз в 5 минут
 var _saveIndicatorTimer=null;
 setInterval(function(){
 var _si=document.getElementById("save-indicator");
@@ -2506,7 +2500,6 @@ renderNoteList();
 startCooldownUI();
 startGoldenSecretSchedule();
 
-// ФИКС: Альманах скрыт на первой странице
 (function(){
 var almBtn=$("almanac-btn");
 if(almBtn)almBtn.classList.add("hidden");
