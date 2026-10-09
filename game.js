@@ -2981,7 +2981,54 @@ setInterval(function(){
     if(now-kb.__wdT2>12000){try{kb.remove();}catch(e){}}
   }
 },2000);
-
+// ===== ФИКС v201 — принудительная привязка кнопок =====
+setTimeout(function(){
+  // Друзья — кнопка поиска
+  var sb=document.getElementById("friends-search-btn");
+  if(sb){sb.onclick=function(e){e.preventDefault();if(typeof _socialDoSearch==="function")_socialDoSearch();};}
+  // Друзья — Enter в поле ввода
+  var si=document.getElementById("friends-search-input");
+  if(si){si.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();if(typeof _socialDoSearch==="function")_socialDoSearch();}};}
+  // Друзья — вкладки
+  document.querySelectorAll(".friends-tab").forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll(".friends-tab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var pane=tb.dataset.ftab;
+      document.querySelectorAll(".friends-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("friends-pane-"+pane);if(pv)pv.classList.remove("hidden");
+    };
+  });
+  // Клан — вкладки
+  document.querySelectorAll(".clan-tab").forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-tab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var pane=tb.dataset.ctab;
+      document.querySelectorAll(".clan-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-pane-"+pane);if(pv)pv.classList.remove("hidden");
+    };
+  });
+  // Клан — подтабы
+  document.querySelectorAll(".clan-subtab").forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-subtab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var st=tb.dataset.cstab;
+      document.querySelectorAll(".clan-subpane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-sub-"+st);if(pv)pv.classList.remove("hidden");
+    };
+  });
+  // Кнопки копирования ID
+  var cp=document.getElementById("friends-copy-id");
+  if(cp){cp.onclick=function(){
+    var el=document.getElementById("friends-my-id");
+    var txt=el?el.textContent:"";
+    if(!txt)return;
+    try{navigator.clipboard.writeText(txt);alert("📋 "+txt);}catch(e){prompt("Скопируй:",txt);}
+  };}
+  console.log("[v201] Кнопки привязаны");
+}, 500);
 // === СТАРТ ===
 initFirebase();
 initSounds();
