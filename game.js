@@ -2543,8 +2543,7 @@ setInterval(function(){if(goldenTimer>0){goldenTimer--;if(goldenTimer===0){golde
 setInterval(function(){if(shards>lastShardsForTracking)totalShardsEarned+=(shards-lastShardsForTracking);lastShardsForTracking=shards;},500);
 var _saveIndicatorTimer=null;
 setInterval(function(){var _si=document.getElementById("save-indicator");if(!_si)return;_si.classList.add("show");if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);},5*60*1000);
-
-// ===== ПАТЧ v109 =====
+// ===== ПАТЧ v109 (с фиксами) =====
 
 // --- БАННЕРЫ ---
 if(typeof BANNERS==="undefined"){
@@ -2562,15 +2561,25 @@ if(typeof BANNERS==="undefined"){
 window.bannerState=window.bannerState||{active:null,unlocked:{}};
 window.loadBanners=function(){try{var r=localStorage.getItem("clicker-banners");if(r){var d=JSON.parse(r);bannerState.active=d.active||null;bannerState.unlocked=d.unlocked||{};}}catch(e){}};
 window.saveBanners=function(){try{localStorage.setItem("clicker-banners",JSON.stringify({active:bannerState.active,unlocked:bannerState.unlocked}));}catch(e){}};
+
+// ✅ ФИКС: IIFE-замыкание — попап больше не залипает
 window.checkBannersUnlock=function(){
   var changed=false;
   for(var id in BANNERS){
     if(bannerState.unlocked[id])continue;
-    try{if(BANNERS[id].check&&BANNERS[id].check()){
-      bannerState.unlocked[id]=true;changed=true;
-      var p=document.createElement("div");p.className="achievement-popup";p.textContent="🎨 "+BANNERS[id].name;
-      document.body.appendChild(p);setTimeout(function(){p.remove();},3500);
-    }}catch(e){}
+    try{
+      if(BANNERS[id].check&&BANNERS[id].check()){
+        bannerState.unlocked[id]=true;
+        changed=true;
+        (function(bannerName){
+          var p=document.createElement("div");
+          p.className="achievement-popup";
+          p.textContent="🎨 "+bannerName;
+          document.body.appendChild(p);
+          setTimeout(function(){try{p.remove();}catch(e){}},3500);
+        })(BANNERS[id].name);
+      }
+    }catch(e){}
   }
   if(changed)saveBanners();
 };
@@ -2595,8 +2604,10 @@ window.renderBannerList=function(){
   }
 };
 
-// --- ДРУЗЬЯ (базовый UI) ---
-window.socialState=window.socialState||{shortId:"",friendsList:{},incoming:{},outgoing:{}};
+// --- ДРУЗЬЯ (полный рабочий модуль) ---
+window.socialState=window.socialState||{shortId:"",friendsList:{},incoming:{},outgoing:{},online:{}};
+var _socialFriendsRef=null,_socialIncomingRef=null,_socialOutgoingRef=null;
+
 function _shortIdFromProfile(){
   if(!profile.id)return "----";
   var h=0;for(var i=0;i<profile.id.length;i++)h=(h*31+profile.id.charCodeAt(i))|0;
@@ -2604,11 +2615,213 @@ function _shortIdFromProfile(){
   for(var k=0;k<4;k++){s+=c[v%c.length];v=Math.floor(v/c.length);}
   return s;
 }
+function _getMyShortId(){return (profile.nickname||"Anon")+"#"+_shortIdFromProfile();}
+function _parseShortId(s){
+  if(!s)return null;
+  s=String(s).trim().toUpperCase();
+  var m=s.match(/^(.+)#([A-Z0-9]{4})$/);
+  if(!m)return null;
+  return {nick:m[1],code:m[2]};
+}
+function _socialPublishMe(){
+  if(!db||!profile.id||!profile.nickname)return;
+  ensureProfileId();
+  var code=_shortIdFromProfile();
+  db.ref("shortIds/"+code).set(profile.id).catch(function(){});
+  db.ref("users/"+profile.id+"/nickname").set(profile.nickname).catch(function(){});
+  db.ref("users/"+profile.id+"/shortId").set(code).catch(function(){});
+  db.ref("users/"+profile.id+"/lastSeen").set(Date.now()).catch(function(){});
+  db.ref("users/"+profile.id+"/totalEarned").set(Math.floor(totalEarned)).catch(function(){});
+}
+function _socialHeartbeat(){
+  if(!db||!profile.id)return;
+  db.ref("users/"+profile.id+"/lastSeen").set(Date.now()).catch(function(){});
+  db.ref("users/"+profile.id+"/totalEarned").set(Math.floor(totalEarned)).catch(function(){});
+}
+function _socialStatusText(lastSeen){
+  if(!lastSeen)return t("friends.status_offline");
+  var diff=Math.floor((Date.now()-lastSeen)/1000);
+  if(diff<90)return "🟢 "+t("friends.status_online");
+  if(diff<600)return "🟡 "+t("friends.status_away");
+  return "⚪ "+t("friends.was_online").replace("{time}",formatTime(diff));
+}
+function _socialRenderFriendList(){
+  var list=document.getElementById("friends-list");
+  var empty=document.getElementById("friends-list-empty");
+  var cnt=document.getElementById("friends-count");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(socialState.friendsList||{});
+  if(cnt)cnt.textContent=ids.length;
+  if(ids.length===0){if(empty)empty.classList.remove("hidden");return;}
+  if(empty)empty.classList.add("hidden");
+  ids.forEach(function(fid){
+    var info=socialState.friendsList[fid]||{};
+    var row=document.createElement("div");
+    row.className="friend-row";
+    var dot=document.createElement("div");dot.className="friend-status-dot";dot.textContent="🟢";
+    var name=info.nickname||"Anon";
+    var infoDiv=document.createElement("div");infoDiv.className="friend-info";
+    infoDiv.innerHTML='<div class="friend-name">'+escapeHtml(name)+'</div>'+
+      '<div class="friend-id" title="Копировать">'+escapeHtml((info.shortId||"----"))+'</div>'+
+      '<div class="friend-status-text">'+_socialStatusText(info.lastSeen)+'</div>';
+    var btnChat=document.createElement("button");btnChat.className="friend-action-btn chat";btnChat.textContent="💬";
+    btnChat.onclick=function(){if(typeof dmOpen==="function")dmOpen(fid,name);};
+    var btnGift=document.createElement("button");btnGift.className="friend-action-btn gift";btnGift.textContent="🎁";
+    btnGift.onclick=function(){_socialSendGift(fid,name);};
+    var btnDel=document.createElement("button");btnDel.className="friend-action-btn decline";btnDel.textContent="✕";
+    btnDel.onclick=function(){
+      if(!confirm(t("friends.delete_confirm")))return;
+      db.ref("friends/"+profile.id+"/list/"+fid).remove();
+      db.ref("friends/"+fid+"/list/"+profile.id).remove();
+    };
+    row.appendChild(dot);row.appendChild(infoDiv);row.appendChild(btnChat);row.appendChild(btnGift);row.appendChild(btnDel);
+    list.appendChild(row);
+  });
+}
+function _socialRenderIncoming(){
+  var list=document.getElementById("friends-incoming-list");
+  var empty=document.getElementById("friends-incoming-empty");
+  var badge=document.getElementById("friends-req-badge");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(socialState.incoming||{});
+  if(badge){if(ids.length>0){badge.textContent=ids.length;badge.classList.remove("hidden");}else badge.classList.add("hidden");}
+  if(ids.length===0){if(empty)empty.classList.remove("hidden");return;}
+  if(empty)empty.classList.add("hidden");
+  ids.forEach(function(fid){
+    var info=socialState.incoming[fid]||{};
+    var row=document.createElement("div");row.className="friend-row";
+    var infoDiv=document.createElement("div");infoDiv.className="friend-info";
+    infoDiv.innerHTML='<div class="friend-name">'+escapeHtml(info.nickname||"Anon")+'</div>'+
+      '<div class="friend-id">'+escapeHtml(info.shortId||"----")+'</div>';
+    var btnA=document.createElement("button");btnA.className="friend-action-btn accept";btnA.textContent="✓";
+    btnA.onclick=function(){
+      db.ref("friends/"+profile.id+"/list/"+fid).set({nickname:info.nickname||"Anon",shortId:info.shortId||"----",addedAt:Date.now()});
+      db.ref("friends/"+fid+"/list/"+profile.id).set({nickname:profile.nickname,shortId:_shortIdFromProfile(),addedAt:Date.now()});
+      db.ref("friends/"+profile.id+"/incoming/"+fid).remove();
+      db.ref("friends/"+fid+"/outgoing/"+profile.id).remove();
+    };
+    var btnD=document.createElement("button");btnD.className="friend-action-btn decline";btnD.textContent="✕";
+    btnD.onclick=function(){
+      db.ref("friends/"+profile.id+"/incoming/"+fid).remove();
+      db.ref("friends/"+fid+"/outgoing/"+profile.id).remove();
+    };
+    row.appendChild(infoDiv);row.appendChild(btnA);row.appendChild(btnD);
+    list.appendChild(row);
+  });
+}
+function _socialRenderOutgoing(){
+  var list=document.getElementById("friends-outgoing-list");
+  var empty=document.getElementById("friends-outgoing-empty");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(socialState.outgoing||{});
+  if(ids.length===0){if(empty)empty.classList.remove("hidden");return;}
+  if(empty)empty.classList.add("hidden");
+  ids.forEach(function(fid){
+    var info=socialState.outgoing[fid]||{};
+    var row=document.createElement("div");row.className="friend-row";
+    var infoDiv=document.createElement("div");infoDiv.className="friend-info";
+    infoDiv.innerHTML='<div class="friend-name">'+escapeHtml(info.nickname||"Anon")+'</div>'+
+      '<div class="friend-id">'+escapeHtml(info.shortId||"----")+'</div>'+
+      '<div class="friend-status-text">⏳ Ожидание</div>';
+    row.appendChild(infoDiv);
+    list.appendChild(row);
+  });
+}
+function _socialSendGift(fid,name){
+  if(coins<100){alert(t("friends.gift_no_coins"));return;}
+  var today=new Date().toDateString();
+  var giftKey="gift-"+fid+"-"+today;
+  if(localStorage.getItem(giftKey)==="1"){alert(t("friends.gift_already"));return;}
+  if(!confirm(t("friends.gift_confirm").replace("{name}",name)))return;
+  coins-=100;totalEarned-=100;
+  db.ref("gifts/"+fid).push({from:profile.id,fromNick:profile.nickname,amount:100,ts:Date.now()});
+  localStorage.setItem(giftKey,"1");
+  alert(t("friends.gift_sent"));
+  updateUI();saveGame();
+}
+function _socialSubscribeFriends(){
+  if(!db||!profile.id)return;
+  if(_socialFriendsRef)_socialFriendsRef.off();
+  if(_socialIncomingRef)_socialIncomingRef.off();
+  if(_socialOutgoingRef)_socialOutgoingRef.off();
+  _socialFriendsRef=db.ref("friends/"+profile.id+"/list");
+  _socialFriendsRef.on("value",function(snap){
+    var val=snap.val()||{};
+    var ids=Object.keys(val);
+    socialState.friendsList={};
+    ids.forEach(function(fid){
+      socialState.friendsList[fid]=val[fid]||{};
+      db.ref("users/"+fid).once("value").then(function(us){
+        var u=us.val()||{};
+        if(socialState.friendsList[fid]){
+          socialState.friendsList[fid].lastSeen=u.lastSeen||0;
+          socialState.friendsList[fid].nickname=u.nickname||socialState.friendsList[fid].nickname;
+          socialState.friendsList[fid].shortId=u.shortId||socialState.friendsList[fid].shortId;
+          _socialRenderFriendList();
+        }
+      });
+    });
+    _socialRenderFriendList();
+  });
+  _socialIncomingRef=db.ref("friends/"+profile.id+"/incoming");
+  _socialIncomingRef.on("value",function(snap){
+    socialState.incoming=snap.val()||{};
+    _socialRenderIncoming();
+  });
+  _socialOutgoingRef=db.ref("friends/"+profile.id+"/outgoing");
+  _socialOutgoingRef.on("value",function(snap){
+    socialState.outgoing=snap.val()||{};
+    _socialRenderOutgoing();
+  });
+}
+function _socialDoSearch(){
+  var input=document.getElementById("friends-search-input");
+  var result=document.getElementById("friends-search-result");
+  if(!input||!result)return;
+  result.innerHTML="";
+  var parsed=_parseShortId(input.value);
+  if(!parsed){result.innerHTML='<p class="friends-empty" style="color:#ff5252">'+t("friends.search_hint")+'</p>';return;}
+  if(!db){result.innerHTML='<p class="friends-empty" style="color:#ff5252">Firebase недоступен</p>';return;}
+  result.innerHTML='<p class="friends-empty">⏳ Поиск...</p>';
+  db.ref("shortIds/"+parsed.code).once("value").then(function(snap){
+    var uid=snap.val();
+    if(!uid){result.innerHTML='<p class="friends-empty" style="color:#ff5252">❌ Игрок не найден</p>';return;}
+    if(uid===profile.id){result.innerHTML='<p class="friends-empty" style="color:#ff5252">Это ты 🙂</p>';return;}
+    db.ref("users/"+uid).once("value").then(function(us){
+      var u=us.val()||{};
+      var nick=u.nickname||parsed.nick;
+      var alreadyFriend=!!(socialState.friendsList&&socialState.friendsList[uid]);
+      var alreadySent=!!(socialState.outgoing&&socialState.outgoing[uid]);
+      var html='<div class="friend-row"><div class="friend-info">'+
+        '<div class="friend-name">'+escapeHtml(nick)+'</div>'+
+        '<div class="friend-id">'+escapeHtml(parsed.code)+'</div>'+
+        '<div class="friend-status-text">'+_socialStatusText(u.lastSeen)+'</div>'+
+        '</div>';
+      if(alreadyFriend){html+='<div class="friend-action-btn chat">✓ Друг</div>';}
+      else if(alreadySent){html+='<div class="friend-action-btn">⏳ Отправлено</div>';}
+      else{html+='<button class="friend-action-btn accept" id="friends-add-btn">➕ Добавить</button>';}
+      html+='</div>';
+      result.innerHTML=html;
+      var addBtn=document.getElementById("friends-add-btn");
+      if(addBtn)addBtn.onclick=function(){
+        db.ref("friends/"+uid+"/incoming/"+profile.id).set({nickname:profile.nickname,shortId:_shortIdFromProfile(),ts:Date.now()});
+        db.ref("friends/"+profile.id+"/outgoing/"+uid).set({nickname:nick,shortId:parsed.code,ts:Date.now()});
+        addBtn.outerHTML='<div class="friend-action-btn">⏳ Отправлено</div>';
+      };
+    });
+  }).catch(function(e){result.innerHTML='<p class="friends-empty" style="color:#ff5252">❌ '+e.message+'</p>';});
+}
 window.setupFriendsUI=function(){
   var idEl=document.getElementById("friends-my-id");
-  if(idEl){if(!profile.id)ensureProfileId();idEl.textContent=(profile.nickname||"Anon")+"#"+_shortIdFromProfile();}
+  if(idEl){if(!profile.id)ensureProfileId();idEl.textContent=_getMyShortId();}
   var cp=document.getElementById("friends-copy-id");
-  if(cp&&!cp.__b){cp.__b=true;cp.onclick=function(){var txt=(profile.nickname||"Anon")+"#"+_shortIdFromProfile();try{navigator.clipboard.writeText(txt);}catch(e){}if(typeof playSound==="function")playSound("ui");};}
+  if(cp&&!cp.__b){cp.__b=true;cp.onclick=function(){
+    var txt=_getMyShortId();
+    try{navigator.clipboard.writeText(txt);alert("📋 "+txt);}catch(e){prompt("Скопируй:",txt);}
+  };}
   document.querySelectorAll(".friends-tab").forEach(function(tb){
     if(tb.__b)return;tb.__b=true;
     tb.onclick=function(){
@@ -2619,18 +2832,45 @@ window.setupFriendsUI=function(){
       var pv=document.getElementById("friends-pane-"+pane);if(pv)pv.classList.remove("hidden");
     };
   });
+  var searchBtn=document.getElementById("friends-search-btn");
+  if(searchBtn&&!searchBtn.__b){searchBtn.__b=true;searchBtn.onclick=_socialDoSearch;}
+  var searchInput=document.getElementById("friends-search-input");
+  if(searchInput&&!searchInput.__b){searchInput.__b=true;searchInput.addEventListener("keydown",function(e){if(e.key==="Enter")_socialDoSearch();});}
 };
 window.openFriendsModal=function(){
   var m=document.getElementById("modal-friends");if(!m)return;
   if(typeof playSound==="function")playSound("ui");
   setupFriendsUI();
+  if(db&&profile.id){_socialPublishMe();_socialSubscribeFriends();}
   m.classList.remove("hidden");
   if(typeof syncScrollLock==="function")syncScrollLock();
+  _socialRenderFriendList();_socialRenderIncoming();_socialRenderOutgoing();
 };
 window.closeFriendsModal=function(){var m=document.getElementById("modal-friends");if(m)m.classList.add("hidden");};
-window.socialInit=function(){};
-window.processIncomingGifts=function(){};
-window.renderFriendsRating=function(){};
+window.socialInit=function(){if(db&&profile.id){_socialPublishMe();_socialSubscribeFriends();_socialProcessGifts();}};
+window.processIncomingGifts=function(){_socialProcessGifts();};
+function _socialProcessGifts(){
+  if(!db||!profile.id)return;
+  db.ref("gifts/"+profile.id).once("value").then(function(snap){
+    var val=snap.val();
+    if(!val)return;
+    var total=0;var senders=[];
+    Object.keys(val).forEach(function(k){
+      var g=val[k];
+      total+=g.amount||0;
+      if(g.fromNick)senders.push(g.fromNick);
+      db.ref("gifts/"+profile.id+"/"+k).remove();
+    });
+    if(total>0){
+      coins+=total;totalEarned+=total;
+      alert(t("friends.gift_received").replace("{amount}",total).replace("{senders}",senders.join(", ")));
+      updateUI();saveGame();
+    }
+  }).catch(function(){});
+}
+setInterval(_socialHeartbeat,30000);
+setTimeout(function(){if(db&&profile.id)_socialPublishMe();},3000);
+setTimeout(function(){if(db&&profile.id){_socialSubscribeFriends();_socialProcessGifts();}},5000);
 
 // --- КЛАН ---
 window.clanState=window.clanState||{myClanId:null,myRole:null,myClanData:null};
@@ -2688,7 +2928,7 @@ window.clanInvest=function(){return false;};
 window.clanCanEdit=function(){return false;};
 window.hasBadWords=function(){return false;};
 
-// --- ПРОЧИЕ ЗАГЛУШКИ (оставляем как есть, но БЕЗ alert) ---
+// --- ПРОЧИЕ ЗАГЛУШКИ ---
 if(typeof dmSetupUI!=="function"){
   window.dmState={friendId:null,unread:{}};
   window.dmSetupUI=function(){};window.dmUpdateSideBadge=function(){};
@@ -2720,53 +2960,27 @@ if(typeof installV89CpsClanBonus!=="function"){
   window.installV89CpsClanBonus=function(){};window.hookSeasonAccumulators=function(){};
 }
 
-// ===== WATCHDOG v110 — чистит зависшие попапы =====
-(function(){
-  // 1) Авто-удаление всех DOM-попапов через 8 сек
-  setInterval(function(){
-    var now=Date.now();
-    var sels=".achievement-popup,.float-plus,.tap-ring,.tap-wave,.tap-particle,.shard-drop,.item-upgrade-popup,.blood-banner,.super-event-popup,.fortune-popup,.golden-bonus,.crystal-convert-popup";
-    var els=document.querySelectorAll(sels);
-    for(var i=0;i<els.length;i++){
-      var el=els[i];
-      if(!el.__watchdogT)el.__watchdogT=now;
-      if(now-el.__watchdogT>8000){
-        try{el.remove();}catch(e){}
-      }
-    }
-    // отдельно — золотая монетка (если застряла >30 сек)
-    var gc=document.getElementById("golden-coin");
-    if(gc){
-      if(!gc.__watchdogT)gc.__watchdogT=now;
-      if(now-gc.__watchdogT>30000){try{gc.remove();}catch(e){}}
-    }
-    // krohlupic bubble — если застрял и не скрылся
-    var kb=document.querySelector(".krohlupic-bubble.show");
-    if(kb){
-      if(!kb.__watchdogT2)kb.__watchdogT2=now;
-      if(now-kb.__watchdogT2>12000){try{kb.remove();}catch(e){}}
-    }
-  },2000);
-
-  // 2) Если popup создан с пустым текстом — заполняем маркером
-  var _createElementOrig=document.createElement.bind(document);
-  document.createElement=function(tag){
-    var el=_createElementOrig(tag);
-    return el;
-  };
-
-  // 3) Патч alert/confirm/prompt — не даём пустому тексту пройти
-  var _oa=window.alert,_oc=window.confirm,_op=window.prompt;
-  function _safe(m){
-    if(m===undefined||m===null)return "(пустое уведомление)";
-    var s=String(m);
-    if(s.trim()==="")return "(пустое уведомление)";
-    return s;
+// ===== WATCHDOG (один, не дублируется) =====
+setInterval(function(){
+  var now=Date.now();
+  var sels=".achievement-popup,.float-plus,.tap-ring,.tap-wave,.tap-particle,.shard-drop,.item-upgrade-popup,.blood-banner,.super-event-popup,.fortune-popup,.golden-bonus";
+  var els=document.querySelectorAll(sels);
+  for(var i=0;i<els.length;i++){
+    var el=els[i];
+    if(!el.__wdT)el.__wdT=now;
+    if(now-el.__wdT>8000){try{el.remove();}catch(e){}}
   }
-  window.alert=function(m){return _oa.call(window,_safe(m));};
-  window.confirm=function(m){return _oc.call(window,_safe(m));};
-  window.prompt=function(m,d){return _op.call(window,_safe(m),d);};
-})();
+  var gc=document.getElementById("golden-coin");
+  if(gc){
+    if(!gc.__wdT)gc.__wdT=now;
+    if(now-gc.__wdT>30000){try{gc.remove();}catch(e){}}
+  }
+  var kb=document.querySelector(".krohlupic-bubble.show");
+  if(kb){
+    if(!kb.__wdT2)kb.__wdT2=now;
+    if(now-kb.__wdT2>12000){try{kb.remove();}catch(e){}}
+  }
+},2000);
 
 // === СТАРТ ===
 initFirebase();
