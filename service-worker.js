@@ -1,5 +1,5 @@
-// ===== SERVICE WORKER v113 =====
-var CACHE_NAME = "krohlupic-v113";
+// ===== SERVICE WORKER v200 =====
+var CACHE_NAME = "krohlupic-v200";
 var URLS = [
   "./",
   "./index.html",
@@ -26,13 +26,9 @@ var URLS = [
 self.addEventListener("install", function(e){
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache){
-      return Promise.all(
-        URLS.map(function(url){
-          return cache.add(url).catch(function(err){
-            console.warn("SW: не удалось закэшировать", url);
-          });
-        })
-      );
+      return Promise.all(URLS.map(function(url){
+        return cache.add(url).catch(function(){});
+      }));
     })
   );
   self.skipWaiting();
@@ -41,13 +37,7 @@ self.addEventListener("install", function(e){
 self.addEventListener("activate", function(e){
   e.waitUntil(
     caches.keys().then(function(names){
-      return Promise.all(
-        names.filter(function(n){ return n !== CACHE_NAME; })
-             .map(function(n){
-               console.log("SW: удаляю старый кэш", n);
-               return caches.delete(n);
-             })
-      );
+      return Promise.all(names.filter(function(n){return n!==CACHE_NAME;}).map(function(n){return caches.delete(n);}));
     })
   );
   self.clients.claim();
@@ -60,23 +50,17 @@ self.addEventListener("fetch", function(e){
       if(r) return r;
       return fetch(e.request).then(function(response){
         if(response && response.status === 200 && response.type === "basic"){
-          var responseClone = response.clone();
-          caches.open(CACHE_NAME).then(function(cache){
-            cache.put(e.request, responseClone);
-          });
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache){cache.put(e.request, clone);});
         }
         return response;
       }).catch(function(){
-        if(e.request.mode === "navigate"){
-          return caches.match("./index.html");
-        }
+        if(e.request.mode === "navigate") return caches.match("./index.html");
       });
     })
   );
 });
 
 self.addEventListener("message", function(e){
-  if(e.data === "skipWaiting"){
-    self.skipWaiting();
-  }
+  if(e.data === "skipWaiting") self.skipWaiting();
 });
