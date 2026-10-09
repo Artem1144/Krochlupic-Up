@@ -3499,6 +3499,67 @@ setInterval(function(){
     });
   }
 },15000);
+// ===== ФИКС КЛАН v202 — принудительная привязка =====
+setTimeout(function(){
+  // Поиск кланов
+  var sb=document.getElementById("clan-search-btn");
+  if(sb)sb.onclick=function(e){e.preventDefault();if(typeof _clanSearch==="function")_clanSearch();};
+  var si=document.getElementById("clan-search-input");
+  if(si)si.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();if(typeof _clanSearch==="function")_clanSearch();}};
+  
+  // Создание клана
+  var cb=document.getElementById("clan-create-submit");
+  if(cb)cb.onclick=function(e){e.preventDefault();if(typeof _clanCreate==="function")_clanCreate();};
+  
+  // Выйти / Распустить
+  var lb=document.getElementById("clan-leave-btn");
+  if(lb)lb.onclick=function(e){e.preventDefault();if(typeof _clanLeave==="function")_clanLeave();};
+  var db2=document.getElementById("clan-disband-btn");
+  if(db2)db2.onclick=function(e){e.preventDefault();if(typeof _clanDisband==="function")_clanDisband();};
+  
+  // Чат
+  var send=document.getElementById("clan-chat-send");
+  if(send)send.onclick=function(e){e.preventDefault();if(typeof _clanSendChat==="function")_clanSendChat();};
+  var ci=document.getElementById("clan-chat-input");
+  if(ci)ci.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();if(typeof _clanSendChat==="function")_clanSendChat();}};
+  
+  // Вклад
+  document.querySelectorAll("[data-invest]").forEach(function(b){
+    b.onclick=function(e){
+      e.preventDefault();
+      if(typeof _clanInvest==="function")_clanInvest(b.dataset.invest==="custom"?"custom":parseInt(b.dataset.invest));
+    };
+  });
+  
+  // Вкладки клана
+  document.querySelectorAll(".clan-tab").forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-tab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var pane=tb.dataset.ctab;
+      document.querySelectorAll(".clan-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-pane-"+pane);if(pv)pv.classList.remove("hidden");
+      if(pane==="my"&&typeof clanRenderMyClan==="function")clanRenderMyClan();
+    };
+  });
+  
+  // Подтабы клана
+  document.querySelectorAll(".clan-subtab").forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-subtab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var st=tb.dataset.cstab;
+      document.querySelectorAll(".clan-subpane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-sub-"+st);if(pv)pv.classList.remove("hidden");
+    };
+  });
+  
+  // Кнопка клана (сбоку)
+  var clbtn=document.getElementById("clan-side-btn");
+  if(clbtn)clbtn.onclick=function(e){e.preventDefault();if(typeof clanOpen==="function")clanOpen();};
+  
+  console.log("[v202] Клан фиксы привязаны");
+}, 800);
 // === СТАРТ ===
 initFirebase();
 initSounds();
