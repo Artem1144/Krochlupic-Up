@@ -2544,123 +2544,180 @@ setInterval(function(){if(shards>lastShardsForTracking)totalShardsEarned+=(shard
 var _saveIndicatorTimer=null;
 setInterval(function(){var _si=document.getElementById("save-indicator");if(!_si)return;_si.classList.add("show");if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);},5*60*1000);
 
-// ===== ПАТЧ-ЗАГЛУШКИ v108 =====
-// Защита от падения если оригинальные функции не загрузились
+// ===== ПАТЧ v109 =====
 
+// --- БАННЕРЫ ---
 if(typeof BANNERS==="undefined"){
-  window.BANNERS={};
-  window.bannerState={active:null,unlocked:{},wins:0};
-  window.loadBanners=function(){};
-  window.saveBanners=function(){};
-  window.checkBannersUnlock=function(){};
-  window.showBannerUnlockPopup=function(){};
-  window.renderProfileBanner=function(){};
-  window.renderBannerList=function(){};
+  window.BANNERS={
+    novice:   {id:"novice",   name:"🥉 Новичок",       desc:"100 тапов",             cls:"banner-novice",   check:function(){return totalTaps>=100;}},
+    farmer:   {id:"farmer",   name:"🌾 Фермер",         desc:"10 000 тапов",          cls:"banner-farmer",   check:function(){return totalTaps>=10000;}},
+    veteran:  {id:"veteran",  name:"🎖️ Ветеран",       desc:"1 000 000 тапов",       cls:"banner-veteran",  check:function(){return totalTaps>=1000000;}},
+    master:   {id:"master",   name:"🏆 Мастер",        desc:"100M монет/сек",        cls:"banner-master",   check:function(){return getCPS()>=100000000;}},
+    legend:   {id:"legend",   name:"👑 Легенда",       desc:"Топ-1 лидерборд",       cls:"banner-legend",   check:function(){return unlocked.leader_top1===true;}},
+    absolute: {id:"absolute", name:"🔱 Абсолют",       desc:"Абсолют куплен",        cls:"banner-absolute", check:function(){return upgrades.absolute.count>=1;}},
+    genesis:  {id:"genesis",  name:"💠 Генезис",       desc:"Генезис куплен",        cls:"banner-genesis",  check:function(){return upgrades.genesis.count>=1;}},
+    bloodlord:{id:"bloodlord",name:"🩸 Кровавый Лорд", desc:"10 000 осколков",       cls:"banner-bloodlord",check:function(){return totalShardsEarned>=10000;}}
+  };
 }
+window.bannerState=window.bannerState||{active:null,unlocked:{}};
+window.loadBanners=function(){try{var r=localStorage.getItem("clicker-banners");if(r){var d=JSON.parse(r);bannerState.active=d.active||null;bannerState.unlocked=d.unlocked||{};}}catch(e){}};
+window.saveBanners=function(){try{localStorage.setItem("clicker-banners",JSON.stringify({active:bannerState.active,unlocked:bannerState.unlocked}));}catch(e){}};
+window.checkBannersUnlock=function(){
+  var changed=false;
+  for(var id in BANNERS){
+    if(bannerState.unlocked[id])continue;
+    try{if(BANNERS[id].check&&BANNERS[id].check()){
+      bannerState.unlocked[id]=true;changed=true;
+      var p=document.createElement("div");p.className="achievement-popup";p.textContent="🎨 "+BANNERS[id].name;
+      document.body.appendChild(p);setTimeout(function(){p.remove();},3500);
+    }}catch(e){}
+  }
+  if(changed)saveBanners();
+};
+window.renderProfileBanner=function(){
+  var el=document.getElementById("profile-banner-display");if(!el)return;
+  var id=bannerState.active;
+  el.className="profile-banner-display";
+  if(!id||!BANNERS[id]||!bannerState.unlocked[id]){el.classList.add("hidden");return;}
+  el.classList.remove("hidden");el.classList.add(BANNERS[id].cls);el.textContent=BANNERS[id].name;
+};
+window.renderBannerList=function(){
+  var list=document.getElementById("banner-list");if(!list)return;
+  list.innerHTML="";
+  for(var id in BANNERS){
+    var b=BANNERS[id];var unl=!!bannerState.unlocked[id];var act=bannerState.active===id;
+    var div=document.createElement("div");
+    div.className="banner-card"+(act?" active":"")+(unl?"":" locked");
+    div.innerHTML='<div class="banner-card-preview '+b.cls+'">'+b.name+'</div>'+
+      '<div class="banner-card-status">'+(act?"✅ Выбран":unl?"Нажми":"🔒 "+b.desc)+'</div>';
+    if(unl){(function(bid){div.onclick=function(){bannerState.active=(bannerState.active===bid)?null:bid;saveBanners();renderBannerList();renderProfileBanner();};})(id);}
+    list.appendChild(div);
+  }
+};
 
-if(typeof setupFriendsUI!=="function"){
-  window.socialState={shortId:"",friendsList:{},incoming:{},outgoing:{}};
-  window.setupFriendsUI=function(){};
-  window.openFriendsModal=function(){console.log("v108 friends stub");};
-  window.closeFriendsModal=function(){};
-  window.socialInit=function(){};
-  window.processIncomingGifts=function(){};
-  window.renderFriendsRating=function(){};
+// --- ДРУЗЬЯ (базовый UI) ---
+window.socialState=window.socialState||{shortId:"",friendsList:{},incoming:{},outgoing:{}};
+function _shortIdFromProfile(){
+  if(!profile.id)return "----";
+  var h=0;for(var i=0;i<profile.id.length;i++)h=(h*31+profile.id.charCodeAt(i))|0;
+  var c="ABCDEFGHJKMNPQRSTUVWXYZ23456789",s="",v=Math.abs(h);
+  for(var k=0;k<4;k++){s+=c[v%c.length];v=Math.floor(v/c.length);}
+  return s;
 }
+window.setupFriendsUI=function(){
+  var idEl=document.getElementById("friends-my-id");
+  if(idEl){if(!profile.id)ensureProfileId();idEl.textContent=(profile.nickname||"Anon")+"#"+_shortIdFromProfile();}
+  var cp=document.getElementById("friends-copy-id");
+  if(cp&&!cp.__b){cp.__b=true;cp.onclick=function(){var txt=(profile.nickname||"Anon")+"#"+_shortIdFromProfile();try{navigator.clipboard.writeText(txt);}catch(e){}if(typeof playSound==="function")playSound("ui");};}
+  document.querySelectorAll(".friends-tab").forEach(function(tb){
+    if(tb.__b)return;tb.__b=true;
+    tb.onclick=function(){
+      document.querySelectorAll(".friends-tab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var pane=tb.dataset.ftab;
+      document.querySelectorAll(".friends-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("friends-pane-"+pane);if(pv)pv.classList.remove("hidden");
+    };
+  });
+};
+window.openFriendsModal=function(){
+  var m=document.getElementById("modal-friends");if(!m)return;
+  if(typeof playSound==="function")playSound("ui");
+  setupFriendsUI();
+  m.classList.remove("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+};
+window.closeFriendsModal=function(){var m=document.getElementById("modal-friends");if(m)m.classList.add("hidden");};
+window.socialInit=function(){};
+window.processIncomingGifts=function(){};
+window.renderFriendsRating=function(){};
 
+// --- КЛАН ---
+window.clanState=window.clanState||{myClanId:null,myRole:null,myClanData:null};
+window.clanSetupUI=function(){
+  var btn=document.getElementById("clan-side-btn");
+  if(btn&&!btn.__b){
+    btn.__b=true;
+    btn.onclick=function(e){
+      e.preventDefault();
+      if(typeof playSound==="function")playSound("ui");
+      window.clanOpen();
+    };
+  }
+  document.querySelectorAll(".clan-tab").forEach(function(tb){
+    if(tb.__b)return;tb.__b=true;
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-tab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var pane=tb.dataset.ctab;
+      document.querySelectorAll(".clan-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-pane-"+pane);if(pv)pv.classList.remove("hidden");
+    };
+  });
+  document.querySelectorAll("[data-ctab-jump]").forEach(function(b){
+    if(b.__b)return;b.__b=true;
+    b.onclick=function(){
+      var target=b.dataset.ctabJump;
+      document.querySelectorAll(".clan-tab").forEach(function(x){if(x.dataset.ctab===target)x.click();});
+    };
+  });
+  document.querySelectorAll(".clan-subtab").forEach(function(tb){
+    if(tb.__b)return;tb.__b=true;
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-subtab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var st=tb.dataset.cstab;
+      document.querySelectorAll(".clan-subpane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-sub-"+st);if(pv)pv.classList.remove("hidden");
+    };
+  });
+};
+window.clanSetupEditorUI=function(){};
+window.clanOpen=function(){
+  var m=document.getElementById("modal-clans");if(!m)return;
+  m.classList.remove("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+};
+window.clanClose=function(){var m=document.getElementById("modal-clans");if(m)m.classList.add("hidden");};
+window.clanGetBonus=function(){return 0;};
+window.clanGetLevel=function(){return {level:1,need:0,bonus:0};};
+window.clanGetInvested=function(){return 0;};
+window.clanRenderLevelBlock=function(){};
+window.clanUpdateUI=function(){};
+window.clanInvest=function(){return false;};
+window.clanCanEdit=function(){return false;};
+window.hasBadWords=function(){return false;};
+
+// --- ПРОЧИЕ ЗАГЛУШКИ (оставляем как есть, но БЕЗ alert) ---
 if(typeof dmSetupUI!=="function"){
   window.dmState={friendId:null,unread:{}};
-  window.dmSetupUI=function(){};
-  window.dmUpdateSideBadge=function(){};
-  window.dmOpen=function(){};
-  window.dmClose=function(){};
-  window.dmSubscribeUnreadForAll=function(){};
-  window.dmUnsubAllUnread=function(){};
+  window.dmSetupUI=function(){};window.dmUpdateSideBadge=function(){};
+  window.dmOpen=function(){};window.dmClose=function(){};
+  window.dmSubscribeUnreadForAll=function(){};window.dmUnsubAllUnread=function(){};
 }
-
-if(typeof clanSetupUI!=="function"){
-  window.clanState={myClanId:null,myRole:null,myClanData:null};
-  window.clanSetupUI=function(){};
-  window.clanSetupEditorUI=function(){};
-  window.clanOpen=function(){var m=document.getElementById("modal-clans");if(m){m.classList.remove("hidden");}};
-  window.clanClose=function(){var m=document.getElementById("modal-clans");if(m)m.classList.add("hidden");};
-  window.clanGetBonus=function(){return 0;};
-  window.clanGetLevel=function(){return {level:1,need:0,bonus:0};};
-  window.clanGetInvested=function(){return 0;};
-  window.clanRenderLevelBlock=function(){};
-  window.clanUpdateUI=function(){};
-  window.clanInvest=function(){return false;};
-  window.clanCanEdit=function(){return false;};
-  window.hasBadWords=function(t){return false;};
-}
-
 if(typeof auctionSetupTabs!=="function"){
   window.auctionState={myLots:{},marketLots:{}};
-  window.auctionSetupTabs=function(){};
-  window.installAuctionHooks=function(){};
+  window.auctionSetupTabs=function(){};window.installAuctionHooks=function(){};
 }
-
 if(typeof compSetupUI!=="function"){
   window.compState={roomId:null};
-  window.compSetupUI=function(){};
-  window.compOnFriendsCompOpen=function(){};
+  window.compSetupUI=function(){};window.compOnFriendsCompOpen=function(){};
 }
-
 if(typeof fnfSetup!=="function"){
   window.fnfState={active:false};
-  window.fnfSetup=function(){};
-  window.fnfOpen=function(){console.log("v108 fnf stub");};
-  window.fnfClose=function(){};
+  window.fnfSetup=function(){};window.fnfOpen=function(){console.log("fnf stub");};window.fnfClose=function(){};
 }
-
 if(typeof adminSetup!=="function"){
-  window.adminState={promoUnlocked:false,boost:{active:false,mult:1}};
-  window.loadAdminState=function(){};
-  window.adminSetup=function(){};
-  window.adminGetBoostMult=function(){return 1;};
-  window.adminRequestPassword=function(){};
-  window.adminOpen=function(){};
-  window.adminClose=function(){};
+  window.adminSetup=function(){};window.adminGetBoostMult=function(){return 1;};
+  window.adminRequestPassword=function(){};window.adminOpen=function(){};window.adminClose=function(){};
 }
-
 if(typeof loadSeasonLocal!=="function"){
   window.seasonState={myScore:0};
-  window.loadSeasonLocal=function(){};
-  window.saveSeasonLocal=function(){};
-  window.updateSeasonTick=function(){};
-  window.pushSeasonToFirebase=function(){};
+  window.loadSeasonLocal=function(){};window.saveSeasonLocal=function(){};
+  window.updateSeasonTick=function(){};window.pushSeasonToFirebase=function(){};
 }
-
 if(typeof installV89CpsClanBonus!=="function"){
-  window.installV89CpsClanBonus=function(){};
-  window.hookSeasonAccumulators=function(){};
-}
-
-if(typeof subscribeBannerInit!=="function"){
-  window.subscribeBannerInit=function(){};
-}
-
-if(typeof khrPetInit!=="function"){
-  window.khrPetInit=function(){};
-  window.khrShow=function(){};
-  window.khrPetHookTap=function(){};
-}
-
-if(typeof petRenderAll!=="function"){
-  window.petRenderAll=function(){};
-  window.petLoadFromSave=function(){};
-  window.petSaveToSave=function(){};
-  window.petGetIncomeBonus=function(){return 0;};
-  window.petGetGemTapChance=function(){return 0;};
-  window.petGetShardTapBonus=function(){return 0;};
-  window.petTotalCount=function(){return 0;};
-  window.petGetActive=function(){return null;};
-  window.petGenerateId=function(){return Date.now();};
-}
-
-if(typeof setupFriendsUI==="function"&&!window.__patchDone){
-  window.__patchDone=true;
-  console.log("[patch v108] Заглушки установлены");
+  window.installV89CpsClanBonus=function(){};window.hookSeasonAccumulators=function(){};
 }
 
 // === СТАРТ ===
