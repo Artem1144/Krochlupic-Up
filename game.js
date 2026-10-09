@@ -3029,6 +3029,476 @@ setTimeout(function(){
   };}
   console.log("[v201] Кнопки привязаны");
 }, 500);
+// ===== МОДУЛЬ КЛАНЫ v201 =====
+window.clanState=window.clanState||{myClanId:null,myRole:null,myClanData:null,myBonus:0};
+
+var CLAN_MAX_MEMBERS=10;
+var CLAN_CREATE_COST=500;
+var CLAN_LEVELS=[0,50000,500000,5000000,50000000];
+
+function clanCalcLevel(invested){
+  for(var i=CLAN_LEVELS.length-1;i>=0;i--){
+    if(invested>=CLAN_LEVELS[i]) return i+1;
+  }
+  return 1;
+}
+function clanNextLevelNeed(invested){
+  var lvl=clanCalcLevel(invested);
+  if(lvl>=CLAN_LEVELS.length) return null;
+  return CLAN_LEVELS[lvl];
+}
+function clanGetBonus(){ return clanState.myBonus||0; }
+function clanGetLevel(){
+  if(!clanState.myClanData)return {level:1,need:0,bonus:0};
+  var inv=clanState.myClanData.invested||0;
+  var lvl=clanCalcLevel(inv);
+  var need=clanNextLevelNeed(inv);
+  return {level:lvl,need:need,bonus:lvl*0.01};
+}
+function clanGetInvested(){
+  return clanState.myClanData?(clanState.myClanData.invested||0):0;
+}
+function _clanPublishMe(){
+  if(!db||!profile.id)return;
+  if(clanState.myClanId){
+    db.ref("users/"+profile.id+"/clanId").set(clanState.myClanId).catch(function(){});
+  }else{
+    db.ref("users/"+profile.id+"/clanId").remove().catch(function(){});
+  }
+}
+var _clanRef=null,_clanMembersRef=null,_clanChatRef=null,_clanRequestsRef=null;
+
+function _clanSubscribeMyClan(){
+  if(!db||!profile.id)return;
+  db.ref("users/"+profile.id+"/clanId").once("value").then(function(snap){
+    var cid=snap.val();
+    if(!cid){clanState.myClanId=null;clanState.myRole=null;clanState.myClanData=null;clanState.myBonus=0;clanRenderMyClan();return;}
+    clanState.myClanId=cid;
+    _clanSubscribeClan(cid);
+  }).catch(function(){});
+}
+function _clanSubscribeClan(cid){
+  if(_clanRef)_clanRef.off();
+  if(_clanMembersRef)_clanMembersRef.off();
+  if(_clanChatRef)_clanChatRef.off();
+  if(_clanRequestsRef)_clanRequestsRef.off();
+  
+  _clanRef=db.ref("clans/"+cid);
+  _clanRef.on("value",function(snap){
+    var data=snap.val();
+    if(!data){
+      clanState.myClanId=null;clanState.myRole=null;clanState.myClanData=null;clanState.myBonus=0;
+      clanRenderMyClan();
+      return;
+    }
+    clanState.myClanData=data;
+    var members=data.members||{};
+    clanState.myRole=members[profile.id]?(members[profile.id].role||"member"):null;
+    if(!clanState.myRole){
+      clanState.myClanId=null;clanState.myClanData=null;clanState.myBonus=0;
+      _clanPublishMe();
+      clanRenderMyClan();
+      return;
+    }
+    var lvl=clanCalcLevel(data.invested||0);
+    clanState.myBonus=lvl*0.01;
+    clanRenderMyClan();
+  });
+  
+  _clanMembersRef=db.ref("clans/"+cid+"/members");
+  _clanMembersRef.on("value",function(snap){
+    var mem=snap.val()||{};
+    clanRenderMembers(mem);
+    clanRenderMemberCount(Object.keys(mem).length);
+  });
+  
+  _clanChatRef=db.ref("clans/"+cid+"/chat").limitToLast(50);
+  _clanChatRef.on("value",function(snap){
+    clanRenderChat(snap.val()||{});
+  });
+  
+  _clanRequestsRef=db.ref("clans/"+cid+"/requests");
+  _clanRequestsRef.on("value",function(snap){
+    clanRenderRequests(snap.val()||{});
+  });
+}
+
+function clanRenderMyClan(){
+  var noClan=document.getElementById("clan-no-clan");
+  var myInfo=document.getElementById("clan-my-info");
+  if(!noClan||!myInfo)return;
+  if(!clanState.myClanId||!clanState.myClanData){
+    noClan.classList.remove("hidden");
+    myInfo.classList.add("hidden");
+    return;
+  }
+  noClan.classList.add("hidden");
+  myInfo.classList.remove("hidden");
+  var d=clanState.myClanData;
+  var $tag=document.getElementById("clan-my-tag"); if($tag)$tag.textContent=d.tag||"---";
+  var $name=document.getElementById("clan-my-name"); if($name)$name.textContent=d.name||"Клан";
+  var $type=document.getElementById("clan-my-type"); if($type)$type.textContent=(d.type==="closed"?"🔒 Закрытый":"🔓 Открытый");
+  var $desc=document.getElementById("clan-my-desc"); if($desc)$desc.textContent=d.description||"";
+  var roleLabel="👤 Участник";
+  if(clanState.myRole==="owner")roleLabel="👑 Владелец";
+  else if(clanState.myRole==="officer")roleLabel="🛡 Офицер";
+  var $role=document.getElementById("clan-my-role"); if($role)$role.textContent=roleLabel;
+  var inv=d.invested||0;
+  var lvl=clanCalcLevel(inv);
+  var next=clanNextLevelNeed(inv);
+  var $lvlV=document.getElementById("clan-level-value"); if($lvlV)$lvlV.textContent=lvl+" / 5";
+  var $lvlI=document.getElementById("clan-level-invested"); if($lvlI)$lvlI.textContent=formatNumber(inv);
+  var $lvlN=document.getElementById("clan-level-next"); if($lvlN)$lvlN.textContent=next?formatNumber(next):"—";
+  var $lvlB=document.getElementById("clan-level-bonus"); if($lvlB)$lvlB.textContent="+"+lvl+"%";
+  var $lvlF=document.getElementById("clan-level-fill");
+  if($lvlF){
+    var prev=CLAN_LEVELS[lvl-1]||0;
+    var pct=next?Math.min(100,((inv-prev)/(next-prev))*100):100;
+    $lvlF.style.width=pct+"%";
+  }
+  var $edit=document.getElementById("clan-edit-btn");
+  if($edit){if(clanState.myRole==="owner")$edit.classList.remove("hidden");else $edit.classList.add("hidden");}
+  var $disband=document.getElementById("clan-disband-btn");
+  if($disband){if(clanState.myRole==="owner")$disband.classList.remove("hidden");else $disband.classList.add("hidden");}
+  var $reqTab=document.getElementById("clan-subtab-requests");
+  if($reqTab){if(clanState.myRole==="owner"||clanState.myRole==="officer")$reqTab.classList.remove("hidden");else $reqTab.classList.add("hidden");}
+}
+function clanRenderMemberCount(n){
+  var el=document.getElementById("clan-my-count");
+  if(el)el.textContent=n+" / "+CLAN_MAX_MEMBERS;
+}
+function clanRenderMembers(mem){
+  var list=document.getElementById("clan-members-list");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(mem);
+  ids.sort(function(a,b){
+    var order={owner:0,officer:1,member:2};
+    var ra=order[mem[a].role]||3, rb=order[mem[b].role]||3;
+    if(ra!==rb)return ra-rb;
+    return (mem[a].joinedAt||0)-(mem[b].joinedAt||0);
+  });
+  ids.forEach(function(uid){
+    var m=mem[uid]||{};
+    var row=document.createElement("div");row.className="clan-member-row";
+    var dot=document.createElement("div");dot.className="clan-member-status";dot.textContent="●";
+    var info=document.createElement("div");info.className="clan-member-info";
+    var roleClass="role-member",roleLabel="👤 Участник";
+    if(m.role==="owner"){roleClass="role-owner";roleLabel="👑 Владелец";}
+    else if(m.role==="officer"){roleClass="role-officer";roleLabel="🛡 Офицер";}
+    info.innerHTML='<div class="clan-member-name '+roleClass+'">'+escapeHtml(m.nickname||"Anon")+(uid===profile.id?' (ты)':'')+'</div>'+'<div class="clan-member-role">'+roleLabel+'</div>';
+    row.appendChild(dot);row.appendChild(info);
+    if(uid!==profile.id){
+      var actions=document.createElement("div");actions.className="clan-member-actions";
+      if(clanState.myRole==="owner"){
+        if(m.role==="member"){
+          var btnP=document.createElement("button");btnP.className="clan-mini-btn success";btnP.textContent="↑";btnP.title="Офицер";
+          btnP.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("officer");};
+          actions.appendChild(btnP);
+        }else if(m.role==="officer"){
+          var btnD=document.createElement("button");btnD.className="clan-mini-btn";btnD.textContent="↓";btnD.title="Снять";
+          btnD.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("member");};
+          actions.appendChild(btnD);
+        }
+      }
+      if(clanState.myRole==="owner"||clanState.myRole==="officer"){
+        var btnK=document.createElement("button");btnK.className="clan-mini-btn danger";btnK.textContent="✕";btnK.title="Кик";
+        btnK.onclick=function(){
+          if(!confirm("Кикнуть игрока из клана?"))return;
+          db.ref("clans/"+clanState.myClanId+"/members/"+uid).remove();
+          db.ref("users/"+uid+"/clanId").remove();
+        };
+        actions.appendChild(btnK);
+      }
+      row.appendChild(actions);
+    }
+    list.appendChild(row);
+  });
+}
+function clanRenderChat(val){
+  var box=document.getElementById("clan-chat-messages");
+  if(!box)return;
+  var atBottom=box.scrollTop+box.clientHeight>=box.scrollHeight-40;
+  box.innerHTML="";
+  var ids=Object.keys(val).sort(function(a,b){return (val[a].ts||0)-(val[b].ts||0);});
+  ids.forEach(function(mid){
+    var m=val[mid];
+    var div=document.createElement("div");
+    div.className="clan-chat-msg"+(m.authorId===profile.id?" own":"");
+    var dt=new Date(m.ts||0);
+    var time=("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2);
+    div.innerHTML='<div class="clan-chat-author'+(m.authorId===profile.id?" mine":"")+'">'+escapeHtml(m.author||"Anon")+'</div>'+
+      '<div class="clan-chat-text">'+escapeHtml(m.text||"")+'</div>'+
+      '<div class="clan-chat-time">'+time+'</div>';
+    box.appendChild(div);
+  });
+  if(atBottom)box.scrollTop=box.scrollHeight;
+}
+function clanRenderRequests(val){
+  var list=document.getElementById("clan-requests-list");
+  var empty=document.getElementById("clan-requests-empty");
+  var badge=document.getElementById("clan-req-badge");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(val||{});
+  if(badge){badge.textContent=ids.length>0?ids.length:"";}
+  if(ids.length===0){if(empty)empty.classList.remove("hidden");return;}
+  if(empty)empty.classList.add("hidden");
+  ids.forEach(function(uid){
+    var r=val[uid]||{};
+    var row=document.createElement("div");row.className="clan-member-row";
+    var info=document.createElement("div");info.className="clan-member-info";
+    info.innerHTML='<div class="clan-member-name">'+escapeHtml(r.nickname||"Anon")+'</div><div class="clan-member-role">Хочет вступить</div>';
+    var acts=document.createElement("div");acts.className="clan-member-actions";
+    var ok=document.createElement("button");ok.className="clan-mini-btn success";ok.textContent="✓";
+    ok.onclick=function(){
+      db.ref("clans/"+clanState.myClanId+"/members").once("value").then(function(s){
+        var cur=Object.keys(s.val()||{}).length;
+        if(cur>=CLAN_MAX_MEMBERS){alert(t("clan.full"));return;}
+        db.ref("clans/"+clanState.myClanId+"/members/"+uid).set({nickname:r.nickname||"Anon",role:"member",joinedAt:Date.now(),invested:0});
+        db.ref("users/"+uid+"/clanId").set(clanState.myClanId);
+        db.ref("clans/"+clanState.myClanId+"/requests/"+uid).remove();
+      });
+    };
+    var no=document.createElement("button");no.className="clan-mini-btn danger";no.textContent="✕";
+    no.onclick=function(){db.ref("clans/"+clanState.myClanId+"/requests/"+uid).remove();};
+    acts.appendChild(ok);acts.appendChild(no);
+    row.appendChild(info);row.appendChild(acts);
+    list.appendChild(row);
+  });
+}
+window.clanOpen=function(){
+  var m=document.getElementById("modal-clans");if(!m)return;
+  if(typeof playSound==="function")playSound("ui");
+  m.classList.remove("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+  _clanSubscribeMyClan();
+  clanRenderMyClan();
+};
+window.clanClose=function(){
+  var m=document.getElementById("modal-clans");
+  if(m)m.classList.add("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+};
+window.clanUpdateUI=function(){clanRenderMyClan();};
+
+function _clanCreate(){
+  if(!db){alert("Firebase недоступен");return;}
+  if(!hasProfile()){alert("Сначала задай ник");return;}
+  if(clanState.myClanId){alert(t("clan.err_in_clan"));return;}
+  var $name=document.getElementById("clan-create-name");
+  var $tag=document.getElementById("clan-create-tag");
+  var $desc=document.getElementById("clan-create-desc");
+  var $err=document.getElementById("clan-create-error");
+  var type="open";
+  var radio=document.querySelector('input[name="clan-type"]:checked');
+  if(radio)type=radio.value;
+  var name=($name.value||"").trim();
+  var tag=($tag.value||"").trim().toUpperCase();
+  var desc=($desc.value||"").trim();
+  if(!name||name.length<3||name.length>20){if($err)$err.textContent=t("clan.err_name_short");return;}
+  if(!tag||!/^[A-Z]{2,4}$/.test(tag)){if($err)$err.textContent=t("clan.err_tag_invalid");return;}
+  if(crystals<CLAN_CREATE_COST){if($err)$err.textContent=t("clan.err_not_enough_gems");return;}
+  if($err)$err.textContent="";
+  db.ref("clanTags/"+tag).once("value").then(function(snap){
+    if(snap.val()){if($err)$err.textContent=t("clan.err_tag_taken");return;}
+    var cid="c_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+    var clan={name:name,tag:tag,description:desc,type:type,ownerId:profile.id,createdAt:Date.now(),invested:0};
+    db.ref("clans/"+cid).set(clan).then(function(){
+      db.ref("clans/"+cid+"/members/"+profile.id).set({nickname:profile.nickname,role:"owner",joinedAt:Date.now(),invested:0});
+      db.ref("clanTags/"+tag).set(cid);
+      db.ref("users/"+profile.id+"/clanId").set(cid);
+      crystals-=CLAN_CREATE_COST;
+      playSound("achievement");vibrate(30);
+      updateUI();saveGame();
+      $name.value="";$tag.value="";$desc.value="";
+      document.querySelectorAll(".clan-tab").forEach(function(x){if(x.dataset.ctab==="my")x.click();});
+    }).catch(function(e){if($err)$err.textContent="Ошибка: "+e.message;});
+  });
+}
+function _clanSearch(){
+  var $inp=document.getElementById("clan-search-input");
+  var $res=document.getElementById("clan-search-results");
+  if(!$inp||!$res)return;
+  var q=($inp.value||"").trim();
+  if(!q){$res.innerHTML='<p class="clan-empty-msg">Введи название или тег</p>';return;}
+  $res.innerHTML='<p class="clan-empty-msg">⏳ Поиск...</p>';
+  db.ref("clans").once("value").then(function(snap){
+    var all=snap.val()||{};
+    var found=[];
+    var ql=q.toLowerCase();
+    Object.keys(all).forEach(function(cid){
+      var c=all[cid];if(!c)return;
+      var n=(c.name||"").toLowerCase();
+      var tg=(c.tag||"").toLowerCase();
+      if(n.indexOf(ql)!==-1||tg.indexOf(ql)!==-1)found.push({id:cid,data:c});
+    });
+    $res.innerHTML="";
+    if(found.length===0){$res.innerHTML='<p class="clan-empty-msg">Не найдено</p>';return;}
+    found.slice(0,20).forEach(function(item){
+      var c=item.data;
+      var membersCount=Object.keys(c.members||{}).length;
+      var div=document.createElement("div");div.className="clan-card";
+      div.innerHTML='<div class="clan-card-row"><div class="clan-card-tag">'+escapeHtml(c.tag||"")+'</div>'+
+        '<div class="clan-card-info">'+
+        '<div class="clan-card-name">'+escapeHtml(c.name||"")+'</div>'+
+        '<div class="clan-card-meta">'+(c.type==="closed"?"🔒 Закрытый":"🔓 Открытый")+' · '+membersCount+'/'+CLAN_MAX_MEMBERS+' · ⭐ '+clanCalcLevel(c.invested||0)+'</div>'+
+        '</div>'+
+        '<button class="clan-mini-btn success" data-join="'+item.id+'">Вступить</button>'+
+        '</div>';
+      if(c.description){
+        var desc=document.createElement("div");desc.className="clan-card-desc";desc.textContent=c.description;
+        div.appendChild(desc);
+      }
+      $res.appendChild(div);
+    });
+    $res.querySelectorAll("[data-join]").forEach(function(btn){
+      btn.onclick=function(){_clanJoin(btn.dataset.join);};
+    });
+  });
+}
+function _clanJoin(cid){
+  if(clanState.myClanId){alert(t("clan.err_in_clan"));return;}
+  db.ref("clans/"+cid).once("value").then(function(snap){
+    var c=snap.val();
+    if(!c){alert("Клан не найден");return;}
+    var mem=c.members||{};
+    if(Object.keys(mem).length>=CLAN_MAX_MEMBERS){alert(t("clan.full"));return;}
+    if(c.type==="open"){
+      db.ref("clans/"+cid+"/members/"+profile.id).set({nickname:profile.nickname,role:"member",joinedAt:Date.now(),invested:0});
+      db.ref("users/"+profile.id+"/clanId").set(cid);
+      alert(t("clan.joined"));
+      _clanSubscribeMyClan();
+    }else{
+      db.ref("clans/"+cid+"/requests/"+profile.id).set({nickname:profile.nickname,ts:Date.now()});
+      alert(t("clan.request_sent"));
+    }
+  });
+}
+function _clanLeave(){
+  if(!clanState.myClanId)return;
+  if(!confirm(t("clan.confirm_leave")))return;
+  var cid=clanState.myClanId;
+  if(clanState.myRole==="owner"){
+    db.ref("clans/"+cid+"/members").once("value").then(function(s){
+      var mem=s.val()||{};
+      var others=Object.keys(mem).filter(function(u){return u!==profile.id;});
+      if(others.length===0){
+        db.ref("clans/"+cid).remove();
+        db.ref("clanTags/"+clanState.myClanData.tag).remove();
+        db.ref("users/"+profile.id+"/clanId").remove();
+        alert(t("clan.disbanded"));
+      }else{
+        var heir=others[0];
+        db.ref("clans/"+cid+"/members/"+heir+"/role").set("owner");
+        db.ref("clans/"+cid+"/ownerId").set(heir);
+        db.ref("clans/"+cid+"/members/"+profile.id).remove();
+        db.ref("users/"+profile.id+"/clanId").remove();
+        alert(t("clan.left"));
+      }
+      _clanSubscribeMyClan();
+    });
+  }else{
+    db.ref("clans/"+cid+"/members/"+profile.id).remove();
+    db.ref("users/"+profile.id+"/clanId").remove();
+    alert(t("clan.left"));
+    _clanSubscribeMyClan();
+  }
+}
+function _clanDisband(){
+  if(clanState.myRole!=="owner")return;
+  if(!confirm(t("clan.confirm_disband")))return;
+  var cid=clanState.myClanId;
+  var tag=clanState.myClanData.tag;
+  db.ref("clans/"+cid).remove();
+  db.ref("clanTags/"+tag).remove();
+  db.ref("users/"+profile.id+"/clanId").remove();
+  alert(t("clan.disbanded"));
+  _clanSubscribeMyClan();
+}
+function _clanSendChat(){
+  var $inp=document.getElementById("clan-chat-input");
+  if(!$inp)return;
+  var text=($inp.value||"").trim();
+  if(!text)return;
+  if(text.length>200)text=text.slice(0,200);
+  if(!clanState.myClanId)return;
+  db.ref("clans/"+clanState.myClanId+"/chat").push({author:profile.nickname,authorId:profile.id,text:text,ts:Date.now()});
+  $inp.value="";
+}
+function _clanInvest(amount){
+  if(!clanState.myClanId)return;
+  if(amount==="custom"){
+    var s=prompt("Сколько монет вложить?\nУ тебя: "+formatNumber(coins));
+    if(!s)return;
+    amount=Math.floor(parseFloat(String(s).replace(/[^0-9]/g,"")));
+    if(!amount||amount<=0)return;
+  }
+  if(coins<amount){alert(t("clan.invest_no_coins").replace("{need}",formatNumber(amount)).replace("{have}",formatNumber(coins)));return;}
+  if(!confirm(t("clan.invest_confirm").replace("{amount}",formatNumber(amount))))return;
+  coins-=amount;totalEarned-=amount;
+  db.ref("clans/"+clanState.myClanId+"/invested").transaction(function(cur){return (cur||0)+amount;});
+  db.ref("clans/"+clanState.myClanId+"/members/"+profile.id+"/invested").transaction(function(cur){return (cur||0)+amount;});
+  alert(t("clan.invest_done").replace("{amount}",formatNumber(amount)));
+  updateUI();saveGame();
+}
+window.clanSetupUI=function(){
+  var btn=document.getElementById("clan-side-btn");
+  if(btn&&!btn.__b){btn.__b=true;btn.onclick=function(e){e.preventDefault();window.clanOpen();};}
+  document.querySelectorAll(".clan-tab").forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-tab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var pane=tb.dataset.ctab;
+      document.querySelectorAll(".clan-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-pane-"+pane);if(pv)pv.classList.remove("hidden");
+      if(pane==="my")clanRenderMyClan();
+    };
+  });
+  document.querySelectorAll("[data-ctab-jump]").forEach(function(b){
+    b.onclick=function(){
+      var target=b.dataset.ctabJump;
+      document.querySelectorAll(".clan-tab").forEach(function(x){if(x.dataset.ctab===target)x.click();});
+    };
+  });
+  document.querySelectorAll(".clan-subtab").forEach(function(tb){
+    tb.onclick=function(){
+      document.querySelectorAll(".clan-subtab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var st=tb.dataset.cstab;
+      document.querySelectorAll(".clan-subpane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("clan-sub-"+st);if(pv)pv.classList.remove("hidden");
+    };
+  });
+  var $search=document.getElementById("clan-search-btn");
+  if($search&&!$search.__b){$search.__b=true;$search.onclick=_clanSearch;}
+  var $sinp=document.getElementById("clan-search-input");
+  if($sinp&&!$sinp.__b){$sinp.__b=true;$sinp.addEventListener("keydown",function(e){if(e.key==="Enter")_clanSearch();});}
+  var $create=document.getElementById("clan-create-submit");
+  if($create&&!$create.__b){$create.__b=true;$create.onclick=_clanCreate;}
+  var $leave=document.getElementById("clan-leave-btn");
+  if($leave&&!$leave.__b){$leave.__b=true;$leave.onclick=_clanLeave;}
+  var $disband=document.getElementById("clan-disband-btn");
+  if($disband&&!$disband.__b){$disband.__b=true;$disband.onclick=_clanDisband;}
+  document.querySelectorAll("[data-invest]").forEach(function(b){
+    if(b.__b)return;b.__b=true;
+    b.onclick=function(){_clanInvest(b.dataset.invest==="custom"?"custom":parseInt(b.dataset.invest));};
+  });
+  var $send=document.getElementById("clan-chat-send");
+  if($send&&!$send.__b){$send.__b=true;$send.onclick=_clanSendChat;}
+  var $cinp=document.getElementById("clan-chat-input");
+  if($cinp&&!$cinp.__b){$cinp.__b=true;$cinp.addEventListener("keydown",function(e){if(e.key==="Enter")_clanSendChat();});}
+};
+window.clanSetupEditorUI=function(){};
+
+setTimeout(function(){_clanSubscribeMyClan();},1500);
+setInterval(function(){
+  if(db&&profile.id&&!clanState.myClanId){
+    db.ref("users/"+profile.id+"/clanId").once("value").then(function(s){
+      if(s.val())_clanSubscribeMyClan();
+    });
+  }
+},15000);
 // === СТАРТ ===
 initFirebase();
 initSounds();
