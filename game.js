@@ -2663,6 +2663,156 @@ if(typeof setupFriendsUI==="function"&&!window.__patchDone){
   console.log("[patch v108] Заглушки установлены");
 }
 
+// ===== ПАТЧ v108b — рабочая привязка кнопок =====
+(function(){
+console.log("[patch v108b] Привязка кнопок");
+
+// === КНОПКА КЛАНА ===
+var clanBtn=document.getElementById("clan-side-btn");
+if(clanBtn){
+  clanBtn.onclick=function(){
+    try{playSound("ui");}catch(e){}
+    var m=document.getElementById("modal-clans");
+    if(m)m.classList.remove("hidden");
+    if(typeof syncScrollLock==="function")syncScrollLock();
+  };
+}
+
+// === ВКЛАДКИ КЛАНА ===
+document.querySelectorAll(".clan-tab").forEach(function(tab){
+  tab.onclick=function(){
+    document.querySelectorAll(".clan-tab").forEach(function(b){b.classList.remove("active");});
+    tab.classList.add("active");
+    var name=tab.dataset.ctab;
+    ["my","search","create"].forEach(function(n){
+      var p=document.getElementById("clan-pane-"+n);
+      if(!p)return;
+      if(n===name)p.classList.remove("hidden");
+      else p.classList.add("hidden");
+    });
+  };
+});
+
+// === СУБ-ВКЛАДКИ КЛАНА ===
+document.querySelectorAll(".clan-subtab").forEach(function(tab){
+  tab.onclick=function(){
+    document.querySelectorAll(".clan-subtab").forEach(function(b){b.classList.remove("active");});
+    tab.classList.add("active");
+    var name=tab.dataset.cstab;
+    ["members","chat","requests"].forEach(function(n){
+      var p=document.getElementById("clan-sub-"+n);
+      if(!p)return;
+      if(n===name)p.classList.remove("hidden");
+      else p.classList.add("hidden");
+    });
+  };
+});
+
+// === ВКЛАДКИ В МОДАЛКЕ ДРУЗЕЙ ===
+document.querySelectorAll(".friends-tab").forEach(function(tab){
+  tab.onclick=function(){
+    document.querySelectorAll(".friends-tab").forEach(function(t){t.classList.remove("active");});
+    tab.classList.add("active");
+    var name=tab.dataset.ftab;
+    ["list","requests","search","comp","rating","auction"].forEach(function(n){
+      var p=document.getElementById("friends-pane-"+n);
+      if(!p)return;
+      if(n===name)p.classList.remove("hidden");
+      else p.classList.add("hidden");
+    });
+  };
+});
+
+// === ПРИВЯЗКА ВКЛАДОК ТОПБАРА ===
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.onclick=function(){
+    try{playSound("ui");}catch(e){}
+    var tab=btn.dataset.tab;
+    var m=document.getElementById("modal-"+tab);
+    if(m){
+      m.classList.remove("hidden");
+      if(typeof syncScrollLock==="function")syncScrollLock();
+    }
+  };
+});
+
+// === ПРИВЯЗКА ЗАКРЫВАЮЩИХ КРЕСТИКОВ ===
+document.querySelectorAll(".modal-close").forEach(function(btn){
+  btn.onclick=function(){
+    try{playSound("ui");}catch(e){}
+    var id=btn.dataset.close;
+    var el=document.getElementById(id);
+    if(el)el.classList.add("hidden");
+    if(typeof syncScrollLock==="function")syncScrollLock();
+  };
+});
+
+// === ЗАКРЫТИЕ ПО КЛИКУ НА ФОН ===
+document.querySelectorAll(".modal").forEach(function(m){
+  m.onclick=function(e){
+    if(e.target===m){
+      m.classList.add("hidden");
+      if(typeof syncScrollLock==="function")syncScrollLock();
+    }
+  };
+});
+
+// === КНОПКА ПРОФИЛЯ ===
+var profileBtn=document.getElementById("profile-side-btn");
+if(profileBtn){
+  profileBtn.onclick=function(){
+    try{playSound("ui");}catch(e){}
+    var m=document.getElementById("modal-profile");
+    if(m){
+      m.classList.remove("hidden");
+      if(typeof syncScrollLock==="function")syncScrollLock();
+      if(typeof renderBannerList==="function")renderBannerList();
+    }
+  };
+}
+
+// === БАННЕРЫ ПРОФИЛЯ — быстрая отрисовка ===
+window.renderBannerList=function(){
+  var list=document.getElementById("banner-list");
+  if(!list)return;
+  var banners=[
+    {id:"novice",name:"🥉 Новичок",cls:"banner-novice",desc:"100 тапов"},
+    {id:"farmer",name:"🌾 Фермер",cls:"banner-farmer",desc:"Заработать 1M монет"},
+    {id:"veteran",name:"💠 Ветеран",cls:"banner-veteran",desc:"1T заработанных"},
+    {id:"master",name:"👑 Мастер",cls:"banner-master",desc:"50 достижений"},
+    {id:"legend",name:"🌟 Легенда",cls:"banner-legend",desc:"Топ-1 лидерборда"},
+    {id:"absolute",name:"🔱 Абсолют",cls:"banner-absolute",desc:"Абсолют 699 ур."},
+    {id:"genesis",name:"💠 Генезис",cls:"banner-genesis",desc:"7 питомцев"},
+    {id:"bloodlord",name:"🩸 Кровавый Лорд",cls:"banner-bloodlord",desc:"10 побед в сорев."}
+  ];
+  var activeId=null;
+  try{var s=JSON.parse(localStorage.getItem("clicker-banners")||"{}");activeId=s.active||null;}catch(e){}
+  list.innerHTML="";
+  banners.forEach(function(b){
+    var div=document.createElement("div");
+    div.className="banner-card"+(activeId===b.id?" active":"")+" locked";
+    div.innerHTML='<div class="banner-card-preview '+b.cls+'">'+b.name+'</div>'+'<div class="banner-card-status">🔒 '+b.desc+'</div>';
+    list.appendChild(div);
+  });
+};
+
+// === РЕПЛИКИ КРОХЛЮПИКА — простая инициализация ===
+if(typeof khrPetInit!=="function"){
+  window.khrPetInit=function(){
+    var el=document.getElementById("krohlupic-pet");
+    if(el&&settings&&settings.krohlupic!==false)el.classList.remove("hidden");
+  };
+}
+
+// === МОДАЛКА ДРУЗЕЙ — открыть через tab-btn уже привязано, но на случай ===
+window.openFriendsModal=function(){
+  var m=document.getElementById("modal-friends");
+  if(m){m.classList.remove("hidden");if(typeof syncScrollLock==="function")syncScrollLock();}
+};
+
+console.log("[patch v108b] Готово");
+})();
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
