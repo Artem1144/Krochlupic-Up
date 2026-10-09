@@ -20,6 +20,8 @@ h1{color:#e0c25a;font-size:24px;text-shadow:0 2px 6px rgba(0,0,0,.5)}
 #gulau-info{font-size:15px;color:#ffeb3b;font-weight:bold;margin:10px 0;animation:gulauPulse 1s ease-in-out infinite;text-shadow:0 0 8px rgba(255,235,59,.5)}
 @keyframes gulauPulse{0%,100%{opacity:1}50%{opacity:.5}}
 #prestige-info{font-size:15px;color:#d0a0ff;margin:15px 0;font-weight:600}
+#season-info{font-size:13px;color:#7fb8e6;margin:6px 0}
+#season-info b{color:#ffd54f;font-weight:bold}
 #blood-info{font-size:15px;color:#ff5252;margin:10px 0;font-weight:bold;animation:bloodPulse 1.5s ease-in-out infinite;text-shadow:0 0 10px rgba(255,82,82,.7)}
 @keyframes bloodPulse{0%,100%{opacity:1}50%{opacity:.6}}
 #shards-info{font-size:15px;color:#d0a0ff;margin-bottom:15px;font-weight:600}
@@ -28,7 +30,14 @@ body.blood-moon #click-btn:not(.has-emoji){box-shadow:0 6px 0 #4a0000,0 0 30px #
 body.blood-moon #counter{color:#ff5252}
 
 /* === ФОНЫ === */
-#bg-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
+#bg-canvas{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;display:none;
+  contain:strict;
+  will-change:transform;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
 body.has-bg #bg-canvas{display:block}
 .page{position:relative;z-index:1}
 body.bg-space{background:linear-gradient(180deg,#0a0a2e 0%,#050518 50%,#000 100%)!important}
@@ -89,12 +98,62 @@ body.bg-nebula{background:linear-gradient(180deg,#1a0a2e 0%,#2a1050 50%,#0a0518 
 #deposit-side-btn.lvl-happy{background:radial-gradient(circle at 30% 30%,#81c784,#2e7d32);box-shadow:0 4px 0 #1b5e20}
 #deposit-side-btn.lvl-max{background:radial-gradient(circle at 30% 30%,#f4e28d,#e8b525);box-shadow:0 4px 0 #c78e10,0 0 20px rgba(255,235,59,.5);animation:maxPulse 1.5s ease-in-out infinite}
 @keyframes maxPulse{0%,100%{box-shadow:0 4px 0 #c78e10,0 0 18px rgba(255,235,59,.5)}50%{box-shadow:0 4px 0 #c78e10,0 0 30px rgba(255,235,59,.8)}}
+
+/* ✅ ФИКС: кнопки фиксированы, не смещаются при ивентах */
 #profile-side-btn{position:fixed;left:15px;top:15px;width:50px;height:50px;border-radius:12px;border:none;background:linear-gradient(135deg,#e0c25a,#d97a1a);color:#1a1a2e;font-size:26px;cursor:pointer;box-shadow:0 4px 0 #9a5310;transition:transform .05s;outline:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:100;touch-action:manipulation}
 #profile-side-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #9a5310}
-body.boost-active #profile-side-btn,body.super-storm #profile-side-btn{top:48px}
-body.boost-active .save-indicator,body.super-storm .save-indicator{top:48px}
+#dm-side-btn{position:fixed;left:15px;top:75px;width:50px;height:50px;border-radius:12px;border:none;background:linear-gradient(135deg,#1976d2,#42a5f5);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 0 #0d47a1;outline:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:100;touch-action:manipulation}
+#dm-side-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0d47a1}
+.dm-side-badge{position:absolute;top:-4px;right:-4px;background:#ff5252;color:#fff;border-radius:10px;font-size:11px;font-weight:bold;padding:2px 6px;min-width:18px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.5)}
+#clan-side-btn{position:fixed;left:15px;top:135px;width:50px;height:50px;border-radius:12px;border:none;background:linear-gradient(135deg,#7b1fa2,#c2185b);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 0 #4a148c;outline:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:100;touch-action:manipulation}
+#clan-side-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #4a148c}
+.clan-badge{position:absolute;top:-4px;right:-4px;background:#ff5252;color:#fff;border-radius:10px;font-size:11px;font-weight:bold;padding:2px 6px;min-width:18px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.5)}
+
 .save-indicator{position:fixed;top:15px;right:75px;font-size:20px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .save-indicator.show{opacity:.9}
+
+/* === ТАП-ЭФФЕКТЫ === */
+.tap-ring{position:fixed;border-radius:50%;pointer-events:none;z-index:190;border:3px solid #ffd54f;box-shadow:0 0 20px rgba(255,213,79,.8),inset 0 0 10px rgba(255,213,79,.5);animation:tapRing .5s ease-out forwards;transform:translate(-50%,-50%)}
+@keyframes tapRing{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.5)}}
+.tap-ring-lvl1{border-color:#ffd54f;box-shadow:0 0 20px rgba(255,213,79,.8)}
+.tap-ring-lvl2{border-color:#4fc3f7;box-shadow:0 0 25px rgba(79,195,247,.9)}
+.tap-ring-lvl3{border-color:#9c27b0;box-shadow:0 0 30px rgba(156,39,176,.9)}
+.tap-ring-lvl4{border-color:#e91e63;box-shadow:0 0 35px rgba(233,30,99,1)}
+.tap-ring-lvl5{border-color:#fff;box-shadow:0 0 40px #fff,0 0 60px #ffd54f}
+@keyframes screenShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-3px)}80%{transform:translate(2px,3px)}}
+/* ✅ ФИКС: было body.shake → стало .page.shake */
+.page.shake{animation:screenShake .15s ease-out}
+.float-plus.crit{font-size:32px!important;color:#ff1744!important;text-shadow:0 0 10px #ff1744,0 2px 8px rgba(0,0,0,.8)!important;animation:floatUpCrit .9s ease-out forwards!important}
+@keyframes floatUpCrit{0%{opacity:1;transform:translateY(0) scale(1.3)}50%{transform:translateY(-40px) scale(1.1)}100%{opacity:0;transform:translateY(-100px) scale(1)}}
+@keyframes waveExpand{0%{opacity:0.9;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(3)}}
+.tap-wave{position:fixed;width:150px;height:150px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,213,79,.6) 0%,transparent 70%);z-index:189;animation:waveExpand .6s ease-out forwards;transform:translate(-50%,-50%)}
+
+/* === АНИМАЦИЯ ПОКУПКИ === */
+.item.just-bought{animation:itemBought .6s ease-out}
+@keyframes itemBought{0%{transform:scale(1);background:#16213e}20%{transform:scale(1.03);background:linear-gradient(90deg,#1e3a2e,#16213e)}60%{transform:scale(1.02);background:linear-gradient(90deg,#2e5a3e,#1e3a2e)}100%{transform:scale(1);background:#16213e}}
+.item.just-bought .owned{color:#4caf50!important;font-weight:bold}
+.item.just-bought .cps-info{color:#4caf50!important;font-weight:bold}
+.item-upgrade-popup{position:fixed;font-size:20px;font-weight:bold;color:#4caf50;pointer-events:none;z-index:500;text-shadow:0 2px 8px rgba(0,0,0,.8);animation:upgradePop 1.2s ease-out forwards}
+@keyframes upgradePop{0%{opacity:0;transform:translateY(0) scale(0.5)}30%{opacity:1;transform:translateY(-20px) scale(1.2)}100%{opacity:0;transform:translateY(-60px) scale(1)}}
+#shop.flash{animation:shopFlash .5s ease-out}
+@keyframes shopFlash{0%{filter:brightness(1)}30%{filter:brightness(1.3) drop-shadow(0 0 20px #4caf50)}100%{filter:brightness(1)}}
+
+/* === ЖИВОЙ КРОХЛЮПИК === */
+.krohlupic-pet{position:fixed;right:15px;bottom:80px;width:90px;height:110px;z-index:95;cursor:pointer;touch-action:manipulation;transition:transform .3s;pointer-events:auto}
+.krohlupic-pet:active{transform:scale(.9)}
+.krohlupic-pet-img{width:100%;height:100%;border-radius:50% 50% 45% 45%;position:relative;box-shadow:0 6px 20px rgba(0,0,0,.5),0 0 25px rgba(201,160,216,.5);border:3px solid #ffd54f;display:flex;align-items:center;justify-content:center;font-size:52px;overflow:hidden;animation:khrBreathe 3s ease-in-out infinite;background-size:contain,cover!important;background-position:center!important;background-repeat:no-repeat!important}
+@keyframes khrBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.krohlupic-pet-img.happy{animation:khrHappy 0.4s ease-out}
+@keyframes khrHappy{0%{transform:scale(1)}30%{transform:scale(1.15) rotate(-8deg)}60%{transform:scale(1.1) rotate(8deg)}100%{transform:scale(1)}}
+.krohlupic-pet-img.sad{filter:brightness(0.7) saturate(0.5);animation:khrSad 3s ease-in-out infinite}
+@keyframes khrSad{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+.krohlupic-pet-img.sleep{opacity:0.7;animation:khrSleep 4s ease-in-out infinite}
+@keyframes khrSleep{0%,100%{transform:scale(1)}50%{transform:scale(0.98) rotate(3deg)}}
+.krohlupic-pet-hint{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:20px;opacity:0.6;animation:khrHint 2s ease-in-out infinite;pointer-events:none}
+@keyframes khrHint{0%,100%{opacity:0.4;transform:translateX(-50%) translateY(0)}50%{opacity:0.9;transform:translateX(-50%) translateY(-5px)}}
+.krohlupic-pet.miss-you .krohlupic-pet-img::after{content:"💭";position:absolute;top:5px;right:5px;font-size:18px;animation:khrMissYou 1.5s ease-in-out infinite}
+@keyframes khrMissYou{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-3px)}}
+body.no-krohlupic .krohlupic-pet{display:none!important}
 
 /* === ОБУЧЕНИЕ === */
 #tutorial-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;touch-action:auto}
@@ -138,6 +197,8 @@ body.boost-active .save-indicator,body.super-storm .save-indicator{top:48px}
 #daily-btn{background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;box-shadow:0 3px 0 #1b5e20}
 #daily-btn:disabled{background:#444;color:#888;box-shadow:none}
 #minigame-btn{background:linear-gradient(135deg,#1976d2,#42a5f5);color:#fff;box-shadow:0 3px 0 #0d47a1}
+#activity-row-3{display:flex;gap:8px;justify-content:center;margin:10px auto;max-width:400px;padding:0 5px}
+#fnf-btn{flex:1;padding:14px 8px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;text-shadow:0 1px 3px rgba(0,0,0,.5);touch-action:manipulation;background:linear-gradient(135deg,#e91e63,#7b1fa2);color:#fff;box-shadow:0 3px 0 #4a148c}
 #fortune-btn{display:block;margin:10px auto;padding:10px 22px;background:linear-gradient(135deg,#f4d35e,#e8b525);border:none;color:#1a1a2e;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #b8891a;text-shadow:none;touch-action:manipulation}
 #fortune-btn:disabled{background:#444;color:#888;box-shadow:none}
 #fortune-btn.available{animation:noteShine 2s ease-in-out infinite}
@@ -150,7 +211,7 @@ body.boost-active .save-indicator,body.super-storm .save-indicator{top:48px}
 .items-tab.active{border-color:#e0c25a;color:#e0c25a;background:#16213e;box-shadow:0 0 12px rgba(224,194,90,.3)}
 #global-shop-list{display:none}
 #shop-list.hidden{display:none}
-.item{display:flex;justify-content:space-between;align-items:center;background:#16213e;border:1px solid #3a7bd5;border-radius:10px;padding:10px 15px;margin-bottom:10px;gap:10px}
+.item{display:flex;justify-content:space-between;align-items:center;background:#16213e;border:1px solid #3a7bd5;border-radius:10px;padding:10px 15px;margin-bottom:10px;gap:10px;transition:background .3s}
 .name{font-size:15px;color:#e0c25a;font-weight:bold}
 .desc{font-size:12px;color:#aaa}
 .owned{font-size:12px;color:#aaa;margin-bottom:5px}
@@ -221,7 +282,7 @@ body.boost-active .save-indicator,body.super-storm .save-indicator{top:48px}
 
 /* === МОДАЛКИ === */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:500;padding:15px;touch-action:none}
-.modal-box{background:#16213e;border:2px solid #3a7bd5;border-radius:15px;padding:25px 25px 20px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;position:relative;text-align:left}
+.modal-box{background:#16213e;border:2px solid #3a7bd5;border-radius:15px;padding:25px 25px 20px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;position:relative;text-align:left;overscroll-behavior:contain}
 .modal-box h2{color:#4fc3f7;margin:0 0 20px;text-align:center;font-size:20px;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.5)}
 .modal-close{position:absolute;top:10px;right:10px;background:transparent;border:none;color:#aaa;font-size:20px;cursor:pointer;padding:5px 10px;touch-action:manipulation}
 .modal-content p{margin:8px 0;color:#e0e0e0;font-size:14px;line-height:1.5}
@@ -252,13 +313,14 @@ body.boost-active .save-indicator,body.super-storm .save-indicator{top:48px}
 .bg-preview.nebula{background:linear-gradient(180deg,#1a0a2e,#0a0518)}
 
 /* === БАННЕРЫ === */
-#event-banner{position:fixed;top:0;left:0;right:0;height:28px;padding:0 10px;font-weight:bold;font-size:12px;color:#fff;z-index:999;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:eventIn .5s ease-out;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+/* ✅ ФИКС: max-height + ellipsis чтобы не перекрывали кнопки */
+#event-banner{position:fixed;top:0;left:0;right:0;height:28px;max-height:28px;padding:0 10px;font-weight:bold;font-size:11px;color:#fff;z-index:999;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:eventIn .5s ease-out;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 @keyframes eventIn{from{transform:translateY(-30px)}to{transform:translateY(0)}}
 .blood-banner{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b0000,#f00);color:#fff;padding:15px 25px;border-radius:12px;font-weight:bold;font-size:16px;box-shadow:0 0 30px rgba(255,0,0,.6);z-index:400;animation:bloodIn .5s ease-out;text-align:center;pointer-events:none}
 @keyframes bloodIn{from{opacity:0;transform:translate(-50%,-30px)}to{opacity:1;transform:translate(-50%,0)}}
 .shard-drop{position:fixed;font-size:24px;pointer-events:none;animation:shardFloat 1.5s ease-out forwards;z-index:350;color:#d0a0ff;font-weight:bold}
 @keyframes shardFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-100px) scale(1.5)}}
-#boost-banner{position:fixed;top:0;left:0;right:0;height:28px;padding:0 10px;font-weight:bold;font-size:12px;color:#fff;z-index:999;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:eventIn .5s ease-out;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;background:linear-gradient(135deg,#6a1a8a,#c2185b)}
+#boost-banner{position:fixed;top:0;left:0;right:0;height:28px;max-height:28px;padding:0 10px;font-weight:bold;font-size:11px;color:#fff;z-index:999;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:eventIn .5s ease-out;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;background:linear-gradient(135deg,#6a1a8a,#c2185b)}
 body.boost-active #event-banner{top:28px}
 
 /* === ПРОМОКОДЫ === */
@@ -457,7 +519,7 @@ body.boost-active #event-banner{top:28px}
 .booster-activate-btn:disabled{background:#444;color:#888;box-shadow:none}
 .booster-active-banner{background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;padding:12px 15px;border-radius:10px;font-weight:bold;font-size:14px;text-align:center;margin-bottom:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
-/* === КРОХЛЮПИК === */
+/* === КРОХЛЮПИК (реплики) === */
 .krohlupic-bubble{position:relative;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#1e2d54,#0e1a30);border:3px solid #ffd54f;border-radius:18px;padding:14px 18px;max-width:340px;margin:15px auto 0;opacity:0;transform:translateY(-20px) scale(.85);transition:opacity .35s,transform .35s;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.6),0 0 25px rgba(255,213,79,.6);pointer-events:none}
 .krohlupic-bubble.show{opacity:1;transform:translateY(0) scale(1)}
 .krohlupic-bubble .krohlupic-avatar{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9a0d8,#8a4f9e);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;overflow:hidden;border:2px solid #ffd54f}
@@ -564,7 +626,8 @@ body.boost-active #event-banner{top:28px}
 .almanac-box .modal-close{color:#5c3a1a!important}
 
 /* === СУПЕР-ИВЕНТ === */
-#super-event-banner{position:fixed;top:0;left:0;right:0;height:34px;z-index:1001;display:none;align-items:center;justify-content:center;gap:10px;padding:0 10px;font-weight:bold;font-size:13px;color:#fff;background:linear-gradient(135deg,#4a0000,#b71c1c,#ff1744);box-shadow:0 2px 12px rgba(255,23,68,.7);text-shadow:0 1px 3px rgba(0,0,0,.7);animation:superBannerPulse 1.5s ease-in-out infinite;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ✅ ФИКС: pointer-events:none + max-height */
+#super-event-banner{position:fixed;top:0;left:0;right:0;height:34px;max-height:34px;z-index:1001;display:none;align-items:center;justify-content:center;gap:10px;padding:0 10px;font-weight:bold;font-size:12px;color:#fff;background:linear-gradient(135deg,#4a0000,#b71c1c,#ff1744);box-shadow:0 2px 12px rgba(255,23,68,.7);text-shadow:0 1px 3px rgba(0,0,0,.7);animation:superBannerPulse 1.5s ease-in-out infinite;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 #super-event-banner.show{display:flex}
 @keyframes superBannerPulse{0%,100%{box-shadow:0 2px 12px rgba(255,23,68,.7)}50%{box-shadow:0 2px 26px rgba(255,23,68,1)}}
 .super-event-label{background:#ffd54f;color:#1a1a2e;padding:3px 8px;border-radius:6px;font-size:12px;text-shadow:none}
@@ -581,18 +644,407 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 @keyframes superTitlePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 .super-event-sub{font-size:15px;color:#fff;font-weight:600;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 
+/* === ДРУЗЬЯ === */
+.friends-my-id{background:linear-gradient(135deg,#1e2d54,#0e1a30);border:2px solid #4fc3f7;border-radius:10px;padding:12px 14px;margin-bottom:15px;text-align:center}
+.friends-my-id-label{font-size:12px;color:#7fb8e6;margin-bottom:6px}
+.friends-my-id-row{display:flex;align-items:center;justify-content:center;gap:8px}
+#friends-my-id{font-size:20px;font-weight:bold;color:#ffd54f;letter-spacing:1px;font-family:monospace}
+#friends-copy-id{background:#253a5c;border:1px solid #4fc3f7;color:#fff;border-radius:8px;padding:6px 10px;font-size:16px;cursor:pointer;touch-action:manipulation}
+#friends-copy-id:active{transform:scale(.95)}
+.friends-tabs{display:flex;gap:6px;margin-bottom:15px;flex-wrap:wrap}
+.friends-tab{flex:1;min-width:80px;padding:9px 6px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;text-shadow:none;touch-action:manipulation;position:relative}
+.friends-tab.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
+#friends-req-badge{background:#ff5252;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:3px}
+.friends-pane{min-height:100px}
+.friends-empty{text-align:center;color:#7a8aa8;font-size:13px;padding:15px 10px;font-style:italic}
+.friends-subtitle{color:#4fc3f7;font-size:13px;margin:15px 0 8px;letter-spacing:1px}
+.friend-row{display:flex;align-items:center;gap:10px;background:#0e1a30;border:1px solid #253a5c;border-radius:10px;padding:10px 12px;margin-bottom:6px}
+.friend-status-dot{font-size:16px;flex-shrink:0}
+.friend-info{flex:1;min-width:0;text-align:left}
+.friend-name{font-size:14px;color:#e0c25a;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.friend-id{font-size:11px;color:#7fb8e6;font-family:monospace;cursor:pointer;transition:color .15s}
+.friend-id:hover{color:#ffd54f}
+.friend-id:active{transform:scale(.95)}
+.friend-status-text{font-size:11px;color:#aaa;margin-top:2px}
+.friend-action-btn{background:#253a5c;border:1px solid #3a7bd5;color:#fff;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:bold;cursor:pointer;touch-action:manipulation;flex-shrink:0}
+.friend-action-btn.accept{background:linear-gradient(135deg,#2e7d32,#4caf50);border-color:#4caf50}
+.friend-action-btn.decline{background:linear-gradient(135deg,#8b0000,#c62828);border-color:#c62828}
+.friend-action-btn.chat{background:linear-gradient(135deg,#1976d2,#42a5f5);border-color:#4fc3f7;position:relative;padding:6px 10px}
+.friend-action-btn.gift{background:linear-gradient(135deg,#e91e63,#ff5252);border-color:#ff5252;padding:6px 8px}
+.friend-unread-badge{position:absolute;top:-5px;right:-5px;background:#ff5252;color:#fff;border-radius:10px;font-size:10px;font-weight:bold;padding:1px 5px;min-width:16px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.5);pointer-events:none}
+.friends-hint{text-align:center;color:#aaa;font-size:13px;margin:0 0 12px}
+.friends-hint b{color:#ffd54f;font-family:monospace}
+.friends-search-row{display:flex;gap:8px;margin-bottom:12px}
+#friends-search-input{flex:1;padding:12px 14px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:16px;box-sizing:border-box;font-family:monospace}
+#friends-search-btn{background:linear-gradient(135deg,#e0c25a,#d97a1a);border:none;color:#1a1a2e;border-radius:8px;padding:12px 16px;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+
+/* === СОЦИАЛЬНОЕ ОБНОВЛЕНИЕ === */
+.friends-online-counter{text-align:center;font-size:12px;color:#7fb8e6;margin:-10px 0 12px;padding:6px 10px;background:linear-gradient(135deg,#16213e,#0e1a30);border:1px solid #253a5c;border-radius:8px}
+.friends-online-counter b{color:#4caf50;font-weight:bold}
+
+/* === РЕЙТИНГ ДРУЗЕЙ === */
+.friend-rating-row{display:flex;align-items:center;gap:10px;background:#0e1a30;border:1px solid #253a5c;border-radius:10px;padding:9px 12px;margin-bottom:6px}
+.friend-rating-row.rank-1{border-color:#e0c25a;background:linear-gradient(90deg,#2a2416,#0e1a30)}
+.friend-rating-row.rank-2{border-color:#b0b0b0}
+.friend-rating-row.rank-3{border-color:#b86e30}
+.friend-rating-rank{font-size:15px;font-weight:bold;color:#e0c25a;min-width:26px;text-align:center}
+.friend-rating-info{flex:1;min-width:0;text-align:left}
+.friend-rating-name{font-size:13px;color:#e0c25a;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.friend-rating-cps{font-size:11px;color:#7fb8e6;margin-top:2px}
+.friend-rating-score{font-size:13px;color:#4fc3f7;font-weight:bold;flex-shrink:0;text-align:right}
+
+/* === БАННЕРЫ ПРОФИЛЯ === */
+.profile-banner-display{text-align:center;padding:12px 16px;border-radius:10px;font-size:15px;font-weight:bold;color:#fff;margin-bottom:14px;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-spacing:1px}
+.profile-banner-display.banner-novice{background:linear-gradient(135deg,#6b7280,#374151)}
+.profile-banner-display.banner-farmer{background:linear-gradient(135deg,#4caf50,#2e7d32)}
+.profile-banner-display.banner-veteran{background:linear-gradient(135deg,#1976d2,#0d47a1)}
+.profile-banner-display.banner-master{background:linear-gradient(135deg,#7b1fa2,#4a148c)}
+.profile-banner-display.banner-legend{background:linear-gradient(135deg,#e0c25a,#d97a1a,#7a3e10);box-shadow:0 0 20px rgba(224,194,90,.5)}
+.profile-banner-display.banner-absolute{background:linear-gradient(135deg,#b71c1c,#4a0000,#1a0000);box-shadow:0 0 25px rgba(255,23,68,.7);animation:bannerGlow 2s ease-in-out infinite}
+.profile-banner-display.banner-genesis{background:linear-gradient(135deg,#00bcd4,#1565c0,#7b1fa2);box-shadow:0 0 25px rgba(0,188,212,.7);animation:bannerGlow 2s ease-in-out infinite}
+.profile-banner-display.banner-bloodlord{background:linear-gradient(135deg,#8b0000,#b71c1c,#ff1744);box-shadow:0 0 30px rgba(255,23,68,.9);animation:bannerGlow 1.5s ease-in-out infinite}
+@keyframes bannerGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+.banner-list{display:grid;grid-template-columns:1fr;gap:8px}
+.banner-card{background:#0e1a30;border:2px solid #253a5c;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;touch-action:manipulation;transition:all .15s}
+.banner-card.active{border-color:#e0c25a;box-shadow:0 0 12px rgba(224,194,90,.4)}
+.banner-card.locked{opacity:.55;cursor:not-allowed}
+.banner-card-preview{flex:1;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:bold;color:#fff;text-align:center;letter-spacing:1px;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.banner-card-status{font-size:11px;color:#7a8aa8;flex-shrink:0;white-space:nowrap}
+.banner-card.active .banner-card-status{color:#e0c25a;font-weight:bold}
+.banner-card.locked .banner-card-status{color:#ff5252}
+
+/* === БАННЕР ПОДПИСКИ === */
+#subscribe-banner{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9800;display:flex;align-items:center;justify-content:center;padding:20px;animation:subBannerFade .4s ease-out}
+#subscribe-banner.hidden{display:none!important}
+@keyframes subBannerFade{from{opacity:0}to{opacity:1}}
+.subscribe-banner-box{background:linear-gradient(135deg,#1e2d54,#0e1a30);border:3px solid #e0c25a;border-radius:18px;padding:26px 22px 20px;max-width:380px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.7),0 0 30px rgba(224,194,90,.4);animation:subBannerPop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes subBannerPop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.subscribe-banner-emoji{font-size:56px;margin-bottom:8px;animation:subBannerWave 1.5s ease-in-out infinite}
+@keyframes subBannerWave{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-10deg) scale(1.05)}75%{transform:rotate(10deg) scale(1.05)}}
+.subscribe-banner-title{font-size:20px;color:#e0c25a;font-weight:bold;margin-bottom:6px;text-shadow:0 2px 8px rgba(224,194,90,.4);letter-spacing:0.5px}
+.subscribe-banner-sub{font-size:13px;color:#b8b8b8;margin-bottom:18px;line-height:1.4}
+.subscribe-links{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.subscribe-link{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#0e1a30;border:2px solid #253a5c;border-radius:12px;text-decoration:none;color:inherit;text-shadow:none;touch-action:manipulation;transition:transform .1s,border-color .2s}
+.subscribe-link:active{transform:scale(.97)}
+.subscribe-link.telegram{border-left:4px solid #29b6f6}
+.subscribe-link.telegram:hover{border-color:#29b6f6}
+.subscribe-link.vk{border-left:4px solid #4c75a3}
+.subscribe-link.vk:hover{border-color:#4c75a3}
+.subscribe-link-icon{font-size:26px;flex-shrink:0;width:34px;text-align:center}
+.subscribe-link-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
+.subscribe-link-label{font-size:14px;color:#e0e0e0;font-weight:bold}
+.subscribe-link-url{font-size:11px;color:#7fb8e6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subscribe-close-btn{width:100%;padding:14px;background:linear-gradient(135deg,#2e7d32,#4caf50);border:none;color:#fff;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer;box-shadow:0 4px 0 #1b5e20;text-shadow:0 1px 3px rgba(0,0,0,.5);touch-action:manipulation}
+.subscribe-close-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #1b5e20}
+
+/* === КЛАНЫ === */
+.clan-box{max-width:480px}
+.clan-tabs{display:flex;gap:6px;margin-bottom:15px}
+.clan-tab{flex:1;padding:10px 6px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;text-shadow:none;touch-action:manipulation}
+.clan-tab.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
+.clan-pane{min-height:200px}
+.clan-empty-icon{font-size:72px;text-align:center;margin:20px 0 10px;opacity:.6}
+.clan-empty-text{text-align:center;color:#e0e0e0;font-size:16px;font-weight:bold;margin:0 0 6px}
+.clan-hint{text-align:center;color:#aaa;font-size:13px;margin:0 0 20px}
+.clan-empty-msg{text-align:center;color:#7a8aa8;font-size:13px;padding:15px;font-style:italic}
+.clan-primary-btn{display:block;width:100%;padding:13px;background:linear-gradient(135deg,#2e7d32,#4caf50);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #1b5e20;margin-bottom:10px;text-shadow:0 1px 3px rgba(0,0,0,.5);touch-action:manipulation}
+.clan-secondary-btn{display:block;width:100%;padding:12px;background:#253a5c;border:1px solid #3a7bd5;color:#b8b8b8;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;margin-bottom:10px;touch-action:manipulation}
+.clan-danger-btn{display:block;width:100%;padding:12px;background:linear-gradient(135deg,#8b0000,#c62828);border:none;color:#fff;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;margin-bottom:10px;touch-action:manipulation}
+.clan-danger-row{margin-top:15px;padding-top:15px;border-top:1px solid #253a5c}
+.clan-header-card{background:linear-gradient(135deg,#1e2d54,#0e1a30);border:2px solid #7b1fa2;border-radius:12px;padding:15px;margin-bottom:15px}
+.clan-header-row{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.clan-tag-big{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#7b1fa2,#c2185b);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;color:#fff;flex-shrink:0;font-family:monospace}
+.clan-header-info{flex:1;min-width:0}
+.clan-name-big{font-size:17px;color:#fff;font-weight:bold;margin-bottom:3px;overflow-wrap:anywhere}
+.clan-type-label{font-size:12px;color:#b8b8b8}
+.clan-desc{font-size:13px;color:#b8b8b8;line-height:1.4;margin:8px 0;font-style:italic;overflow-wrap:anywhere}
+.clan-stats-row{display:flex;gap:10px;margin-top:10px}
+.clan-stat{flex:1;background:#0e1a30;border-radius:8px;padding:8px;text-align:center}
+.clan-stat-num{display:block;font-size:15px;color:#e0c25a;font-weight:bold;margin-bottom:2px}
+.clan-stat-label{font-size:11px;color:#7a8aa8}
+.clan-level-block{background:linear-gradient(135deg,#1e2d54,#0e1a30);border:2px solid #ffd54f;border-radius:10px;padding:12px;margin-top:10px}
+.clan-level-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.clan-level-title{font-size:13px;color:#ffd54f;font-weight:bold}
+.clan-level-value{font-size:15px;color:#fff;font-weight:bold}
+.clan-level-bar{height:12px;background:#16213e;border-radius:6px;overflow:hidden;border:1px solid #253a5c;margin-bottom:6px}
+.clan-level-fill{height:100%;background:linear-gradient(90deg,#e0c25a,#d97a1a);transition:width .4s;border-radius:6px}
+.clan-level-info{text-align:center;font-size:11px;color:#7a8aa8;margin-bottom:6px}
+.clan-level-bonus{text-align:center;font-size:13px;color:#4caf50;font-weight:bold}
+.clan-level-bonus b{color:#ffd54f}
+#clan-edit-btn{margin-bottom:10px}
+#clan-edit-error{min-height:18px}
+.clan-subtabs{display:flex;gap:6px;margin-bottom:12px}
+.clan-subtab{flex:1;padding:8px 4px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;touch-action:manipulation;position:relative}
+.clan-subtab.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
+#clan-chat-badge{background:#ff5252;color:#fff;border-radius:10px;padding:1px 5px;font-size:10px;margin-left:3px}
+.clan-subpane{min-height:150px}
+.clan-members-list,.clan-requests-list{display:flex;flex-direction:column;gap:6px}
+.clan-member-row{display:flex;align-items:center;gap:10px;background:#0e1a30;border:1px solid #253a5c;border-radius:10px;padding:9px 12px}
+.clan-member-status{font-size:14px;flex-shrink:0}
+.clan-member-info{flex:1;min-width:0;text-align:left}
+.clan-member-name{font-size:14px;color:#e0c25a;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clan-member-name.role-owner{color:#ffd54f}
+.clan-member-name.role-officer{color:#4fc3f7}
+.clan-member-role{font-size:11px;color:#7fb8e6;margin-top:2px}
+.clan-member-actions{display:flex;gap:4px;flex-shrink:0}
+.clan-mini-btn{background:#253a5c;border:1px solid #3a7bd5;color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.clan-mini-btn.danger{background:#8b0000;border-color:#c62828}
+.clan-mini-btn.success{background:#2e7d32;border-color:#4caf50}
+.clan-chat-messages{height:300px;overflow-y:auto;background:#0a1520;border-radius:10px;padding:10px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
+.clan-chat-msg{background:#16213e;border-radius:8px;padding:7px 10px;font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+.clan-chat-msg.own{background:linear-gradient(135deg,#1e2d54,#16213e);border-left:3px solid #4fc3f7}
+.clan-chat-author{font-size:11px;color:#e0c25a;font-weight:bold;margin-bottom:2px}
+.clan-chat-author.mine{color:#4fc3f7}
+.clan-chat-text{color:#e0e0e0;word-break:break-word}
+.clan-chat-time{font-size:10px;color:#5a6a8a;margin-top:2px;text-align:right}
+.clan-chat-input-row{display:flex;gap:8px}
+#clan-chat-input{flex:1;padding:11px 13px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:14px;box-sizing:border-box}
+#clan-chat-send{background:linear-gradient(135deg,#e0c25a,#d97a1a);border:none;color:#1a1a2e;border-radius:8px;padding:11px 16px;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.clan-chat-hint{text-align:center;color:#7a8aa8;font-size:11px;margin:6px 0 0}
+.clan-search-row{display:flex;gap:8px;margin-bottom:12px}
+#clan-search-input{flex:1;padding:12px 14px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:14px;box-sizing:border-box}
+#clan-search-btn{background:linear-gradient(135deg,#e0c25a,#d97a1a);border:none;color:#1a1a2e;border-radius:8px;padding:12px 16px;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.clan-card{background:#0e1a30;border:1px solid #253a5c;border-radius:10px;padding:12px;margin-bottom:8px}
+.clan-card-row{display:flex;align-items:center;gap:10px}
+.clan-card-tag{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#7b1fa2,#c2185b);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;flex-shrink:0;font-family:monospace}
+.clan-card-info{flex:1;min-width:0;text-align:left}
+.clan-card-name{font-size:14px;color:#e0c25a;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clan-card-meta{font-size:11px;color:#7a8aa8;margin-top:2px}
+.clan-card-desc{font-size:12px;color:#b8b8b8;margin-top:6px;line-height:1.35;overflow-wrap:anywhere}
+.clan-field{margin-bottom:14px}
+.clan-field label{display:block;font-size:13px;color:#b8b8b8;margin-bottom:6px;font-weight:600}
+.clan-field input,.clan-field textarea{width:100%;padding:11px 13px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:14px;box-sizing:border-box;font-family:inherit;resize:vertical}
+.clan-field textarea{min-height:70px;line-height:1.4}
+.clan-type-picker{display:flex;gap:8px}
+.clan-type-option{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;background:#0e1a30;border:2px solid #253a5c;border-radius:10px;cursor:pointer;text-align:center;transition:all .15s}
+.clan-type-option input{display:none}
+.clan-type-option.active{border-color:#e0c25a;background:#16213e}
+.clan-type-icon{font-size:24px}
+.clan-type-text b{display:block;font-size:13px;color:#e0c25a;margin-bottom:2px}
+.clan-type-text small{font-size:11px;color:#7a8aa8}
+.clan-create-cost{text-align:center;color:#e0c25a;font-size:14px;font-weight:bold;margin:12px 0}
+.clan-error{text-align:center;color:#ff5252;font-size:13px;margin:8px 0;min-height:18px}
+
+/* ✅ НОВОЕ: блок вклада в клан */
+.clan-invest-block{background:linear-gradient(135deg,#1e2d54,#0e1a30);border:2px solid #ffd54f;border-radius:10px;padding:12px;margin:10px 0}
+.clan-invest-title{color:#ffd54f;font-size:13px;font-weight:bold;margin-bottom:8px;text-align:center}
+.clan-invest-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.clan-invest-btn{padding:10px 4px;background:linear-gradient(135deg,#e0c25a,#d97a1a);border:none;color:#1a1a2e;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #9a5310;touch-action:manipulation}
+.clan-invest-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #9a5310}
+.clan-invest-hint{text-align:center;font-size:11px;color:#7a8aa8;line-height:1.4}
+.clan-invest-hint b{color:#ffd54f}
+
+/* === АДМИН-КОНСОЛЬ === */
+.admin-box{background:linear-gradient(180deg,#1a0e2e,#0e1a30)!important;border:2px solid #7b1fa2!important;max-width:520px}
+.admin-box h2{color:#c9a0ff!important;text-shadow:0 0 12px rgba(123,31,162,.6)!important}
+.admin-hint{text-align:center;color:#b8a0d8;font-size:12px;font-style:italic;margin:-10px 0 15px}
+.admin-hint b{color:#e0c25a}
+#admin-status-block{background:#0e1a30;border:1px solid #4a148c;border-radius:10px;padding:10px;margin-bottom:12px}
+.admin-status-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:#e0e0e0}
+.admin-status-row span:last-child{color:#e0c25a;font-weight:bold}
+.admin-input-row{display:flex;gap:8px;margin-bottom:10px}
+#admin-cmd-input{flex:1;padding:12px 14px;border-radius:8px;border:1px solid #7b1fa2;background:#0a0518;color:#c9a0ff;font-size:14px;font-family:monospace;box-sizing:border-box;font-weight:600}
+#admin-cmd-input::placeholder{color:#6a4a8a}
+#admin-cmd-exec{background:linear-gradient(135deg,#7b1fa2,#c2185b);border:none;color:#fff;border-radius:8px;padding:12px 18px;font-size:18px;font-weight:bold;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 0 #4a148c}
+#admin-cmd-exec:active{transform:translateY(2px);box-shadow:0 1px 0 #4a148c}
+.admin-quick{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.admin-quick-btn{padding:8px 6px;background:#1a1030;border:1px solid #4a148c;color:#b8a0d8;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;font-family:monospace;touch-action:manipulation}
+.admin-quick-btn:active{transform:scale(.97);background:#2a1850}
+.admin-result{text-align:center;font-size:13px;margin:10px 0;min-height:18px;font-weight:bold;overflow-wrap:anywhere;white-space:pre-line}
+.admin-result.success{color:#4caf50}
+.admin-result.error{color:#ff5252}
+.admin-result.info{color:#4fc3f7}
+.admin-log-title{font-size:13px;color:#c9a0ff;font-weight:bold;margin:15px 0 8px;border-top:1px solid #4a148c;padding-top:12px}
+.admin-log{max-height:200px;overflow-y:auto;background:#0a0518;border-radius:8px;padding:8px;font-family:monospace;font-size:11px;display:flex;flex-direction:column;gap:6px}
+.admin-log-empty{text-align:center;color:#5a3a7a;font-style:italic;padding:10px}
+.admin-log-item{color:#b8a0d8;padding:5px 8px;background:#1a1030;border-radius:6px;border-left:2px solid #7b1fa2}
+.admin-log-item .time{color:#6a4a8a;font-size:10px;margin-right:6px}
+.admin-log-item .cmd{color:#4fc3f7;font-weight:bold}
+.admin-log-item .author{color:#e0c25a;font-size:10px}
+
+/* === FNF-БИТВА === */
+#fnf-overlay{position:fixed;inset:0;background:#000;z-index:9000;display:flex;align-items:center;justify-content:center;touch-action:none}
+#fnf-scene{width:100%;max-width:600px;height:100vh;max-height:900px;display:flex;flex-direction:column;background:linear-gradient(180deg,#1a0520,#0a0518);position:relative;overflow:hidden}
+#fnf-header{padding:10px 15px;background:linear-gradient(180deg,#2a0a3a,#1a0520);border-bottom:2px solid #7b1fa2;text-align:center;z-index:5}
+#fnf-title{font-size:16px;font-weight:bold;color:#c9a0ff;letter-spacing:1px;margin-bottom:6px;text-shadow:0 0 10px rgba(123,31,162,.8)}
+#fnf-hp-row{font-size:14px;color:#fff;font-weight:bold;margin-bottom:4px}
+#fnf-hp{color:#ff5252;font-size:16px}
+#fnf-stats-row{display:flex;justify-content:center;gap:20px;font-size:13px;color:#fff;font-weight:bold}
+#fnf-stats-row span{display:inline-flex;gap:4px;align-items:center}
+#fnf-score{color:#4fc3f7}
+#fnf-combo{color:#ffd54f}
+#fnf-miss{color:#ff5252}
+#fnf-arena{flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg, rgba(10,5,24,0.55), rgba(5,2,16,0.75)),url('corridor.jpg') center / cover no-repeat,#0a0518;box-shadow: inset 0 0 120px rgba(0,0,0,0.9)}
+#fnf-arena::before{content:"";position:absolute;left:50%;top:48%;width:22%;height:22%;transform:translate(-50%,-50%);background:radial-gradient(ellipse at center, rgba(230,180,255,0.7) 0%, rgba(140,60,200,0.3) 35%, transparent 75%);filter:blur(14px);pointer-events:none;z-index:0}
+#fnf-scene::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(0deg, rgba(120,40,180,0.35) 0%, transparent 100%);pointer-events:none;z-index:1;animation:fnfFogPulse 4s ease-in-out infinite}
+@keyframes fnfFogPulse{0%,100%{opacity:0.7}50%{opacity:1}}
+#fnf-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:3}
+#fnf-zone{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(0deg,rgba(123,31,162,.3),transparent);border-top:2px dashed rgba(201,160,255,.4);pointer-events:none;display:flex;justify-content:space-around;align-items:center;z-index:2}
+#fnf-controls{position:absolute;bottom:0;left:0;right:0;height:90px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px;background:linear-gradient(0deg,#1a0520,transparent);z-index:10}
+.fnf-arrow-btn{background:linear-gradient(135deg,#4a148c,#7b1fa2);border:2px solid #c9a0ff;color:#fff;border-radius:12px;font-size:32px;font-weight:bold;cursor:pointer;touch-action:manipulation;text-shadow:0 0 10px rgba(201,160,255,.6);box-shadow:0 4px 0 #2a0a3a;transition:transform .05s,box-shadow .05s}
+.fnf-arrow-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #2a0a3a}
+.fnf-arrow-btn.hit{background:linear-gradient(135deg,#4caf50,#8bc34a);border-color:#e0ffb0;box-shadow:0 4px 0 #1b5e20,0 0 20px rgba(76,175,80,.8)}
+.fnf-arrow-btn.miss{background:linear-gradient(135deg,#b71c1c,#ff5252);border-color:#ffb0b0;box-shadow:0 4px 0 #4a0000,0 0 20px rgba(255,82,82,.8)}
+#fnf-timer-row{position:absolute;top:70px;right:15px;font-size:13px;color:#c9a0ff;font-weight:bold;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:10px;z-index:5}
+#fnf-time-left{color:#4fc3f7}
+#fnf-start-block{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.75);z-index:20;padding:20px}
+#fnf-start-block.hidden{display:none!important}
+#fnf-start-btn{padding:16px 40px;background:linear-gradient(135deg,#e91e63,#7b1fa2);border:none;color:#fff;border-radius:14px;font-size:18px;font-weight:bold;cursor:pointer;box-shadow:0 5px 0 #4a148c;margin-bottom:15px;text-shadow:0 1px 3px rgba(0,0,0,.5);touch-action:manipulation}
+#fnf-start-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #4a148c}
+#fnf-start-btn:disabled{background:#444;box-shadow:0 5px 0 #222;cursor:not-allowed}
+#fnf-start-hint{color:#c9a0ff;font-size:13px;text-align:center;margin:0 0 10px;line-height:1.5;max-width:340px}
+.fnf-cooldown{color:#ffd54f;font-size:13px;margin:8px 0 0;text-align:center;font-weight:bold;min-height:18px}
+#fnf-result{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.85);z-index:25;padding:20px;text-align:center}
+#fnf-result.hidden{display:none!important}
+#fnf-result-title{font-size:32px;font-weight:bold;margin:0 0 15px;text-shadow:0 0 20px currentColor}
+#fnf-result-title.win{color:#4caf50}
+#fnf-result-title.lose{color:#ff5252}
+#fnf-result-text{color:#fff;font-size:15px;line-height:1.6;margin:0 0 20px;max-width:340px;white-space:pre-line}
+#fnf-result-close{padding:14px 30px;background:linear-gradient(135deg,#7b1fa2,#c2185b);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;box-shadow:0 4px 0 #4a148c;touch-action:manipulation}
+.fnf-close-btn{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);border:1px solid #7b1fa2;color:#c9a0ff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;z-index:30;touch-action:manipulation}
+
+/* === СОРЕВНОВАНИЯ === */
+.comp-hero{text-align:center;padding:18px 12px;background:linear-gradient(135deg,#1e2d54,#0e1a30);border:2px solid #e0c25a;border-radius:14px;margin-bottom:14px}
+.comp-hero-icon{font-size:48px;margin-bottom:6px}
+.comp-hero-title{font-size:20px;color:#e0c25a;font-weight:bold;margin-bottom:4px}
+.comp-hero-sub{font-size:12px;color:#b8b8b8;line-height:1.5}
+.comp-btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:8px;text-shadow:0 1px 3px rgba(0,0,0,.5);touch-action:manipulation;color:#fff}
+.comp-btn small{display:block;font-size:11px;font-weight:500;opacity:.85;margin-top:2px}
+.comp-btn-quick{background:linear-gradient(135deg,#e91e63,#7b1fa2);box-shadow:0 4px 0 #4a148c;padding:18px}
+.comp-btn-create{background:linear-gradient(135deg,#2e7d32,#4caf50);box-shadow:0 4px 0 #1b5e20}
+.comp-btn-join{background:linear-gradient(135deg,#1976d2,#42a5f5);box-shadow:0 4px 0 #0d47a1}
+.comp-btn-danger{background:linear-gradient(135deg,#8b0000,#c62828);box-shadow:0 4px 0 #4a0000}
+.comp-btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.comp-btn:disabled{background:#444!important;color:#888!important;box-shadow:none!important;cursor:not-allowed}
+.comp-section{margin-top:18px;padding-top:14px;border-top:1px solid #253a5c}
+.comp-section-title{font-size:13px;color:#e0c25a;font-weight:bold;margin-bottom:10px;letter-spacing:1px}
+.comp-duration-row{display:flex;gap:6px;margin-bottom:6px}
+.comp-dur-btn{flex:1;padding:12px 6px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.comp-dur-btn.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
+#comp-code-input{width:100%;padding:14px;border-radius:10px;border:2px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:22px;text-align:center;letter-spacing:8px;font-weight:bold;font-family:monospace;box-sizing:border-box;margin-bottom:8px;text-transform:uppercase}
+.comp-waiting-title{text-align:center;font-size:18px;color:#4fc3f7;font-weight:bold;margin:20px 0 14px}
+.comp-code-box{background:linear-gradient(135deg,#1e2d54,#0e1a30);border:2px dashed #e0c25a;border-radius:14px;padding:18px;text-align:center;margin-bottom:14px}
+.comp-code-label{font-size:12px;color:#b8b8b8;margin-bottom:6px}
+.comp-code-value{font-size:44px;font-weight:bold;color:#e0c25a;font-family:monospace;letter-spacing:12px;text-shadow:0 0 12px rgba(224,194,90,.6);margin-bottom:12px}
+.comp-copy-btn{padding:10px 20px;background:#253a5c;border:1px solid #4fc3f7;color:#fff;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.comp-waiting-hint{text-align:center;font-size:12px;color:#7a8aa8;margin-bottom:16px;line-height:1.5;padding:0 10px}
+#modal-competition{padding:0}
+.comp-arena-box{background:linear-gradient(180deg,#1a0e2e,#0a0518);width:100%;height:100%;max-width:520px;display:flex;flex-direction:column;position:relative;overflow:hidden;border-radius:0}
+.comp-arena-header{padding:14px 12px;background:linear-gradient(180deg,#2a0a3a,#1a0520);border-bottom:2px solid #7b1fa2;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.comp-player{flex:1;text-align:center;min-width:0}
+.comp-player-avatar{font-size:32px;line-height:1}
+.comp-player-name{font-size:13px;color:#fff;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.comp-player-taps{font-size:22px;font-weight:bold;color:#4fc3f7;margin-top:2px;transition:transform .15s}
+.comp-player-taps.pulse{animation:tapPulse .2s ease-out}
+@keyframes tapPulse{0%{transform:scale(1)}50%{transform:scale(1.3);color:#ffd54f}100%{transform:scale(1)}}
+.comp-player-right .comp-player-taps{color:#ff9800}
+.comp-vs-middle{text-align:center;flex-shrink:0}
+.comp-vs-text{font-size:14px;color:#c9a0ff;font-weight:bold;margin-bottom:4px}
+.comp-timer-big{font-size:26px;font-weight:bold;color:#e0c25a;font-family:monospace;text-shadow:0 0 10px rgba(224,194,90,.5)}
+.comp-tap-zone{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 50%,rgba(123,31,162,.3),transparent 70%),#0a0518}
+.comp-tap-btn{width:200px;height:200px;border-radius:50%;border:none;background:radial-gradient(circle at 30% 30%,#f0c45a,#d97a1a);color:#1a1a2e;font-size:32px;font-weight:bold;cursor:pointer;box-shadow:0 6px 0 #9a5310,0 0 30px rgba(220,160,40,.4);touch-action:manipulation;user-select:none;transition:transform .05s}
+.comp-tap-btn:active:not(:disabled){transform:scale(.94)}
+.comp-tap-btn:disabled{background:#333;color:#666;box-shadow:0 6px 0 #111;cursor:not-allowed}
+.comp-countdown{position:absolute;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:50}
+.comp-countdown-num{font-size:140px;font-weight:bold;color:#e0c25a;text-shadow:0 0 40px rgba(224,194,90,.9);animation:compCountPulse .8s ease-out infinite}
+@keyframes compCountPulse{0%{transform:scale(.6);opacity:0}30%{transform:scale(1.1);opacity:1}100%{transform:scale(1.4);opacity:0}}
+.comp-result{position:absolute;inset:0;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;z-index:60}
+.comp-result-title{font-size:36px;font-weight:bold;margin-bottom:14px}
+.comp-result-title.win{color:#4caf50;text-shadow:0 0 20px rgba(76,175,80,.7)}
+.comp-result-title.lose{color:#ff5252;text-shadow:0 0 20px rgba(255,82,82,.7)}
+.comp-result-title.tie{color:#e0c25a}
+.comp-result-text{font-size:16px;color:#e0e0e0;line-height:1.7;margin-bottom:22px;max-width:340px;white-space:pre-line}
+.comp-leave-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);border:1px solid #7b1fa2;color:#c9a0ff;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;z-index:70}
+
+/* === ЛИЧНЫЕ СООБЩЕНИЯ === */
+.dm-box{max-width:480px;width:100%;display:flex;flex-direction:column;height:85vh;max-height:85vh}
+.dm-header{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid #253a5c;margin-bottom:12px}
+.dm-avatar{font-size:28px;width:46px;height:46px;border-radius:50%;background:#16213e;display:flex;align-items:center;justify-content:center;border:2px solid #3a7bd5;flex-shrink:0}
+.dm-info{flex:1;min-width:0}
+.dm-name{font-size:16px;color:#e0c25a;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dm-status{font-size:12px;color:#7a8aa8;margin-top:2px}
+.dm-typing{font-size:11px;color:#7fb8e6;font-style:italic;margin-top:2px;min-height:14px}
+.dm-messages{flex:1;overflow-y:auto;background:#0a1520;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;min-height:150px}
+.dm-msg{background:#16213e;border-radius:8px;padding:7px 11px;font-size:13px;line-height:1.35;overflow-wrap:anywhere;max-width:80%;align-self:flex-start;border-left:3px solid #253a5c;cursor:pointer;transition:background .15s}
+.dm-msg:hover{background:#1e2d54}
+.dm-msg.mine{background:linear-gradient(135deg,#1e2d54,#16213e);border-left:3px solid #4fc3f7;align-self:flex-end}
+.dm-msg-author{font-size:11px;color:#e0c25a;font-weight:bold;margin-bottom:2px}
+.dm-msg.mine .dm-msg-author{color:#4fc3f7;text-align:right}
+.dm-msg-text{color:#e0e0e0;word-break:break-word}
+.dm-msg-time{font-size:10px;color:#5a6a8a;margin-top:3px;text-align:right}
+.dm-empty{text-align:center;color:#7a8aa8;font-size:13px;padding:40px 20px;font-style:italic}
+.dm-input-row{display:flex;gap:6px;align-items:center;margin-top:10px}
+#dm-input{flex:1;padding:11px 13px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:14px;box-sizing:border-box;min-width:0}
+.dm-counter{font-size:11px;color:#7a8aa8;min-width:44px;text-align:right;flex-shrink:0;transition:color .2s}
+.dm-counter.warn{color:#ff9800}
+.dm-counter.danger{color:#ff5252;font-weight:bold}
+#dm-send{background:linear-gradient(135deg,#e0c25a,#d97a1a);border:none;color:#1a1a2e;border-radius:8px;padding:11px 16px;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 0 #9a5310;flex-shrink:0}
+#dm-send:active{transform:translateY(2px);box-shadow:0 1px 0 #9a5310}
+#dm-send:disabled{background:#444;color:#888;box-shadow:none;cursor:not-allowed}
+.dm-hint{text-align:center;color:#7a8aa8;font-size:11px;margin:8px 0 0}
+.dm-clear-btn{display:block;width:100%;padding:8px;margin-top:6px;background:#253a5c;border:1px solid #3a7bd5;color:#b8b8b8;border-radius:8px;font-size:12px;cursor:pointer;touch-action:manipulation}
+
+/* === АУКЦИОН === */
+.auction-top{display:flex;gap:6px;margin-bottom:12px}
+.auction-tab-btn{flex:1;padding:10px 6px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.auction-tab-btn.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
+.auction-pane{min-height:120px}
+.auction-filter-row{display:flex;gap:6px;margin-bottom:10px}
+.auction-filter{flex:1;padding:7px 4px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.auction-filter.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
+.auction-card{background:#0e1a30;border:2px solid #253a5c;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.auction-card.rarity-common{border-left:5px solid #4caf50}
+.auction-card.rarity-rare{border-left:5px solid #2196f3}
+.auction-card.rarity-epic{border-left:5px solid #9c27b0}
+.auction-card.mine{border-style:dashed}
+.auction-card-emoji{font-size:42px;flex-shrink:0}
+.auction-card-info{flex:1;min-width:0;text-align:left}
+.auction-card-name{font-size:14px;color:#e0c25a;font-weight:bold;margin-bottom:2px}
+.auction-card-rarity{font-size:11px;font-weight:600;margin-bottom:2px}
+.auction-card-rarity.common{color:#4caf50}
+.auction-card-rarity.rare{color:#4fc3f7}
+.auction-card-rarity.epic{color:#ba68c8}
+.auction-card-seller{font-size:11px;color:#7a8aa8;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auction-card-time{font-size:10px;color:#5a6a8a}
+.auction-card-price{font-size:15px;color:#ffd54f;font-weight:bold;text-align:right;flex-shrink:0}
+.auction-card-price small{display:block;font-size:10px;color:#7a8aa8;font-weight:normal;margin-top:2px}
+.auction-card-buy{background:linear-gradient(135deg,#2e7d32,#4caf50);border:none;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #1b5e20;touch-action:manipulation;flex-shrink:0;margin-left:6px}
+.auction-card-buy:disabled{background:#444;color:#888;box-shadow:none;cursor:not-allowed}
+.auction-card-cancel{background:linear-gradient(135deg,#8b0000,#c62828);border:none;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #4a0000;touch-action:manipulation;flex-shrink:0;margin-left:6px}
+.auction-empty{text-align:center;color:#7a8aa8;font-size:13px;padding:30px 15px;font-style:italic}
+.auction-loading{text-align:center;color:#7a8aa8;font-size:13px;padding:20px}
+.auction-pet-picker{max-height:220px;overflow-y:auto;margin-bottom:14px;display:flex;flex-direction:column;gap:6px;padding:2px}
+.auction-pet-option{background:#0e1a30;border:2px solid #253a5c;border-radius:10px;padding:8px 10px;display:flex;gap:8px;align-items:center;cursor:pointer;touch-action:manipulation}
+.auction-pet-option.active{border-color:#e0c25a;background:#16213e;box-shadow:0 0 10px rgba(224,194,90,.3)}
+.auction-pet-option-emoji{font-size:28px;flex-shrink:0}
+.auction-pet-option-info{flex:1;min-width:0;text-align:left}
+.auction-pet-option-name{font-size:13px;color:#e0c25a;font-weight:bold}
+.auction-pet-option-rarity{font-size:10px;color:#7fb8e6}
+.auction-price-block{margin:14px 0}
+.auction-price-row{display:flex;gap:6px;margin-top:6px}
+#auction-price-input{flex:1;padding:11px 13px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:15px;box-sizing:border-box;min-width:0}
+#auction-price-unit{padding:11px 10px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;flex-shrink:0}
+.auction-hint{text-align:center;color:#7a8aa8;font-size:11px;margin:8px 0 0}
+.auction-hint b{color:#e0c25a}
+
+/* === ЯЗЫКОВОЙ ПЕРЕКЛЮЧАТЕЛЬ === */
+.lang-switch-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #253a5c;color:#e0e0e0;font-size:14px}
+.lang-switch{display:flex;gap:6px}
+.lang-btn{padding:6px 12px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;text-shadow:none;touch-action:manipulation}
+.lang-btn.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
+.lang-choice-box{text-align:center;max-width:400px}
+.lang-choice-box h2{margin-bottom:8px}
+.lang-choice-hint{color:#aaa;font-size:13px;margin:0 0 20px;line-height:1.4}
+.lang-choice-grid{display:flex;flex-direction:column;gap:12px}
+.lang-choice-btn{display:flex;align-items:center;gap:14px;padding:16px 20px;background:linear-gradient(135deg,#16213e,#0e1a30);border:2px solid #3a7bd5;color:#fff;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;text-shadow:none;touch-action:manipulation;transition:all .2s}
+.lang-choice-btn:active{transform:scale(.97)}
+.lang-choice-btn:hover{border-color:#e0c25a;box-shadow:0 0 15px rgba(224,194,90,.4)}
+.lang-choice-flag{font-size:32px}
+.lang-choice-name{flex:1;text-align:left;color:#e0c25a;letter-spacing:1px}
+
 /* === ФИКС ПЕРЕПОЛНЕНИЯ ТЕКСТА === */
 html,body{overflow-wrap:anywhere;word-break:break-word}
-.item .info,
-.item-card .item-info,
-.pet-card-info,
-.booster-info,
-.leader-name,
-.contact-text,
-.quest-name,
-.active-pet-info,
-.note-list-info,
-.krohlupic-text{min-width:0}
+.item .info,.item-card .item-info,.pet-card-info,.booster-info,.leader-name,.contact-text,.quest-name,.active-pet-info,.note-list-info,.krohlupic-text{min-width:0}
 .item .right{flex-shrink:1;min-width:0}
 .buy-wrap{min-width:0}
 .mult-btn{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -602,39 +1054,77 @@ html,body{overflow-wrap:anywhere;word-break:break-word}
 .modal-box,.offline-box,.fortune-popup,.krohlupic-bubble{overflow-wrap:anywhere;word-break:break-word}
 #offline-amount,#promo-result,#import-result,.save-result{overflow-wrap:anywhere;word-break:break-word}
 .achievement .title,.quest-name,.quest-progress-text{overflow-wrap:anywhere;word-break:break-word}
+
+/* === МОБИЛЬНАЯ АДАПТАЦИЯ === */
 @media (max-width:480px){
-  .tab-btn{padding:6px 9px;font-size:12px}
-  #topbar{gap:5px}
+.tab-btn{padding:6px 9px;font-size:12px}
+#topbar{gap:5px}
+}
+@media (max-width:400px){
+.comp-code-value{font-size:34px;letter-spacing:8px}
+.comp-tap-btn{width:170px;height:170px;font-size:26px}
+.comp-result-title{font-size:28px}
+.comp-countdown-num{font-size:110px}
 }
 @media (max-width:380px){
-  body{padding:10px}
-  #topbar{gap:4px}
-  .tab-btn{padding:5px 8px;font-size:11px}
-  .item{padding:8px 10px;gap:6px}
-  .name{font-size:14px}
-  .desc,.owned{font-size:11px}
-  .buy{padding:5px 9px;font-size:12px}
-  .mult-btn{font-size:10px;padding:3px 2px}
-  .item-card{padding:10px 12px;gap:8px}
-  .item-card .item-icon{font-size:26px}
-  .item-card .item-buy{padding:6px 10px;font-size:12px}
-  .leader-row{padding:8px 10px;gap:8px}
-  .leader-name{font-size:13px}
-  .leader-score{font-size:13px}
-  .contact-link{padding:10px 12px;gap:9px}
-  .contact-label{font-size:13px}
-  .contact-url{font-size:11px}
-  .note-paper{padding:18px 15px}
-  .note-text{font-size:15px}
-  .quest-name{font-size:14px}
-  .active-pet-name{font-size:16px}
-  .active-pet-bonus{font-size:12px}
-  #counter{font-size:26px}
-  #click-btn{width:150px;height:150px}
-  #click-btn.has-emoji{min-width:150px}
-  #click-btn .emoji-skin-display{font-size:120px}
-  #active-pet-indicator{right:-42px;top:-38px}
-  #deposit-side-btn{left:-48px;top:-42px;width:52px;height:52px;font-size:26px}
+body{padding:10px}
+#topbar{gap:4px}
+.tab-btn{padding:5px 8px;font-size:11px}
+.item{padding:8px 10px;gap:6px}
+.name{font-size:14px}
+.desc,.owned{font-size:11px}
+.buy{padding:5px 9px;font-size:12px}
+.mult-btn{font-size:10px;padding:3px 2px}
+.item-card{padding:10px 12px;gap:8px}
+.item-card .item-icon{font-size:26px}
+.item-card .item-buy{padding:6px 10px;font-size:12px}
+.leader-row{padding:8px 10px;gap:8px}
+.leader-name{font-size:13px}
+.leader-score{font-size:13px}
+.contact-link{padding:10px 12px;gap:9px}
+.contact-label{font-size:13px}
+.contact-url{font-size:11px}
+.note-paper{padding:18px 15px}
+.note-text{font-size:15px}
+.quest-name{font-size:14px}
+.active-pet-name{font-size:16px}
+.active-pet-bonus{font-size:12px}
+#counter{font-size:26px}
+#click-btn{width:150px;height:150px}
+#click-btn.has-emoji{min-width:150px}
+#click-btn .emoji-skin-display{font-size:120px}
+#active-pet-indicator{right:-42px;top:-38px}
+#deposit-side-btn{left:-48px;top:-42px;width:52px;height:52px;font-size:26px}
+#clan-side-btn{width:44px;height:44px;font-size:20px;top:130px}
+#dm-side-btn{width:44px;height:44px;font-size:20px;top:75px}
+.clan-tab{font-size:11px;padding:8px 4px}
+.clan-tag-big{width:48px;height:48px;font-size:16px}
+.clan-name-big{font-size:15px}
+.clan-stat-num{font-size:13px}
+.admin-quick{grid-template-columns:1fr}
+.admin-quick-btn{font-size:10px}
+#fnf-title{font-size:14px}
+#fnf-stats-row{font-size:11px;gap:12px}
+.fnf-arrow-btn{font-size:26px}
+#fnf-controls{height:80px}
+#fnf-zone{height:70px}
+#fnf-start-btn{padding:14px 30px;font-size:16px}
+#fnf-result-title{font-size:26px}
+.subscribe-banner-box{padding:20px 16px 16px;border-radius:14px}
+.subscribe-banner-emoji{font-size:44px}
+.subscribe-banner-title{font-size:17px}
+.subscribe-banner-sub{font-size:12px;margin-bottom:14px}
+.subscribe-link{padding:10px 12px}
+.subscribe-link-icon{font-size:22px;width:28px}
+.subscribe-link-label{font-size:13px}
+.subscribe-link-url{font-size:10px}
+.subscribe-close-btn{padding:12px;font-size:14px}
+.friends-tab{font-size:11px;padding:7px 4px;min-width:60px}
+.friend-action-btn.gift{padding:5px 6px;font-size:11px}
+.krohlupic-pet{width:70px;height:85px;right:10px;bottom:70px}
+.krohlupic-pet-img{font-size:42px}
+.clan-invest-row{grid-template-columns:repeat(2,1fr)}
+.clan-invest-btn{font-size:11px}
 }
 
 /* === ЭКОНОМИЯ БАТАРЕИ === */
@@ -652,10 +1142,15 @@ body.low-particles #click-btn.golden-tap,
 body.low-particles #click-btn.skin-gennadii.tap-ready,
 body.low-particles #click-btn.has-emoji.tap-ready .emoji-skin-display,
 body.low-particles #super-event-banner,
-body.low-particles #click-btn:not(.has-emoji){
+body.low-particles #click-btn:not(.has-emoji),
+body.low-particles #krohlupic-pet,
+body.low-particles .tap-ring,
+body.low-particles .tap-wave{
 animation:none!important
 }
 body.low-particles #bg-canvas{display:none!important}
+body.low-particles .tap-ring,
+body.low-particles .tap-wave{display:none!important}
 
 @media (prefers-reduced-motion: reduce){
 *,*::before,*::after{
