@@ -1,4 +1,4 @@
-// ===== ЛОКАЛИЗАЦИЯ v106 (финал) =====
+// ===== ЛОКАЛИЗАЦИЯ v110 =====
 var LANG_KEY="clicker-lang";
 var LANG={
 ru:{
@@ -132,7 +132,7 @@ ru:{
 "settings.import_ph":"Вставьте сюда код...","settings.import_load":"📥 Загрузить",
 "settings.advanced":"🔧 Дополнительные настройки",
 "settings.reset":"Сбросить весь прогресс",
-"settings.reset_confirm":"⚠️ Весь прогресс будет удалён!\\nПродолжить?",
+"settings.reset_confirm":"⚠️ Весь прогресс будет удалён!\nПродолжить?",
 
 // ===== КОНТАКТЫ =====
 "contacts.title":"📞 Связь с разработчиком","contacts.tg":"Телеграм-канал",
@@ -235,10 +235,10 @@ ru:{
 "clan.edit_title":"✏️ Редактировать клан","clan.edit_save":"💾 Сохранить изменения",
 "clan.invest_title":"💰 Вложить в клан",
 "clan.invest_hint":"Вложенные монеты повышают уровень клана<br>и дают <b>+1% к доходу</b> каждому участнику",
-"clan.invest_custom":"Сколько монет вложить?\\nУ тебя: {coins}",
+"clan.invest_custom":"Сколько монет вложить?\nУ тебя: {coins}",
 "clan.invest_confirm":"Вложить {amount} монет в клан?",
 "clan.invest_done":"🏰 Вложено {amount} в клан!",
-"clan.invest_no_coins":"Недостаточно монет!\\nНужно: {need}\\nУ вас: {have}",
+"clan.invest_no_coins":"Недостаточно монет!\nНужно: {need}\nУ вас: {have}",
 
 // ===== ПРОФИЛЬ =====
 "profile.title":"🏅 Профиль","profile.hint":"Твой ник. Его нельзя будет изменить.",
@@ -277,7 +277,7 @@ ru:{
 "note.note2.title":"Записка №2",
 "note.note2.text":"«Сначала.. Как по мне, всё выглядит красиво, и.. Так правильно, столько существ объединились.. Но мне не даёт покоя один факт, зачем это всё, в чем смысл такого бизнеса?»",
 "note.note3.title":"Записка №3",
-"note.note3.text":"«Дорогой дневник, я наконец-то нашел работу!\\nЭта студия самая богатая в этом городе, и.. подозреваю что в этом мире!»",
+"note.note3.text":"«Дорогой дневник, я наконец-то нашел работу!\nЭта студия самая богатая в этом городе, и.. подозреваю что в этом мире!»",
 "note.note4.title":"Записка №4",
 "note.note4.text":"«Я {NICK} соглашаюсь с условиями и вступаю в компанию Krochlupic-Up!»",
 "note.note5.title":"Записка №5",
@@ -311,8 +311,8 @@ ru:{
 "fnf.start_hint":"Стрелки летят вниз — тапай их в такт!",
 "fnf.cooldown":"⏳ Следующая битва через","fnf.cooldown_ready":"Готов к битве!",
 "fnf.win":"🏆 ПОБЕДА!","fnf.lose":"💀 ПОРАЖЕНИЕ",
-"fnf.win_text":"Ты продержался до конца!\\n\\n🎵 Счёт: {score}\\n❌ Промахи: {miss}\\n🔥 Макс. комбо: {combo}×\\n\\nНаграда:\\n{rewards}",
-"fnf.lose_text":"Крохлюпик победил...\\n\\n🎵 Счёт: {score}\\n❌ Промахи: {miss}\\n🔥 Макс. комбо: {combo}×",
+"fnf.win_text":"Ты продержался до конца!\n\n🎵 Счёт: {score}\n❌ Промахи: {miss}\n🔥 Макс. комбо: {combo}×\n\nНаграда:\n{rewards}",
+"fnf.lose_text":"Крохлюпик победил...\n\n🎵 Счёт: {score}\n❌ Промахи: {miss}\n🔥 Макс. комбо: {combo}×",
 "fnf.perfect":"🌟 ИДЕАЛЬНО! Бонус ×2!",
 "fnf.reward_gems":"💎 +{n} кристаллов","fnf.reward_shards":"🌑 +{n} осколков",
 "fnf.reward_coins":"🪙 +{n} монет","fnf.err_already":"Битва уже идёт!",
@@ -324,7 +324,7 @@ ru:{
 "wheel.spin_paid":"💰 Крутить","wheel.free_used":"🎁 Завтра",
 "wheel.free_used_alert":"Бесплатный спин уже использован!","wheel.paid_used":"💰 Завтра",
 "wheel.paid_used_alert":"Платный спин уже использован!",
-"wheel.no_coins":"Недостаточно монет!\\nНужно: {need}",
+"wheel.no_coins":"Недостаточно монет!\nНужно: {need}",
 "wheel.result_coins":"💰 Получено {n} монет!","wheel.result_gems":"💎 +{n} кристаллов!",
 "wheel.result_shards":"🌑 +{n} осколков!","wheel.result_negcoins":"💀 Потеряно {n} монет!",
 "wheel.result_neggems":"💀 −{n} кристаллов!","wheel.result_negshards":"💀 −{n} осколков!",
@@ -363,7 +363,7 @@ ru:{
 "generator.upgrade_btn_short":"Улучшить","generator.upgrade_price":"Улучшить:",
 "generator.max":"✨ Максимальный уровень!","generator.max_line":"✨ Максимальный уровень!",
 "generator.drop":"⚡ Генератор упал на {n} ур. (сейчас {level})",
-"generator.no_coins":"Недостаточно монет!\\nНужно: {need}\\nУ вас: {have}",
+"generator.no_coins":"Недостаточно монет!\nНужно: {need}\nУ вас: {have}",
 "generator.tap_per_sec":" тап/сек","generator.tap_per_sec_plural":" тапов/сек",
 "generator.tap_in_sec":"1 тап за ",
 
@@ -423,7 +423,7 @@ ru:{
 "event.rain":"💰 Монетный дождь","event.storm":"⚡ Молниеносный потенциал",
 "event.fast":"🏃 Быстрый способ","event.income":"💵 Заработок",
 "event.super_storm":"🌪️ КРОВАВЫЙ ШТОРМ!",
-"event.blood_moon":"🌕 КРОВАВАЯ ЛУНА 🌕\\nДоход x2!",
+"event.blood_moon":"🌕 КРОВАВАЯ ЛУНА 🌕\nДоход x2!",
 "event.theft_start":"🚨 Ивент «КРАЖА» начался! Потеряно будет ~22% монет.",
 "event.theft_end":"🚨 Кража закончилась. Всего украдено: {n} монет",
 
@@ -438,7 +438,7 @@ ru:{
 "secret.activate_again":"🔥 Активировать ещё (67 Qa)",
 "secret.status_default":"Разблокирован. Активация: 67 Qa за 30 минут.",
 "secret.active":"🔥 Автокликер активен — 67 кликов/сек. Осталось: {time}",
-"secret.too_early":"❌ Ещё рано!\\nНужно {need} тапов.\\nОсталось: {left}",
+"secret.too_early":"❌ Ещё рано!\nНужно {need} тапов.\nОсталось: {left}",
 "secret.no_coins":"❌ Нужно 67 Qa!","secret.unlocked":"🔥 Кликер 67 разблокирован!",
 "secret.stopped":"⏸️ Кликер 67 остановлен.",
 
@@ -489,7 +489,7 @@ ru:{
 "globalup.now_click":"Сейчас: +","globalup.now_chance":"Сейчас: +",
 "globalup.now_income":"Сейчас: +",
 
-// ===== УЛУЧШЕНИЯ (названия и описания) =====
+// ===== УЛУЧШЕНИЯ =====
 "up.clicker":"👆 Кликер","up.clicker.desc":"+1 монета за тап",
 "up.farm":"🌾 Ферма","up.farm.desc":"+1 монета в секунду",
 "up.factory":"🏭 Фабрика","up.factory.desc":"+10 монет в секунду",
@@ -622,10 +622,42 @@ ru:{
 "khrquote.strange_7":"Не заходи в комнату 9. Ой. Забудь, что я сказал.",
 "khrquote.back_1":"Ты вернулся! А я уже думал, что меня одного здесь оставили.",
 "khrquote.back_2":"Ой! Привет. Я тут сидел, смотрел на кнопку. Она красивая.",
-"khrquote.back_3":"Ты долго не заходил. Я скучал. И монеты скучали."
-},
+"khrquote.back_3":"Ты долго не заходил. Я скучал. И монеты скучали.",
 
-en:{
+// ===== ALERT-СООБЩЕНИЯ =====
+"alert.not_enough_coins":"❌ Недостаточно монет!\nНужно: {0}\nУ вас: {1}",
+"alert.not_enough_crystals":"❌ Недостаточно кристаллов!\nНужно: {0}\nУ вас: {1}",
+"alert.not_enough_shards":"❌ Недостаточно осколков!\nНужно: {0}\nУ вас: {1}",
+"alert.not_enough_xp":"❌ Недостаточно опыта!",
+"alert.promo_only":"🎁 Только через промокод!",
+"alert.booster_active":"⚡ Буст уже активен, дождись окончания!",
+"alert.booster_none":"📦 Нет бустеров в наличии!",
+"alert.offline_coins":"💰 Получено {0} монет!",
+"alert.export_empty":"❌ Нет сохранения для экспорта.",
+"alert.export_error":"❌ Ошибка экспорта: {0}",
+"alert.export_copied":"✅ Скопировано!",
+"alert.export_copy_fail":"❌ Не удалось скопировать. Выдели текст и скопируй вручную.",
+"alert.import_empty":"❌ Вставь код сохранения.",
+"alert.import_bad_format":"❌ Неверный формат сохранения.",
+"alert.import_confirm":"⚠️ Текущий прогресс будет заменён.\nПродолжить?",
+"alert.import_loaded":"✅ Прогресс загружен! Перезагрузка...",
+"alert.import_error":"❌ Ошибка импорта: {0}",
+"alert.daily_bonus":"📅 Ежедневный бонус! День {0} подряд.\n+{1} монет!",
+"alert.daily_bonus_week":"🎁 +5 💎 за 7 дней подряд!",
+"alert.leaderboard_no_firebase":"❌ Лидерборд не подключён.",
+"alert.leaderboard_no_nick":"❌ Сначала задай ник в профиле!",
+"alert.set_nickname":"❌ Сначала задай ник в профиле!",
+"alert.pet_storage_full":"❌ Хранилище заполнено (5/5)!",
+"alert.pet_nest_busy":"❌ Гнездо занято! Дождись завершения.",
+"alert.deposit_buy_first":"❌ Сначала купите вклад в модалке смайлика!",
+"alert.deposit_max":"❌ Вклад уже на максимуме (25 ур.)!",
+"alert.competition_room_taken":"❌ Комната уже занята!",
+"alert.competition_not_found":"❌ Комната не найдена!",
+"alert.competition_wrong_code":"❌ Код должен быть 4 символа!",
+"alert.fnf_already":"❌ Битва уже идёт!",
+"alert.fnf_cooldown":"⏳ Рано! Следующая битва через {0}"
+},
+ en:{
 // ===== COMMON =====
 "common.close":"✕ Close","common.close_x":"✖ Close","common.cancel":"✖ Cancel",
 "common.ok":"✅ OK","common.yes":"Yes","common.no":"No","common.error":"Error",
@@ -755,7 +787,7 @@ en:{
 "settings.import_hint":"Paste the code you saved earlier.",
 "settings.import_ph":"Paste code here...","settings.import_load":"📥 Load",
 "settings.advanced":"🔧 Advanced settings","settings.reset":"Reset all progress",
-"settings.reset_confirm":"⚠️ All progress will be deleted!\\nContinue?",
+"settings.reset_confirm":"⚠️ All progress will be deleted!\nContinue?",
 
 // ===== CONTACTS =====
 "contacts.title":"📞 Contact the developer","contacts.tg":"Telegram channel",
@@ -858,10 +890,10 @@ en:{
 "clan.edit_title":"✏️ Edit clan","clan.edit_save":"💾 Save changes",
 "clan.invest_title":"💰 Invest in clan",
 "clan.invest_hint":"Invested coins raise the clan level<br>and give <b>+1% income</b> to every member",
-"clan.invest_custom":"How many coins to invest?\\nYou have: {coins}",
+"clan.invest_custom":"How many coins to invest?\nYou have: {coins}",
 "clan.invest_confirm":"Invest {amount} coins in clan?",
 "clan.invest_done":"🏰 Invested {amount} in clan!",
-"clan.invest_no_coins":"Not enough coins!\\nNeed: {need}\\nYou have: {have}",
+"clan.invest_no_coins":"Not enough coins!\nNeed: {need}\nYou have: {have}",
 
 // ===== PROFILE =====
 "profile.title":"🏅 Profile","profile.hint":"Your nickname. It can't be changed.",
@@ -900,7 +932,7 @@ en:{
 "note.note2.title":"Note #2",
 "note.note2.text":"«At first.. As I see it, everything looks beautiful, and.. It's so right, so many creatures united.. But one fact bothers me, why is all this, what's the point of such a business?»",
 "note.note3.title":"Note #3",
-"note.note3.text":"«Dear diary, I finally found a job!\\nThis studio is the richest in this city, and.. I suspect in this world!»",
+"note.note3.text":"«Dear diary, I finally found a job!\nThis studio is the richest in this city, and.. I suspect in this world!»",
 "note.note4.title":"Note #4",
 "note.note4.text":"«I {NICK} agree with the terms and join the Krochlupic-Up company!»",
 "note.note5.title":"Note #5",
@@ -934,8 +966,8 @@ en:{
 "fnf.start_hint":"Arrows fall down — tap them on beat!",
 "fnf.cooldown":"⏳ Next battle in","fnf.cooldown_ready":"Ready to battle!",
 "fnf.win":"🏆 VICTORY!","fnf.lose":"💀 DEFEAT",
-"fnf.win_text":"You survived to the end!\\n\\n🎵 Score: {score}\\n❌ Misses: {miss}\\n🔥 Max combo: {combo}×\\n\\nRewards:\\n{rewards}",
-"fnf.lose_text":"Krohlupic won...\\n\\n🎵 Score: {score}\\n❌ Misses: {miss}\\n🔥 Max combo: {combo}×",
+"fnf.win_text":"You survived to the end!\n\n🎵 Score: {score}\n❌ Misses: {miss}\n🔥 Max combo: {combo}×\n\nRewards:\n{rewards}",
+"fnf.lose_text":"Krohlupic won...\n\n🎵 Score: {score}\n❌ Misses: {miss}\n🔥 Max combo: {combo}×",
 "fnf.perfect":"🌟 PERFECT! Bonus ×2!",
 "fnf.reward_gems":"💎 +{n} crystals","fnf.reward_shards":"🌑 +{n} shards",
 "fnf.reward_coins":"🪙 +{n} coins","fnf.err_already":"Battle already in progress!",
@@ -947,7 +979,7 @@ en:{
 "wheel.spin_paid":"💰 Spin","wheel.free_used":"🎁 Tomorrow",
 "wheel.free_used_alert":"Free spin already used!","wheel.paid_used":"💰 Tomorrow",
 "wheel.paid_used_alert":"Paid spin already used!",
-"wheel.no_coins":"Not enough coins!\\nNeed: {need}",
+"wheel.no_coins":"Not enough coins!\nNeed: {need}",
 "wheel.result_coins":"💰 Got {n} coins!","wheel.result_gems":"💎 +{n} crystals!",
 "wheel.result_shards":"🌑 +{n} shards!","wheel.result_negcoins":"💀 Lost {n} coins!",
 "wheel.result_neggems":"💀 −{n} crystals!","wheel.result_negshards":"💀 −{n} shards!",
@@ -986,7 +1018,7 @@ en:{
 "generator.upgrade_btn_short":"Upgrade","generator.upgrade_price":"Upgrade:",
 "generator.max":"✨ Maximum level!","generator.max_line":"✨ Maximum level!",
 "generator.drop":"⚡ Generator dropped by {n} lvl. (now {level})",
-"generator.no_coins":"Not enough coins!\\nNeed: {need}\\nYou have: {have}",
+"generator.no_coins":"Not enough coins!\nNeed: {need}\nYou have: {have}",
 "generator.tap_per_sec":" tap/sec","generator.tap_per_sec_plural":" taps/sec",
 "generator.tap_in_sec":"1 tap per ",
 
@@ -1046,7 +1078,7 @@ en:{
 "event.rain":"💰 Coin rain","event.storm":"⚡ Lightning potential",
 "event.fast":"🏃 Fast way","event.income":"💵 Income",
 "event.super_storm":"🌪️ BLOOD STORM!",
-"event.blood_moon":"🌕 BLOOD MOON 🌕\\nIncome x2!",
+"event.blood_moon":"🌕 BLOOD MOON 🌕\nIncome x2!",
 "event.theft_start":"🚨 «THEFT» event started! About 22% of coins will be lost.",
 "event.theft_end":"🚨 Theft ended. Total stolen: {n} coins",
 
@@ -1060,7 +1092,7 @@ en:{
 "secret.activate_again":"🔥 Activate again (67 Qa)",
 "secret.status_default":"Unlocked. Activation: 67 Qa for 30 minutes.",
 "secret.active":"🔥 Auto-clicker active — 67 clicks/sec. Time left: {time}",
-"secret.too_early":"❌ Too early!\\nNeed {need} taps.\\nLeft: {left}",
+"secret.too_early":"❌ Too early!\nNeed {need} taps.\nLeft: {left}",
 "secret.no_coins":"❌ Need 67 Qa!","secret.unlocked":"🔥 Clicker 67 unlocked!",
 "secret.stopped":"⏸️ Clicker 67 stopped.",
 
@@ -1111,7 +1143,7 @@ en:{
 "globalup.now_click":"Currently: +","globalup.now_chance":"Currently: +",
 "globalup.now_income":"Currently: +",
 
-// ===== UPGRADES (names & descriptions) =====
+// ===== UPGRADES =====
 "up.clicker":"👆 Clicker","up.clicker.desc":"+1 coin per tap",
 "up.farm":"🌾 Farm","up.farm.desc":"+1 coin per second",
 "up.factory":"🏭 Factory","up.factory.desc":"+10 coins per second",
@@ -1245,7 +1277,40 @@ en:{
 "khrquote.strange_7":"Don't go into room 9. Oh. Forget I said anything.",
 "khrquote.back_1":"You're back! I was starting to think I'd been left here alone.",
 "khrquote.back_2":"Oh! Hi. I was sitting here looking at the button. She's pretty.",
-"khrquote.back_3":"You were gone a while. I missed you. And the coins missed you."
+"khrquote.back_3":"You were gone a while. I missed you. And the coins missed you.",
+
+// ===== ALERT MESSAGES =====
+"alert.not_enough_coins":"❌ Not enough coins!\nNeed: {0}\nYou have: {1}",
+"alert.not_enough_crystals":"❌ Not enough crystals!\nNeed: {0}\nYou have: {1}",
+"alert.not_enough_shards":"❌ Not enough shards!\nNeed: {0}\nYou have: {1}",
+"alert.not_enough_xp":"❌ Not enough XP!",
+"alert.promo_only":"🎁 Promo code only!",
+"alert.booster_active":"⚡ Booster already active, wait for it to end!",
+"alert.booster_none":"📦 No boosters in storage!",
+"alert.offline_coins":"💰 Got {0} coins!",
+"alert.export_empty":"❌ No save to export.",
+"alert.export_error":"❌ Export error: {0}",
+"alert.export_copied":"✅ Copied!",
+"alert.export_copy_fail":"❌ Failed to copy. Select text and copy manually.",
+"alert.import_empty":"❌ Paste save code.",
+"alert.import_bad_format":"❌ Invalid save format.",
+"alert.import_confirm":"⚠️ Current progress will be replaced.\nContinue?",
+"alert.import_loaded":"✅ Progress loaded! Reloading...",
+"alert.import_error":"❌ Import error: {0}",
+"alert.daily_bonus":"📅 Daily bonus! Streak day {0}.\n+{1} coins!",
+"alert.daily_bonus_week":"🎁 +5 💎 for 7-day streak!",
+"alert.leaderboard_no_firebase":"❌ Leaderboard not connected.",
+"alert.leaderboard_no_nick":"❌ Set a nickname first!",
+"alert.set_nickname":"❌ Set a nickname first!",
+"alert.pet_storage_full":"❌ Storage is full (5/5)!",
+"alert.pet_nest_busy":"❌ Nest is busy! Wait for it to finish.",
+"alert.deposit_buy_first":"❌ Buy the deposit first!",
+"alert.deposit_max":"❌ Deposit already at max (lvl 25)!",
+"alert.competition_room_taken":"❌ Room already taken!",
+"alert.competition_not_found":"❌ Room not found!",
+"alert.competition_wrong_code":"❌ Code must be 4 characters!",
+"alert.fnf_already":"❌ Battle already in progress!",
+"alert.fnf_cooldown":"⏳ Too early! Next battle in {0}"
 }
 };
 
@@ -1257,11 +1322,19 @@ try{var saved=localStorage.getItem(LANG_KEY);if(saved&&LANG[saved]){currentLang=
 return false;
 }
 function saveLangPref(){try{localStorage.setItem(LANG_KEY,currentLang);}catch(e){}}
+
+// t() — с подстановкой {0}, {1}, ... и конвертацией \n
 function t(key){
 var v=LANG[currentLang]&&LANG[currentLang][key];
-if(v!==undefined)return v;
-var fallback=LANG.ru&&LANG.ru[key];
-return fallback!==undefined?fallback:key;
+if(v===undefined)v=LANG.ru&&LANG.ru[key];
+if(v===undefined)return key;
+if(arguments.length>1){
+for(var i=1;i<arguments.length;i++){
+v=v.split("{"+(i-1)+"}").join(arguments[i]);
+}
+}
+v=v.replace(/\\n/g,"\n");
+return v;
 }
 function tt(key){
 var s=t(key);
@@ -1308,4 +1381,4 @@ if(nav.indexOf("en")===0)return "en";
 return "ru";
 }
 function hasLangPref(){try{return !!localStorage.getItem(LANG_KEY);}catch(e){return false;}}
-function getLang(){return currentLang;}
+function getLang(){return currentLang;} 
