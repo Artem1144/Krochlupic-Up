@@ -1,5 +1,5 @@
-// ===== SERVICE WORKER v201 =====
-var CACHE_NAME = "krohlupic-v201";
+// ===== SERVICE WORKER v202 =====
+var CACHE_NAME = "krohlupic-v202";
 var URLS = [
   "./",
   "./index.html",
