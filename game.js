@@ -3640,6 +3640,128 @@ setTimeout(function(){
   console.log("[v203] Clan live-search ready");
 }, 900);
 
+// ===== ФИКС v204 — создание клана =====
+setTimeout(function(){
+  var btn=document.getElementById("clan-create-submit");
+  if(!btn)return;
+  
+  btn.onclick=function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    
+    var $name=document.getElementById("clan-create-name");
+    var $tag=document.getElementById("clan-create-tag");
+    var $desc=document.getElementById("clan-create-desc");
+    var $err=document.getElementById("clan-create-error");
+    
+    if(!$name||!$tag){alert("Поля не найдены");return;}
+    
+    var name=($name.value||"").trim();
+    var tag=($tag.value||"").trim().toUpperCase();
+    var desc=$desc?($desc.value||"").trim():"";
+    
+    // Тип — берём напрямую, не через :checked
+    var type="open";
+    var radios=document.querySelectorAll('input[name="clan-type"]');
+    for(var i=0;i<radios.length;i++){
+      if(radios[i].checked){type=radios[i].value;break;}
+    }
+    
+    // Валидация с показом что введено
+    if(!name||name.length<3||name.length>20){
+      var msg="Название: \""+name+"\" ("+name.length+" симв.). Нужно 3-20";
+      if($err)$err.textContent=msg;
+      alert(msg);
+      return;
+    }
+    if(!tag||!/^[A-Z]{2,4}$/.test(tag)){
+      var msg2="Тег: \""+tag+"\". Нужно 2-4 латинских буквы A-Z";
+      if($err)$err.textContent=msg2;
+      alert(msg2);
+      return;
+    }
+    if(crystals<500){
+      var msg3="Нужно 500 💎. У тебя: "+crystals;
+      if($err)$err.textContent=msg3;
+      alert(msg3);
+      return;
+    }
+    if(typeof db==="undefined"||!db){
+      alert("Firebase не подключён. Проверь интернет.");
+      return;
+    }
+    if(!profile.id||!profile.nickname){
+      alert("Сначала задай ник в профиле!");
+      return;
+    }
+    
+    if($err)$err.textContent="";
+    btn.disabled=true;
+    var oldText=btn.textContent;
+    btn.textContent="⏳ Создаём...";
+    
+    db.ref("clanTags/"+tag).once("value").then(function(snap){
+      if(snap.val()){
+        btn.disabled=false;btn.textContent=oldText;
+        if($err)$err.textContent="Тег занят";
+        alert("Тег \""+tag+"\" уже занят другим кланом");
+        throw new Error("_stop");
+      }
+      var cid="c_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+      var clan={name:name,tag:tag,description:desc,type:type,ownerId:profile.id,createdAt:Date.now(),invested:0};
+      return db.ref("clans/"+cid).set(clan).then(function(){
+        return db.ref("clans/"+cid+"/members/"+profile.id).set({
+          nickname:profile.nickname,role:"owner",joinedAt:Date.now(),invested:0
+        });
+      }).then(function(){
+        return db.ref("clanTags/"+tag).set(cid);
+      }).then(function(){
+        return db.ref("users/"+profile.id+"/clanId").set(cid);
+      }).then(function(){
+        crystals-=500;
+        if(typeof playSound==="function")playSound("achievement");
+        if(typeof vibrate==="function")vibrate(30);
+        updateUI();saveGame();
+        alert("✅ Клан \""+name+"\" создан!");
+        $name.value="";$tag.value="";if($desc)$desc.value="";
+        if(typeof _clanSubscribeMyClan==="function")_clanSubscribeMyClan();
+        btn.disabled=false;btn.textContent=oldText;
+        document.querySelectorAll(".clan-tab").forEach(function(x){
+          if(x.dataset.ctab==="my")x.click();
+        });
+      });
+    }).catch(function(err){
+      btn.disabled=false;btn.textContent=oldText;
+      if(err.message==="_stop")return;
+      var m="Ошибка: "+(err.message||err);
+      if($err)$err.textContent=m;
+      alert(m);
+    });
+  };
+  
+  // Радио-кнопки типа — принудительно вкл/выкл через label
+  document.querySelectorAll(".clan-type-option").forEach(function(lbl){
+    lbl.onclick=function(){
+      document.querySelectorAll(".clan-type-option").forEach(function(x){x.classList.remove("active");});
+      lbl.classList.add("active");
+      var r=lbl.querySelector('input[type="radio"]');
+      if(r)r.checked=true;
+    };
+  });
+  
+  // Кнопки перехода "Создать клан" / "Найти клан"
+  document.querySelectorAll("[data-ctab-jump]").forEach(function(b){
+    b.onclick=function(){
+      var target=b.dataset.ctabJump;
+      document.querySelectorAll(".clan-tab").forEach(function(x){
+        if(x.dataset.ctab===target)x.click();
+      });
+    };
+  });
+  
+  console.log("[v204] Clan create ready");
+}, 1000);
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
