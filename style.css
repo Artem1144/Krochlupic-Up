@@ -51,32 +51,30 @@ body.bg-nebula{background:linear-gradient(180deg,#1a0a2e 0%,#2a1050 50%,#0a0518 
 
 /* === КНОПКА ТАП === */
 #tap-row{position:relative;display:flex;justify-content:center;align-items:center;margin:60px auto 10px;width:100%;max-width:260px;min-height:180px}
-#click-btn{width:180px;height:180px;border-radius:50%;border:none;background:radial-gradient(circle at 30% 30%,#f0c45a,#d97a1a);color:#1a1a2e;font-size:28px;font-weight:bold;cursor:pointer;box-shadow:0 6px 0 #9a5310,0 0 18px rgba(220,160,40,.25);transition:transform .05s,filter .2s,box-shadow .2s;user-select:none;display:flex;align-items:center;justify-content:center;position:relative;padding:0;outline:none;-webkit-touch-callout:none;text-shadow:0 1px 2px rgba(0,0,0,.35);touch-action:manipulation;will-change:auto}
+#click-btn{width:180px;height:180px;border-radius:50%;border:none;background:radial-gradient(circle at 30% 30%,#f0c45a,#d97a1a);color:#1a1a2e;font-size:28px;font-weight:bold;cursor:pointer;box-shadow:0 6px 0 #9a5310,0 0 18px rgba(220,160,40,.25);transition:transform .05s,filter .2s,box-shadow .2s;user-select:none;display:flex;align-items:center;justify-content:center;position:relative;padding:0;outline:none;-webkit-touch-callout:none;text-shadow:0 1px 2px rgba(0,0,0,.35);touch-action:manipulation}
 #click-btn:active{transform:translateY(4px)}
 #click-btn.cooldown{filter:grayscale(.7) brightness(.6);cursor:not-allowed;box-shadow:0 6px 0 #4a4a4a;pointer-events:auto!important}
 #click-btn.cooldown:active{transform:none}
-#click-btn.tap-ready{animation:breathePulse 2.4s ease-in-out infinite;will-change:transform,box-shadow}
+#click-btn.tap-ready{animation:breathePulse 2.4s ease-in-out infinite}
 @keyframes breathePulse{0%,100%{box-shadow:0 6px 0 #9a5310,0 0 8px rgba(255,213,79,.25)}50%{box-shadow:0 6px 0 #9a5310,0 0 32px rgba(255,213,79,.75),0 0 60px rgba(255,213,79,.35)}}
 #tap-label{display:block;font-size:28px;font-weight:bold;position:relative;z-index:3}
 #tap-cooldown-text{display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:42px;font-weight:bold;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.9);z-index:4}
 #click-btn.cooldown #tap-cooldown-text{display:flex}
 #click-btn.cooldown #tap-label{visibility:hidden}
-#click-btn.golden-tap{animation:goldenTap 1.2s ease-in-out infinite;will-change:transform,box-shadow}
+#click-btn.golden-tap{animation:goldenTap 1.2s ease-in-out infinite}
 @keyframes goldenTap{0%,100%{box-shadow:0 6px 0 #9a5310,0 0 30px rgba(255,215,0,.8)}50%{box-shadow:0 6px 0 #9a5310,0 0 60px rgba(255,215,0,1),0 0 100px rgba(255,215,0,.6)}}
 #click-btn.skin-gennadii{background:radial-gradient(circle at 50% 50%,#f4a8c0 0%,#f4a8c0 40%,#e8d7b8 42%,#e8d7b8 100%);box-shadow:0 6px 0 #8a7654,inset 0 0 40px rgba(255,200,220,.35)}
 #click-btn.skin-gennadii #tap-label{display:none}
 #click-btn.skin-gennadii::after{content:"";position:absolute;top:50%;left:50%;width:26px;height:34px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 40% 30%,#b56a86,#7a3e52);box-shadow:inset 0 -3px 6px rgba(0,0,0,.3),inset 0 2px 4px rgba(255,200,220,.4),0 0 8px rgba(150,70,100,.55);pointer-events:none;z-index:3}
 #click-btn.skin-gennadii.cooldown{filter:grayscale(.7) brightness(.55);box-shadow:0 6px 0 #4a4a4a}
-#click-btn.skin-gennadii.cooldown::after{filter:brightness(.6)}
 #click-btn.skin-gennadii.tap-ready{animation:tapReadyPulseGen 2.4s ease-in-out infinite}
 @keyframes tapReadyPulseGen{0%,100%{box-shadow:0 6px 0 #8a7654,inset 0 0 40px rgba(255,200,220,.35),0 0 8px rgba(244,168,192,.2)}50%{box-shadow:0 6px 0 #8a7654,inset 0 0 40px rgba(255,200,220,.55),0 0 28px rgba(244,168,192,.75)}}
 #click-btn.has-emoji{background:transparent!important;box-shadow:none!important;width:auto;min-width:180px;height:180px}
 #click-btn.has-emoji:active{transform:none}
 #click-btn.has-emoji.tap-ready{animation:none}
 #click-btn.has-emoji.cooldown{filter:grayscale(.7) brightness(.6);box-shadow:none!important}
-#click-btn.has-emoji.cooldown:active{transform:none}
 #click-btn.has-emoji #tap-label{display:none}
-#click-btn .emoji-skin-display{display:flex;align-items:center;justify-content:center;font-size:150px;line-height:1;pointer-events:none;position:relative;z-index:3;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5));transition:transform .05s;user-select:none}
+#click-btn .emoji-skin-display{display:flex;align-items:center;justify-content:center;font-size:150px;line-height:1;pointer-events:none;position:relative;z-index:3;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5));user-select:none}
 #click-btn.has-emoji.cooldown .emoji-skin-display{filter:grayscale(.7) brightness(.6) drop-shadow(0 6px 12px rgba(0,0,0,.5));opacity:.4}
 #click-btn.has-emoji.cooldown #tap-cooldown-text{display:flex;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.9)}
 #click-btn.has-emoji.tap-ready .emoji-skin-display{animation:emojiBreathe 2.4s ease-in-out infinite}
@@ -90,7 +88,6 @@ body.bg-nebula{background:linear-gradient(180deg,#1a0a2e 0%,#2a1050 50%,#0a0518 
 #click-btn.skin-shield:active .emoji-skin-display{animation:shieldBounce .38s ease-out}
 @keyframes candyWobble{0%,100%{transform:rotate(0) scale(1)}20%{transform:rotate(-14deg) scale(1.1)}40%{transform:rotate(14deg) scale(1.06)}60%{transform:rotate(-10deg) scale(1.08)}80%{transform:rotate(8deg) scale(1.04)}}
 #click-btn.skin-candy:active .emoji-skin-display{animation:candyWobble .55s ease-out}
-
 #deposit-side-btn{position:absolute;left:-60px;top:-50px;width:60px;height:60px;border-radius:50%;border:none;background:radial-gradient(circle at 30% 30%,#64b5f6,#1565c0);color:#fff;font-size:30px;cursor:pointer;box-shadow:0 4px 0 #0d47a1;transition:transform .05s;user-select:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:5;outline:none;touch-action:manipulation}
 #deposit-side-btn:active{transform:scale(.92)}
 #deposit-side-btn.lvl-hungry{background:radial-gradient(circle at 30% 30%,#ef5350,#b71c1c);box-shadow:0 4px 0 #7f0000}
@@ -98,8 +95,6 @@ body.bg-nebula{background:linear-gradient(180deg,#1a0a2e 0%,#2a1050 50%,#0a0518 
 #deposit-side-btn.lvl-happy{background:radial-gradient(circle at 30% 30%,#81c784,#2e7d32);box-shadow:0 4px 0 #1b5e20}
 #deposit-side-btn.lvl-max{background:radial-gradient(circle at 30% 30%,#f4e28d,#e8b525);box-shadow:0 4px 0 #c78e10,0 0 20px rgba(255,235,59,.5);animation:maxPulse 1.5s ease-in-out infinite}
 @keyframes maxPulse{0%,100%{box-shadow:0 4px 0 #c78e10,0 0 18px rgba(255,235,59,.5)}50%{box-shadow:0 4px 0 #c78e10,0 0 30px rgba(255,235,59,.8)}}
-
-/* ✅ ФИКС: кнопки фиксированы, не смещаются при ивентах */
 #profile-side-btn{position:fixed;left:15px;top:15px;width:50px;height:50px;border-radius:12px;border:none;background:linear-gradient(135deg,#e0c25a,#d97a1a);color:#1a1a2e;font-size:26px;cursor:pointer;box-shadow:0 4px 0 #9a5310;transition:transform .05s;outline:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:100;touch-action:manipulation}
 #profile-side-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #9a5310}
 #dm-side-btn{position:fixed;left:15px;top:75px;width:50px;height:50px;border-radius:12px;border:none;background:linear-gradient(135deg,#1976d2,#42a5f5);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 0 #0d47a1;outline:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:100;touch-action:manipulation}
@@ -108,7 +103,6 @@ body.bg-nebula{background:linear-gradient(180deg,#1a0a2e 0%,#2a1050 50%,#0a0518 
 #clan-side-btn{position:fixed;left:15px;top:135px;width:50px;height:50px;border-radius:12px;border:none;background:linear-gradient(135deg,#7b1fa2,#c2185b);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 0 #4a148c;outline:none;display:flex;align-items:center;justify-content:center;padding:0;z-index:100;touch-action:manipulation}
 #clan-side-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #4a148c}
 .clan-badge{position:absolute;top:-4px;right:-4px;background:#ff5252;color:#fff;border-radius:10px;font-size:11px;font-weight:bold;padding:2px 6px;min-width:18px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.5)}
-
 .save-indicator{position:fixed;top:15px;right:75px;font-size:20px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .save-indicator.show{opacity:.9}
 
@@ -121,7 +115,6 @@ body.bg-nebula{background:linear-gradient(180deg,#1a0a2e 0%,#2a1050 50%,#0a0518 
 .tap-ring-lvl4{border-color:#e91e63;box-shadow:0 0 35px rgba(233,30,99,1)}
 .tap-ring-lvl5{border-color:#fff;box-shadow:0 0 40px #fff,0 0 60px #ffd54f}
 @keyframes screenShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-3px)}80%{transform:translate(2px,3px)}}
-/* ✅ ФИКС: было body.shake → стало .page.shake */
 .page.shake{animation:screenShake .15s ease-out}
 .float-plus.crit{font-size:32px!important;color:#ff1744!important;text-shadow:0 0 10px #ff1744,0 2px 8px rgba(0,0,0,.8)!important;animation:floatUpCrit .9s ease-out forwards!important}
 @keyframes floatUpCrit{0%{opacity:1;transform:translateY(0) scale(1.3)}50%{transform:translateY(-40px) scale(1.1)}100%{opacity:0;transform:translateY(-100px) scale(1)}}
@@ -313,7 +306,6 @@ body.no-krohlupic .krohlupic-pet{display:none!important}
 .bg-preview.nebula{background:linear-gradient(180deg,#1a0a2e,#0a0518)}
 
 /* === БАННЕРЫ === */
-/* ✅ ФИКС: max-height + ellipsis чтобы не перекрывали кнопки */
 #event-banner{position:fixed;top:0;left:0;right:0;height:28px;max-height:28px;padding:0 10px;font-weight:bold;font-size:11px;color:#fff;z-index:999;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:eventIn .5s ease-out;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 @keyframes eventIn{from{transform:translateY(-30px)}to{transform:translateY(0)}}
 .blood-banner{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b0000,#f00);color:#fff;padding:15px 25px;border-radius:12px;font-weight:bold;font-size:16px;box-shadow:0 0 30px rgba(255,0,0,.6);z-index:400;animation:bloodIn .5s ease-out;text-align:center;pointer-events:none}
@@ -519,7 +511,7 @@ body.boost-active #event-banner{top:28px}
 .booster-activate-btn:disabled{background:#444;color:#888;box-shadow:none}
 .booster-active-banner{background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;padding:12px 15px;border-radius:10px;font-weight:bold;font-size:14px;text-align:center;margin-bottom:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
-/* === КРОХЛЮПИК (реплики) === */
+/* === КРОХЛЮПИК === */
 .krohlupic-bubble{position:relative;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#1e2d54,#0e1a30);border:3px solid #ffd54f;border-radius:18px;padding:14px 18px;max-width:340px;margin:15px auto 0;opacity:0;transform:translateY(-20px) scale(.85);transition:opacity .35s,transform .35s;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.6),0 0 25px rgba(255,213,79,.6);pointer-events:none}
 .krohlupic-bubble.show{opacity:1;transform:translateY(0) scale(1)}
 .krohlupic-bubble .krohlupic-avatar{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9a0d8,#8a4f9e);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;overflow:hidden;border:2px solid #ffd54f}
@@ -626,7 +618,6 @@ body.boost-active #event-banner{top:28px}
 .almanac-box .modal-close{color:#5c3a1a!important}
 
 /* === СУПЕР-ИВЕНТ === */
-/* ✅ ФИКС: pointer-events:none + max-height */
 #super-event-banner{position:fixed;top:0;left:0;right:0;height:34px;max-height:34px;z-index:1001;display:none;align-items:center;justify-content:center;gap:10px;padding:0 10px;font-weight:bold;font-size:12px;color:#fff;background:linear-gradient(135deg,#4a0000,#b71c1c,#ff1744);box-shadow:0 2px 12px rgba(255,23,68,.7);text-shadow:0 1px 3px rgba(0,0,0,.7);animation:superBannerPulse 1.5s ease-in-out infinite;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 #super-event-banner.show{display:flex}
 @keyframes superBannerPulse{0%,100%{box-shadow:0 2px 12px rgba(255,23,68,.7)}50%{box-shadow:0 2px 26px rgba(255,23,68,1)}}
@@ -677,12 +668,8 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 .friends-search-row{display:flex;gap:8px;margin-bottom:12px}
 #friends-search-input{flex:1;padding:12px 14px;border-radius:8px;border:1px solid #3a7bd5;background:#0e1a30;color:#fff;font-size:16px;box-sizing:border-box;font-family:monospace}
 #friends-search-btn{background:linear-gradient(135deg,#e0c25a,#d97a1a);border:none;color:#1a1a2e;border-radius:8px;padding:12px 16px;font-size:16px;font-weight:bold;cursor:pointer;touch-action:manipulation}
-
-/* === СОЦИАЛЬНОЕ ОБНОВЛЕНИЕ === */
 .friends-online-counter{text-align:center;font-size:12px;color:#7fb8e6;margin:-10px 0 12px;padding:6px 10px;background:linear-gradient(135deg,#16213e,#0e1a30);border:1px solid #253a5c;border-radius:8px}
 .friends-online-counter b{color:#4caf50;font-weight:bold}
-
-/* === РЕЙТИНГ ДРУЗЕЙ === */
 .friend-rating-row{display:flex;align-items:center;gap:10px;background:#0e1a30;border:1px solid #253a5c;border-radius:10px;padding:9px 12px;margin-bottom:6px}
 .friend-rating-row.rank-1{border-color:#e0c25a;background:linear-gradient(90deg,#2a2416,#0e1a30)}
 .friend-rating-row.rank-2{border-color:#b0b0b0}
@@ -824,8 +811,6 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 .clan-type-text small{font-size:11px;color:#7a8aa8}
 .clan-create-cost{text-align:center;color:#e0c25a;font-size:14px;font-weight:bold;margin:12px 0}
 .clan-error{text-align:center;color:#ff5252;font-size:13px;margin:8px 0;min-height:18px}
-
-/* ✅ НОВОЕ: блок вклада в клан */
 .clan-invest-block{background:linear-gradient(135deg,#1e2d54,#0e1a30);border:2px solid #ffd54f;border-radius:10px;padding:12px;margin:10px 0}
 .clan-invest-title{color:#ffd54f;font-size:13px;font-weight:bold;margin-bottom:8px;text-align:center}
 .clan-invest-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
