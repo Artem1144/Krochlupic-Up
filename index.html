@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -8,8 +8,8 @@
 <meta name="application-name" content="Krochlupic Up!">
 <meta name="description" content="Krochlupic Up! — весёлый браузерный кликер с питомцами, скинами и секретами!">
 <meta name="color-scheme" content="dark">
+<meta name="format-detection" content="telephone=no,address=no,email=no">
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -17,18 +17,14 @@
 <meta name="apple-mobile-web-app-title" content="Krochlupic Up!">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<!-- OG (превью в соцсетях) -->
 <meta property="og:title" content="Krochlupic Up! — весёлый кликер">
 <meta property="og:description" content="Тапай, качай питомцев, открывай секреты!">
-<meta property="og:image" content="https://artem1144.github.io/Clickerup/icon-512.png">
-<meta property="og:url"ontent="https://artem1144.github.io/Clickerup/">
+<meta property="og:image" content="https://artem1144.github.io/Krochlupic-Up/icon-512.png">
+<meta property="og:url" content="https://artem1144.github.io/Krochlupic-Up/">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
 
-<!-- Preconnect к Firebase -->
 <link rel="preconnect" href="https://www.gstatic.com">
 <link rel="preconnect" href="https://clickerup-80939-default-rtdb.firebaseio.com">
-
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -40,7 +36,6 @@
 </div>
 </noscript>
 
-<!-- ✅ ФИКС КРИТ-ТАПА: canvas вынесен из .page в body -->
 <canvas id="bg-canvas"></canvas>
 
 <div id="save-indicator" class="save-indicator">💾</div>
@@ -50,7 +45,6 @@
 <button id="almanac-btn" title="Альманах питомцев">📖</button>
 
 <div id="krohlupic-pet" class="krohlupic-pet hidden">
-<!-- ✅ ФИКС: krohlupic.png → krohlupic.jpg -->
 <div class="krohlupic-pet-img" id="krohlupic-pet-img" style="background-image:url('krohlupic.jpg'),radial-gradient(circle at 50% 40%,#c9a0d8,#8a4f9e);background-size:contain,cover;background-position:center;background-repeat:no-repeat"></div>
 <div class="krohlupic-pet-hint" id="krohlupic-pet-hint" style="display:none">💬</div>
 </div>
@@ -479,7 +473,6 @@
 <div class="clan-level-bonus">💎 Бонус клана: <b id="clan-level-bonus">+0%</b> к доходу</div>
 </div>
 </div>
-<!-- ✅ НОВОЕ: кнопки вклада в клан -->
 <div class="clan-invest-block">
 <div class="clan-invest-title">💰 Вложить в клан</div>
 <div class="clan-invest-row">
@@ -513,7 +506,6 @@
 </div>
 <div class="clan-danger-row">
 <button class="clan-secondary-btn" id="clan-leave-btn" data-i18n="clan.btn_leave">🚪 Выйти из клана</button>
-<!-- ✅ ФИКС: 💀解散ить клан → 💀 Распустить клан -->
 <button class="clan-danger-btn hidden" id="clan-disband-btn" data-i18n="clan.btn_disband">💀 Распустить клан</button>
 </div>
 </div>
@@ -846,9 +838,11 @@
 </div>
 </div>
 
+<div id="super-event-banner" class="hidden"></div>
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="lang.js"></script>
 <script src="game.js"></script>
 </body>
-                                                                                  </html>
+  </html>
