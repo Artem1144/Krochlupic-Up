@@ -2348,12 +2348,15 @@ function subscribeBannerInit(){try{subscribeBannerSetup();var c=subscribeBannerI
 function installV89CpsClanBonus(){if(window.__v89CpsPatched)return;window.__v89CpsPatched=true;var o=window.getCPS;window.getCPS=function(){var b=o();var cb=(typeof clanGetBonus==="function")?clanGetBonus():0;return b*(1+cb);};}
 function hookSeasonAccumulators(){setInterval(updateSeasonTick,1000);setInterval(pushSeasonToFirebase,60000);window.addEventListener("beforeunload",pushSeasonToFirebase);}
 
-// ===== ПЕРЕХВАТ ALERT/CONFIRM/PROMPT =====
+// ===== ПЕРЕХВАТ ALERT/CONFIRM/PROMPT (v110) =====
 (function(){
 var _oa=window.alert,_oc=window.confirm,_op=window.prompt;
 function tr(msg){
-if(typeof msg!=="string")return msg;
-if(currentLang!=="en")return msg;
+if(msg===undefined||msg===null)return "(пустое уведомление)";
+if(typeof msg!=="string")msg=String(msg);
+if(msg.trim()==="")return "(пустое уведомление)";
+if(typeof currentLang==="undefined"||currentLang!=="en")return msg;
+// — старый RU→EN словарь —
 var map=[
 ["Недостаточно монет!","Not enough coins!"],["Недостаточно кристаллов!","Not enough crystals!"],
 ["Недостаточно осколков!","Not enough shards!"],["Недостаточно опыта!","Not enough XP!"],
@@ -2456,6 +2459,28 @@ window.alert=function(m){return _oa.call(window,tr(m));};
 window.confirm=function(m){return _oc.call(window,tr(m));};
 window.prompt=function(m,d){return _op.call(window,tr(m),d);};
 })();
+
+// ===== WATCHDOG v110 =====
+setInterval(function(){
+  var now=Date.now();
+  var sels=".achievement-popup,.float-plus,.tap-ring,.tap-wave,.tap-particle,.shard-drop,.item-upgrade-popup,.blood-banner,.super-event-popup,.fortune-popup,.golden-bonus";
+  var els=document.querySelectorAll(sels);
+  for(var i=0;i<els.length;i++){
+    var el=els[i];
+    if(!el.__watchdogT)el.__watchdogT=now;
+    if(now-el.__watchdogT>8000){try{el.remove();}catch(e){}}
+  }
+  var gc=document.getElementById("golden-coin");
+  if(gc){
+    if(!gc.__watchdogT)gc.__watchdogT=now;
+    if(now-gc.__watchdogT>30000){try{gc.remove();}catch(e){}}
+  }
+  var kb=document.querySelector(".krohlupic-bubble.show");
+  if(kb){
+    if(!kb.__watchdogT2)kb.__watchdogT2=now;
+    if(now-kb.__watchdogT2>12000){try{kb.remove();}catch(e){}}
+  }
+},2000);
 
 // ===== АВТО-ЛОКАЛИЗАЦИЯ ДАННЫХ =====
 var _originalData=null;
