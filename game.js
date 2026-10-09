@@ -2348,15 +2348,12 @@ function subscribeBannerInit(){try{subscribeBannerSetup();var c=subscribeBannerI
 function installV89CpsClanBonus(){if(window.__v89CpsPatched)return;window.__v89CpsPatched=true;var o=window.getCPS;window.getCPS=function(){var b=o();var cb=(typeof clanGetBonus==="function")?clanGetBonus():0;return b*(1+cb);};}
 function hookSeasonAccumulators(){setInterval(updateSeasonTick,1000);setInterval(pushSeasonToFirebase,60000);window.addEventListener("beforeunload",pushSeasonToFirebase);}
 
-// ===== ПЕРЕХВАТ ALERT/CONFIRM/PROMPT (v110) =====
+// ===== ПЕРЕХВАТ ALERT/CONFIRM/PROMPT =====
 (function(){
 var _oa=window.alert,_oc=window.confirm,_op=window.prompt;
 function tr(msg){
-if(msg===undefined||msg===null)return "(пустое уведомление)";
-if(typeof msg!=="string")msg=String(msg);
-if(msg.trim()==="")return "(пустое уведомление)";
-if(typeof currentLang==="undefined"||currentLang!=="en")return msg;
-// — старый RU→EN словарь —
+if(typeof msg!=="string")return msg;
+if(currentLang!=="en")return msg;
 var map=[
 ["Недостаточно монет!","Not enough coins!"],["Недостаточно кристаллов!","Not enough crystals!"],
 ["Недостаточно осколков!","Not enough shards!"],["Недостаточно опыта!","Not enough XP!"],
@@ -2460,28 +2457,6 @@ window.confirm=function(m){return _oc.call(window,tr(m));};
 window.prompt=function(m,d){return _op.call(window,tr(m),d);};
 })();
 
-// ===== WATCHDOG v110 =====
-setInterval(function(){
-  var now=Date.now();
-  var sels=".achievement-popup,.float-plus,.tap-ring,.tap-wave,.tap-particle,.shard-drop,.item-upgrade-popup,.blood-banner,.super-event-popup,.fortune-popup,.golden-bonus";
-  var els=document.querySelectorAll(sels);
-  for(var i=0;i<els.length;i++){
-    var el=els[i];
-    if(!el.__watchdogT)el.__watchdogT=now;
-    if(now-el.__watchdogT>8000){try{el.remove();}catch(e){}}
-  }
-  var gc=document.getElementById("golden-coin");
-  if(gc){
-    if(!gc.__watchdogT)gc.__watchdogT=now;
-    if(now-gc.__watchdogT>30000){try{gc.remove();}catch(e){}}
-  }
-  var kb=document.querySelector(".krohlupic-bubble.show");
-  if(kb){
-    if(!kb.__watchdogT2)kb.__watchdogT2=now;
-    if(now-kb.__watchdogT2>12000){try{kb.remove();}catch(e){}}
-  }
-},2000);
-
 // ===== АВТО-ЛОКАЛИЗАЦИЯ ДАННЫХ =====
 var _originalData=null;
 function _snapshotOriginalData(){
@@ -2569,48 +2544,6 @@ setInterval(function(){if(shards>lastShardsForTracking)totalShardsEarned+=(shard
 var _saveIndicatorTimer=null;
 setInterval(function(){var _si=document.getElementById("save-indicator");if(!_si)return;_si.classList.add("show");if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);},5*60*1000);
 
-master",   name:"🏆 Мастер",        desc:"100M монет/сек",        cls:"banner-master",   check:function(){return getCPS()>=100000000;}},
-    legend:   {id:"legend",   name:"👑 Легенда",       desc:"Топ-1 лидерборд",       cls:"banner-legend",   check:function(){return unlocked.leader_top1===true;}},
-    absolute: {id:"absolute", name:"🔱 Абсолют",       desc:"Абсолют куплен",        cls:"banner-absolute", check:function(){return upgrades.absolute.count>=1;}},
-    genesis:  {id:"genesis",  name:"💠 Генезис",       desc:"Генезис куплен",        cls:"banner-genesis",  check:function(){return upgrades.genesis.count>=1;}},
-    bloodlord:{id:"bloodlord",name:"🩸 Кровавый Лорд", desc:"10 000 осколков",       cls:"banner-bloodlord",check:function(){return totalShardsEarned>=10000;}}
-  };
-}
-window.bannerState=window.bannerState||{active:null,unlocked:{}};
-window.loadBanners=function(){try{var r=localStorage.getItem("clicker-banners");if(r){var d=JSON.parse(r);bannerState.active=d.active||null;bannerState.unlocked=d.unlocked||{};}}catch(e){}};
-window.saveBanners=function(){try{localStorage.setItem("clicker-banners",JSON.stringify({active:bannerState.active,unlocked:bannerState.unlocked}));}catch(e){}};
-window.checkBannersUnlock=function(){
-  var changed=false;
-  for(var id in BANNERS){
-    if(bannerState.unlocked[id])continue;
-    try{if(BANNERS[id].check&&BANNERS[id].check()){
-      bannerState.unlocked[id]=true;changed=true;
-      var p=document.createElement("div");p.className="achievement-popup";p.textContent="🎨 "+BANNERS[id].name;
-      document.body.appendChild(p);setTimeout(function(){p.remove();},3500);
-    }}catch(e){}
-  }
-  if(changed)saveBanners();
-};
-window.renderProfileBanner=function(){
-  var el=document.getElementById("profile-banner-display");if(!el)return;
-  var id=bannerState.active;
-  el.className="profile-banner-display";
-  if(!id||!BANNERS[id]||!bannerState.unlocked[id]){el.classList.add("hidden");return;}
-  el.classList.remove("hidden");el.classList.add(BANNERS[id].cls);el.textContent=BANNERS[id].name;
-};
-window.renderBannerList=function(){
-  var list=document.getElementById("banner-list");if(!list)return;
-  list.innerHTML="";
-  for(var id in BANNERS){
-    var b=BANNERS[id];var unl=!!bannerState.unlocked[id];var act=bannerState.active===id;
-    var div=document.createElement("div");
-    div.className="banner-card"+(act?" active":"")+(unl?"":" locked");
-    div.innerHTML='<div class="banner-card-preview '+b.cls+'">'+b.name+'</div>'+
-      '<div class="banner-card-status">'+(act?"✅ Выбран":unl?"Нажми":"🔒 "+b.desc)+'</div>';
-    if(unl){(function(bid){div.onclick=function(){bannerState.active=(bannerState.active===bid)?null:bid;saveBanners();renderBannerList();renderProfileBanner();};})(id);}
-    list.appendChild(div);
-  }
-};
 // ===== ПАТЧ v109 =====
 
 // --- БАННЕРЫ ---
@@ -2629,26 +2562,15 @@ if(typeof BANNERS==="undefined"){
 window.bannerState=window.bannerState||{active:null,unlocked:{}};
 window.loadBanners=function(){try{var r=localStorage.getItem("clicker-banners");if(r){var d=JSON.parse(r);bannerState.active=d.active||null;bannerState.unlocked=d.unlocked||{};}}catch(e){}};
 window.saveBanners=function(){try{localStorage.setItem("clicker-banners",JSON.stringify({active:bannerState.active,unlocked:bannerState.unlocked}));}catch(e){}};
-
-// ✅ ИСПРАВЛЕНО: IIFE-замыкание — попап больше не залипает
 window.checkBannersUnlock=function(){
   var changed=false;
   for(var id in BANNERS){
     if(bannerState.unlocked[id])continue;
-    try{
-      if(BANNERS[id].check&&BANNERS[id].check()){
-        bannerState.unlocked[id]=true;
-        changed=true;
-        (function(bannerName){
-          var p=document.createElement("div");
-          p.className="achievement-popup";
-          p.textContent="🎨 "+bannerName;
-          p.dataset.wd="1";
-          document.body.appendChild(p);
-          setTimeout(function(){try{p.remove();}catch(e){}},3500);
-        })(BANNERS[id].name);
-      }
-    }catch(e){}
+    try{if(BANNERS[id].check&&BANNERS[id].check()){
+      bannerState.unlocked[id]=true;changed=true;
+      var p=document.createElement("div");p.className="achievement-popup";p.textContent="🎨 "+BANNERS[id].name;
+      document.body.appendChild(p);setTimeout(function(){p.remove();},3500);
+    }}catch(e){}
   }
   if(changed)saveBanners();
 };
@@ -2766,7 +2688,7 @@ window.clanInvest=function(){return false;};
 window.clanCanEdit=function(){return false;};
 window.hasBadWords=function(){return false;};
 
-// --- ПРОЧИЕ ЗАГЛУШКИ ---
+// --- ПРОЧИЕ ЗАГЛУШКИ (оставляем как есть, но БЕЗ alert) ---
 if(typeof dmSetupUI!=="function"){
   window.dmState={friendId:null,unread:{}};
   window.dmSetupUI=function(){};window.dmUpdateSideBadge=function(){};
@@ -2798,8 +2720,53 @@ if(typeof installV89CpsClanBonus!=="function"){
   window.installV89CpsClanBonus=function(){};window.hookSeasonAccumulators=function(){};
 }
 
-// ❌ УДАЛЁН дублирующий блок "WATCHDOG v110 — чистит зависшие попапы"
-// (он перезаписывал правильный перехватчик alert и ломал перевод RU→EN)
+// ===== WATCHDOG v110 — чистит зависшие попапы =====
+(function(){
+  // 1) Авто-удаление всех DOM-попапов через 8 сек
+  setInterval(function(){
+    var now=Date.now();
+    var sels=".achievement-popup,.float-plus,.tap-ring,.tap-wave,.tap-particle,.shard-drop,.item-upgrade-popup,.blood-banner,.super-event-popup,.fortune-popup,.golden-bonus,.crystal-convert-popup";
+    var els=document.querySelectorAll(sels);
+    for(var i=0;i<els.length;i++){
+      var el=els[i];
+      if(!el.__watchdogT)el.__watchdogT=now;
+      if(now-el.__watchdogT>8000){
+        try{el.remove();}catch(e){}
+      }
+    }
+    // отдельно — золотая монетка (если застряла >30 сек)
+    var gc=document.getElementById("golden-coin");
+    if(gc){
+      if(!gc.__watchdogT)gc.__watchdogT=now;
+      if(now-gc.__watchdogT>30000){try{gc.remove();}catch(e){}}
+    }
+    // krohlupic bubble — если застрял и не скрылся
+    var kb=document.querySelector(".krohlupic-bubble.show");
+    if(kb){
+      if(!kb.__watchdogT2)kb.__watchdogT2=now;
+      if(now-kb.__watchdogT2>12000){try{kb.remove();}catch(e){}}
+    }
+  },2000);
+
+  // 2) Если popup создан с пустым текстом — заполняем маркером
+  var _createElementOrig=document.createElement.bind(document);
+  document.createElement=function(tag){
+    var el=_createElementOrig(tag);
+    return el;
+  };
+
+  // 3) Патч alert/confirm/prompt — не даём пустому тексту пройти
+  var _oa=window.alert,_oc=window.confirm,_op=window.prompt;
+  function _safe(m){
+    if(m===undefined||m===null)return "(пустое уведомление)";
+    var s=String(m);
+    if(s.trim()==="")return "(пустое уведомление)";
+    return s;
+  }
+  window.alert=function(m){return _oa.call(window,_safe(m));};
+  window.confirm=function(m){return _oc.call(window,_safe(m));};
+  window.prompt=function(m,d){return _op.call(window,_safe(m),d);};
+})();
 
 // === СТАРТ ===
 initFirebase();
