@@ -68,7 +68,6 @@ var rewardClaimed=false,rewardTabShown=false,noteShown=false;
 var pahanUnlocked=false,pahanActive=false,pahanTimer=0,pahanTickInterval=null,pahanTimerInterval=null;
 var PAHAN_TAPS_PER_SEC=2,PAHAN_REWARD_PER_TAP=1e27,PAHAN_DURATION=10;
 
-// === КОЛЕСО ===
 var WHEEL_SECTORS=[
 {type:"coins",value:0.05,label:"+5% 💰"},{type:"gems",value:15,label:"+15 💎"},
 {type:"shards",value:20,label:"+20 🌑"},{type:"coins",value:0.15,label:"+15% 💰"},
@@ -78,7 +77,6 @@ var WHEEL_SECTORS=[
 {type:"negGems",value:-5,label:"−5 💎"},{type:"negShards",value:-10,label:"−10 🌑"}];
 var wheelSpinning=false,wheelFreeUsed=false,wheelPaidUsed=false,wheelLastResetDay="";
 
-// === РУЛЕТКА ===
 var DAILY_PRIZES=[
 {type:"coins",value:500,label:"💰 500"},{type:"coins",value:5000,label:"💰 5K"},
 {type:"gems",value:5,label:"💎 5"},{type:"gems",value:15,label:"💎 15"},
@@ -86,20 +84,17 @@ var DAILY_PRIZES=[
 {type:"gems",value:25,label:"💎 25"}];
 var dailySpinning=false,dailyLastUsed="";
 
-// === МИНИ-ИГРА ===
 var minigameActive=false,minigameTaps=0,minigameTimer=10,minigameTimerInterval=null,minigameBest=0;
 var minigameLastUsed=0;
 var MINIGAME_COOLDOWN=60*60*1000;
 var MINIGAME_DURATION=10;
 
-// === ГЛОБАЛЬНЫЕ УЛУЧШЕНИЯ ===
 var globalUpgrades={
 superClicker:{id:"superClicker",name:"🌟 Супер кликер",desc:"+1 к базовому клику за уровень",cost:1500,baseCost:1500,count:0,maxLevel:5,effect:"click",amount:1},
 bloodLuck:{id:"bloodLuck",name:"🩸 Кровавая удача",desc:"+1% к шансу кровавого осколка в Кровавую луну",cost:10000,baseCost:10000,count:0,maxLevel:5,effect:"bloodShard",amount:0.01},
 absoluteBoost:{id:"absoluteBoost",name:"🔱 Воля Абсолюта",desc:"+5% к прибыли от Абсолюта",cost:100000000000000000000,baseCost:100000000000000000000,count:0,maxLevel:5,effect:"absoluteMult",amount:0.05},
 genesisBoost:{id:"genesisBoost",name:"💠 Эхо Генезиса",desc:"+3% к прибыли от Генезиса",cost:1000000000000000000000,baseCost:1000000000000000000000,count:0,maxLevel:5,effect:"genesisMult",amount:0.03}};
 
-// === БУСТЕРЫ ===
 var BOOSTERS={
 boost2:{id:"boost2",icon:"⚡",name:"Буст ×2",desc:"Множитель ×2 на 15 минут",duration:15*60,mult:2,storage:0},
 boost3:{id:"boost3",icon:"⚡",name:"Буст ×3",desc:"Множитель ×3 на 10 минут",duration:10*60,mult:3,storage:0},
@@ -113,7 +108,6 @@ boost5:{icon:"⚡",name:"Буст ×5",desc:"Множитель ×5 на 5 ми�
 chest:{icon:"🎁",name:"Мгновенный сундук",desc:"Сразу открывает сундук",cost:20},
 depositUp:{icon:"🏦",name:"+1 уровень вклада",desc:"Только если вклад куплен",cost:100}};
 
-// === ФОНЫ ===
 var BACKGROUNDS={
 base:{id:"base",name:"Базовый",cls:"",cost:0,owned:true},
 space:{id:"space",name:"🌌 Космос",cls:"bg-space",cost:25,particles:"stars",owned:false},
@@ -127,8 +121,13 @@ nebula:{id:"nebula",name:"🌌 Туманность",cls:"bg-nebula",cost:25,par
 var activeBg="base";
 var bgParticles=[];
 var bgCanvas=null,bgCtx=null,bgAnimFrame=null,bgFrameCounter=0;
+var bgParallax={x:0,y:0,targetX:0,targetY:0};
+var _ufoState={x:-100,y:100,speed:0.5,spawnAt:0,visible:false};
+var _fishArray=[];
+var _emberArray=[];
+var _butterflyState={x:0,y:0,angle:0,spawnAt:0};
+var _lastBgFrame=0;
 
-// === КВЕСТЫ ===
 var quests=[],questsDate="",questsClaimed=0;
 var QUEST_TYPES={
 taps_100:{icon:"👆",name:"Сделай 100 тапов",goal:100,reward:2,rewardType:"💎",stat:"taps"},
@@ -146,7 +145,6 @@ prestige_item:{icon:"🩸",name:"Купи предмет за осколки",go
 var questProgress={};
 var settings={showFloat:true,showGolden:true,showDaily:true,sound:true,music:false,lowParticles:false,krohlupic:true};
 
-// === СКИНЫ ===
 var SKIN_PRICE=5;
 var skins={
 gold:{name:"Золотистый",bg:"radial-gradient(circle at 30% 30%, #fff59d, #f9a825)",owned:true},
@@ -157,7 +155,6 @@ ruby:{name:"Рубиновый",bg:"radial-gradient(circle at 30% 30%, #ff8a80, 
 gennadii:{name:"GENNADII",special:true,secret:true,owned:false}};
 var activeSkin="gold";
 
-// === ЭМОДЗИ-СКИНЫ ===
 var EMOJI_SKINS={
 heart:{id:"heart",emoji:"❤️",name:"Сердечко",cost:10,anim:"pulse",owned:false},
 fire_heart:{id:"fire_heart",emoji:"❤️‍🔥",name:"Огненное сердце",cost:10,anim:"pulse-shake",owned:false},
@@ -165,7 +162,6 @@ shield:{id:"shield",emoji:"🛡",name:"Щит",cost:10,anim:"bounce",owned:false
 candy:{id:"candy",emoji:"🍬",name:"Конфета",cost:10,anim:"wobble",owned:false}};
 var activeEmojiSkin=null;
 
-// === ПРЕДМЕТЫ ===
 var ITEMS={
 blade:{icon:"🩸",name:"Кровавый клинок",desc:"Оружие первых охотников",cost:5,bonuses:[0.05,0.08,0.12]},
 amulet:{icon:"🧿",name:"Амулет луны",desc:"Оберег из чёрного камня",cost:10,bonuses:[0.10,0.15,0.22]},
@@ -180,7 +176,6 @@ crown:{icon:"👑",name:"Венец луны",desc:"Власть над Кров
 throne:{icon:"🔱",name:"Трон Кровавого Лорда",desc:"Легендарный трон алой эпохи",cost:1000,bonuses:[1.50,2.00,2.70]}};
 var ITEM_MAX_LEVEL=3,ITEM_PRICE_MULT=[1,2.5,6.25];
 
-// === УЛУЧШЕНИЯ ===
 var upgrades={
 clicker:{name:"👆 Кликер",desc:"+1 монета за тап",cost:10,baseCost:10,count:0,effect:"click",amount:1},
 farm:{name:"🌾 Ферма",desc:"+1 монета в секунду",cost:50,baseCost:50,count:0,effect:"auto",amount:1},
@@ -212,7 +207,25 @@ if(typeof upgrades[_uid].unlocked25==="undefined")upgrades[_uid].unlocked25=fals
 if(typeof upgrades[_uid].buyMult==="undefined")upgrades[_uid].buyMult=1;
 }
 
-// === ДОСТИЖЕНИЯ ===
+var PET_TYPES={
+hamster:{id:"hamster",emoji:"🐹",name:"Хомяк",rarity:"common",rarityLabel:"🟢 Обычный",chance:0.35,sellPrice:25,bonus:{income:0.15},deathMsg:"Твой Хомяк погиб от голода... Он был верным другом."},
+kitten:{id:"kitten",emoji:"🐱",name:"Котёнок",rarity:"common",rarityLabel:"🟢 Обычный",chance:0.25,sellPrice:25,bonus:{gemTap:0.0002},deathMsg:"Твой Котёнок погиб от голода... Он мурлыкал до последнего."},
+fox:{id:"fox",emoji:"🦊",name:"Лисёнок",rarity:"rare",rarityLabel:"🔵 Редкий",chance:0.14,sellPrice:100,bonus:{income:0.35,gemTap:0.0005},deathMsg:"Твой Лисёнок погиб от голода... Хитрый, но голодный."},
+penguin:{id:"penguin",emoji:"🐧",name:"Пингвин",rarity:"rare",rarityLabel:"🔵 Редкий",chance:0.08,sellPrice:100,bonus:{shardTap:0.003},deathMsg:"Твой Пингвин погиб от голода... Ему не хватило рыбы."},
+wolf:{id:"wolf",emoji:"🐺",name:"Волчонок",rarity:"rare",rarityLabel:"🔵 Редкий",chance:0.10,sellPrice:100,bonus:{income:0.28,shardTap:0.002},deathMsg:"Твой Волчонок погиб от голода... Он выл на луну до последнего."},
+dragon:{id:"dragon",emoji:"🐉",name:"Дракончик",rarity:"epic",rarityLabel:"🟣 Эпический",chance:0.04,sellPrice:300,bonus:{income:0.45,gemTap:0.0015,shardTap:0.005},deathMsg:"Твой Дракончик погиб от голода... Даже драконы нуждаются в заботе."},
+phoenix:{id:"phoenix",emoji:"🦅",name:"Феникс",rarity:"epic",rarityLabel:"🟣 Эпический",chance:0.04,sellPrice:350,bonus:{income:0.55,gemTap:0.002,shardTap:0.009},deathMsg:"Твой Феникс погиб от голода... Он не возродился. В этот раз — нет."}};
+var PET_EGG_PRICE=65;
+var PET_EGG_INCUBATE=30*60*1000;
+var PET_EGG_GROW=15*60*1000;
+var PET_EGG_HATCH_TAPS=3;
+var PET_STORAGE_MAX=5;
+var PET_HUNGER_MAX=100;
+var PET_HUNGER_DROP_ONLINE=60*1000;
+var PET_XP_INTERVAL=12000;
+var FOOD_TYPES={strawberry:{emoji:"🍓",name:"Клубничка",hunger:5,price:5},banana:{emoji:"🍌",name:"Банан",hunger:10,price:10},orange:{emoji:"🍊",name:"Апельсин",hunger:20,price:20}};
+var FOOD_CASHBACK=3;
+
 var achievements=[
 {id:"tap_1",icon:"👆",title:"Первый тап",desc:"Сделайте 1 тап",tier:"bronze",check:function(){return totalTaps>=1;}},
 {id:"tap_100",icon:"💪",title:"Сотня тапов",desc:"Сделайте 100 тапов",tier:"bronze",check:function(){return totalTaps>=100;}},
@@ -309,8 +322,10 @@ var achievements=[
 {id:"pet_active",icon:"⭐",title:"Верный друг",desc:"Активируй питомца",tier:"bronze",check:function(){return (typeof petGetActive==="function"&&petGetActive()!==null);}},
 {id:"pet_feed_10",icon:"🍓",title:"Заботливый",desc:"Покорми питомца 10 раз",tier:"silver",check:function(){return (unlocked._petFeedCount||0)>=10;}},
 {id:"pet_dragon",icon:"🐉",title:"Дракончик",desc:"Получи эпического Дракончика",tier:"gold",check:function(){return unlocked._petHasDragon===true;}},
+{id:"pet_phoenix",icon:"🦅",title:"Из пепла",desc:"Получи эпического Феникса",tier:"gold",check:function(){return unlocked._petHasPhoenix===true;}},
 {id:"golden_secret_10",icon:"✨",title:"Охотник за удачей",desc:"Поймайте 10 секретных золотых тапов",tier:"silver",check:function(){return (unlocked._goldenSecretCount||0)>=10;}},
-{id:"golden_secret_50",icon:"🌟",title:"Мастер удачи",desc:"Поймайте 50 секретных золотых тапов",tier:"gold",check:function(){return (unlocked._goldenSecretCount||0)>=50;}}
+{id:"golden_secret_50",icon:"🌟",title:"Мастер удачи",desc:"Поймайте 50 секретных золотых тапов",tier:"gold",check:function(){return (unlocked._goldenSecretCount||0)>=50;}},
+{id:"fnf_rhythm",icon:"🎵",title:"Мастер ритма",desc:"Пройти FNF-битву без единого промаха",tier:"gold",check:function(){return unlocked._fnfPerfect===true;}}
 ];
 
 var SAVE_KEY="clicker-save";
@@ -318,7 +333,6 @@ var PROFILE_KEY="clicker-profile";
 var firebaseConfig={databaseURL:"https://clickerup-80939-default-rtdb.firebaseio.com/"};
 var db=null;
 
-// === ЗАПИСКИ ===
 var NOTES_DATA={
 note4:{icon:"📜",title:"Записка №4",preview:"«Я соглашаюсь с условиями и вступаю в компанию…»",text:"«Я {NICK} соглашаюсь с условиями и вступаю в компанию Krochlupic-Up!»",sign:"— Контракт",unlocked:false},
 note1:{icon:"📜",title:"Записка №1",preview:"«Он заставляет меня нажимать эту чёртову кнопку…»",text:"«Он заставляет меня нажимать эту чёртову кнопку. Я устал. Сутки напролёт я сижу здесь и нажимаю её — ради денег. Лишь это поможет…»",sign:"— ???",unlocked:false},
@@ -378,12 +392,15 @@ if(_fmtCacheCount>5000){_fmtCache={};_fmtCacheCount=0;}
 return result;
 }
 
-function vibrate(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
+function vibrate(ms){
+if(typeof navigator==="undefined"||typeof navigator.vibrate!=="function")return;
+try{navigator.vibrate(ms);}catch(e){}
+}
 
 function lockScroll(){document.body.classList.add("no-scroll");}
 function unlockScroll(){document.body.classList.remove("no-scroll");}
 function syncScrollLock(){
-var anyOpen=document.querySelector(".modal:not(.hidden), #chest-overlay:not(.hidden), #wheel-overlay:not(.hidden), #daily-overlay:not(.hidden), #minigame-overlay:not(.hidden), #offline-popup:not(.hidden), #alarm-overlay:not(.hidden), #tutorial-overlay:not(.hidden)");
+var anyOpen=document.querySelector(".modal:not(.hidden), #chest-overlay:not(.hidden), #wheel-overlay:not(.hidden), #daily-overlay:not(.hidden), #minigame-overlay:not(.hidden), #offline-popup:not(.hidden), #alarm-overlay:not(.hidden), #tutorial-overlay:not(.hidden), #fnf-overlay:not(.hidden), #subscribe-banner:not(.hidden)");
 if(anyOpen)lockScroll();else unlockScroll();
 }
 
@@ -437,7 +454,6 @@ popup.textContent="💎 Лимит 1000! "+amount+" 💎 → "+formatNumber(amou
 document.body.appendChild(popup);
 setTimeout(function(){popup.remove();},3500);}
 
-// === СОХРАНЕНИЕ ===
 function saveGame(){
 if(window.__resetting)return;
 var data={coins:coins,coinsPerClick:coinsPerClick,totalEarned:totalEarned,totalShardsEarned:totalShardsEarned,totalTaps:totalTaps,totalPlayTime:totalPlayTime,crystals:crystals,chestsOpened:chestsOpened,personalBestCoins:personalBestCoins,lastTheftKey:lastTheftKey,unlocked:unlocked,lastTime:Date.now(),shards:shards,eventMultiplier:eventMultiplier,eventTimer:eventTimer,eventName:eventName,currentEventKey:currentEventKey,crystalBoostMultiplier:crystalBoostMultiplier,crystalBoostTimer:crystalBoostTimer,crystalBoostName:crystalBoostName,usedPromos:usedPromos,ownedItems:ownedItems,secretUnlocked:secretUnlocked,secretAutoClicker:secretAutoClicker,secretAutoClickerTimer:secretAutoClickerTimer,depositUnlocked:depositUnlocked,depositLevel:depositLevel,lastDepositTimeKey:lastDepositTimeKey,generatorLevel:generatorLevel,generatorTimer:generatorTimer,smileSkinUnlocked:smileSkinUnlocked,smileSkinActive:smileSkinActive,gulauActive:gulauActive,gulauTimer:gulauTimer,rewardClaimed:rewardClaimed,bossRewardClaimed:bossRewardClaimed,noteShown:noteShown,notesUnlocked:notesUnlocked,note4Shown:note4Shown,note5Shown:note5Shown,note6Shown:note6Shown,note7Shown:note7Shown,pahanUnlocked:pahanUnlocked,quests:quests,questsDate:questsDate,questsClaimed:questsClaimed,questProgress:questProgress,boostersStorage:{},upgrades:{},globalUpgrades:{},wheelState:{freeUsed:wheelFreeUsed,paidUsed:wheelPaidUsed,lastResetDay:wheelLastResetDay},activeBg:activeBg,bgOwned:{},emojiSkinsOwned:{},dailyLastUsed:dailyLastUsed,minigameBest:minigameBest,minigameLastUsed:minigameLastUsed,skinsOwned:{},activeSkin:activeSkin,activeEmojiSkin:activeEmojiSkin};
@@ -451,7 +467,6 @@ if(typeof petSaveToSave==="function")petSaveToSave(data);
 localStorage.setItem(SAVE_KEY,JSON.stringify(data));
 try{localStorage.setItem("clicker-used-promos",JSON.stringify(usedPromos));}catch(e){}
 saveSkins();}
-
 // === ПРОФИЛЬ ===
 function saveProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));}catch(e){}}
 function loadProfile(){
@@ -472,6 +487,8 @@ modal.classList.remove("hidden");syncScrollLock();
 var input=$("profile-name-input");
 if(input){input.value=profile.nickname||"";if(hasProfile()){input.setAttribute("readonly","readonly");}else{input.removeAttribute("readonly");}}
 setTimeout(function(){if(input&&!hasProfile())input.focus();},300);
+if(typeof renderProfileBanner==="function")renderProfileBanner();
+if(typeof renderBannerList==="function")renderBannerList();
 }
 function setupProfileSave(){
 var btn=$("profile-save-btn"),input=$("profile-name-input"),err=$("profile-error");
@@ -479,9 +496,9 @@ if(!btn||!input)return;
 btn.onclick=function(){
 if(hasProfile()){$("modal-profile").classList.add("hidden");syncScrollLock();return;}
 var name=input.value.trim();
-if(!name||name.length<2){if(err)err.textContent="Ник должен быть хотя бы 2 символа";return;}
-if(name.length>15){if(err)err.textContent="Ник не длиннее 15 символов";return;}
-if(!/^[a-zA-Zа-яА-Я0-9_ ]+$/.test(name)){if(err)err.textContent="Только буквы, цифры, пробел и _";return;}
+if(!name||name.length<2){if(err)err.textContent=t("profile.err_short");return;}
+if(name.length>15){if(err)err.textContent=t("profile.err_long");return;}
+if(!/^[a-zA-Zа-яА-Я0-9_ ]+$/.test(name)){if(err)err.textContent=t("profile.err_chars");return;}
 profile.nickname=name;profile.id=generateProfileId();profile.createdAt=Date.now();
 saveProfile();
 if(err)err.textContent="";
@@ -489,6 +506,7 @@ $("modal-profile").classList.add("hidden");syncScrollLock();
 updateLeaderboardName();
 setTimeout(function(){startTutorial();},500);
 saveGame();
+if(typeof socialInit==="function")setTimeout(socialInit,800);
 };
 }
 function setupProfileCopy(){
@@ -517,7 +535,7 @@ renderTutorialStep();
 function renderTutorialStep(){
 var textEl=$("tutorial-text"),nextBtn=$("tutorial-next");if(!textEl||!nextBtn)return;
 textEl.textContent=TUTORIAL_STEPS[tutorialStep];
-nextBtn.textContent=(tutorialStep===TUTORIAL_STEPS.length-1)?"Завершить ✓":"Далее ▶";
+nextBtn.textContent=(tutorialStep===TUTORIAL_STEPS.length-1)?t("tutorial.finish"):t("tutorial.next");
 }
 function nextTutorialStep(){tutorialStep++;if(tutorialStep>=TUTORIAL_STEPS.length){endTutorial();return;}renderTutorialStep();}
 function endTutorial(){
@@ -554,7 +572,7 @@ div.innerHTML='<div class="note-list-icon">'+n.icon+'</div>'+'<div class="note-l
 div.onclick=function(noteId){return function(){showNoteDetail(noteId);};}(id);
 list.appendChild(div);
 }
-if(!anyUnlocked){list.innerHTML='<p style="text-align:center;color:#d4c5a0;font-size:13px;">Пока нет записок. Их можно найти в игре…</p>';}}
+if(!anyUnlocked){list.innerHTML='<p style="text-align:center;color:#d4c5a0;font-size:13px;">'+t("note.empty")+'</p>';}}
 function showNoteDetail(id){
 var n=NOTES_DATA[id];if(!n)return;
 $("note-list-view").style.display="none";
@@ -584,47 +602,20 @@ document.body.appendChild(popup);
 setTimeout(function(){popup.remove();},5000);
 }
 function checkNotesUnlock(){
-if(!note4Shown&&coins>=1000000){
-note4Shown=true;unlockNote("note4");
-showNotePopup("📜 Первая записка появилась...");
-playSound("achievement");saveGame();
-}
-if(!note5Shown&&coins>=1000000000000){
-note5Shown=true;unlockNote("note5");
-showNotePopup("📜 Ещё одна записка...");
-playSound("achievement");saveGame();
-}
-if(!note6Shown&&depositLevel>=25){
-note6Shown=true;unlockNote("note6");
-showNotePopup("📜 Странная записка о смайлике...");
-playSound("achievement");saveGame();
-}
-if(!note7Shown&&totalEarned>=1e32){
-note7Shown=true;unlockNote("note7");
-showNotePopup("📜 Тревожная записка...");
-playSound("achievement");saveGame();
-}
-if(!note1Shown&&coins>=1000000000000000000){
-note1Shown=true;unlockNote("note1");noteShown=true;
-showNotePopup("📜 Странная записка появилась в игре...");
-playSound("achievement");saveGame();
-}
-if(!note2Shown&&coins>=1000000000000000000000000){
-note2Shown=true;unlockNote("note2");
-showNotePopup("📜 Ещё одна записка появилась в игре...");
-playSound("achievement");saveGame();
-}
-if(!note3Shown&&coins>=2e31){
-note3Shown=true;unlockNote("note3");
-showNotePopup("📜 Третья записка появилась в игре...");
-playSound("achievement");saveGame();
-}}
+if(!note4Shown&&coins>=1000000){note4Shown=true;unlockNote("note4");showNotePopup(t("note.new"));playSound("achievement");saveGame();}
+if(!note5Shown&&coins>=1000000000000){note5Shown=true;unlockNote("note5");showNotePopup(t("note.new"));playSound("achievement");saveGame();}
+if(!note6Shown&&depositLevel>=25){note6Shown=true;unlockNote("note6");showNotePopup(t("note.new"));playSound("achievement");saveGame();}
+if(!note7Shown&&totalEarned>=1e32){note7Shown=true;unlockNote("note7");showNotePopup(t("note.new"));playSound("achievement");saveGame();}
+if(!note1Shown&&coins>=1000000000000000000){note1Shown=true;unlockNote("note1");noteShown=true;showNotePopup(t("note.new"));playSound("achievement");saveGame();}
+if(!note2Shown&&coins>=1000000000000000000000000){note2Shown=true;unlockNote("note2");showNotePopup(t("note.new"));playSound("achievement");saveGame();}
+if(!note3Shown&&coins>=2e31){note3Shown=true;unlockNote("note3");showNotePopup(t("note.new"));playSound("achievement");saveGame();}}
 function checkNoteTab(){
 var tab=$("tab-note");if(!tab)return;
 var anyNote=false;
 for(var k in notesUnlocked){if(notesUnlocked[k]){anyNote=true;break;}}
 if(anyNote){tab.classList.remove("hidden");}
 else{tab.classList.add("hidden");}}
+
 // === ЗАГРУЗКА ===
 function loadGame(){
 var raw=localStorage.getItem(SAVE_KEY);
@@ -644,7 +635,7 @@ minigameLastUsed=data.minigameLastUsed||0;
 var loadedCrystals=data.crystals||0;
 if(loadedCrystals>crystalsMax){
 var overflow=loadedCrystals-crystalsMax;var conv=overflow*1e15;coins+=conv;totalEarned+=conv;crystals=crystalsMax;
-setTimeout(function(){var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="💎 Лимит 1000! Излишек "+overflow+" 💎 → "+formatNumber(conv)+" монет";document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);},2000);
+setTimeout(function(){var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="💎 1000! "+overflow+" 💎 → "+formatNumber(conv)+" coins";document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);},2000);
 }else{crystals=loadedCrystals;}
 if(data.unlocked){for(var u in data.unlocked)unlocked[u]=data.unlocked[u];}
 if(data.upgrades){for(var id2 in data.upgrades){if(upgrades[id2]){upgrades[id2].count=data.upgrades[id2].count;upgrades[id2].unlocked10=!!data.upgrades[id2].unlocked10;upgrades[id2].unlocked25=!!data.upgrades[id2].unlocked25;upgrades[id2].buyMult=data.upgrades[id2].buyMult||1;}}}
@@ -675,14 +666,10 @@ $("offline-amount").textContent=formatNumber(earned);
 var missedParts=[];
 var lastChest=parseInt(localStorage.getItem("lastChest")||"0");
 var chestCdLeft=3600000-(Date.now()-lastChest);
-if(lastChest>0&&chestCdLeft<=0&&secondsAway>=3600){missedParts.push("🎁 Сундук был готов");}
+if(lastChest>0&&chestCdLeft<=0&&secondsAway>=3600){missedParts.push("🎁 "+t("main.chest"));}
 var totalBoosters=0;for(var bb in BOOSTERS){totalBoosters+=(BOOSTERS[bb].storage||0);}
-if(totalBoosters>0){missedParts.push("📦 Бустеров в хранилище: <b>"+totalBoosters+"</b>");}
-if(data.depositUnlocked&&data.depositLevel>=1&&data.depositLevel<=5&&secondsAway>=600){missedParts.push("😭 Смайлик был голоден");}
-var todayKey=new Date().toDateString();
-var lastDay=localStorage.getItem("lastOfflineDay")||"";
-if(lastDay&&lastDay!==todayKey&&secondsAway>=3600){missedParts.push("📜 Задания обновились");}
-localStorage.setItem("lastOfflineDay",todayKey);
+if(totalBoosters>0){missedParts.push("📦 "+t("boosters.title")+": <b>"+totalBoosters+"</b>");}
+if(data.depositUnlocked&&data.depositLevel>=1&&data.depositLevel<=5&&secondsAway>=600){missedParts.push("😭 "+t("deposit.hungry_line"));}
 var missedEl=$("offline-missed");
 if(missedEl){if(missedParts.length>0){missedEl.innerHTML=missedParts.join("<br>");missedEl.classList.remove("hidden");}else{missedEl.classList.add("hidden");}}
 $("offline-popup").classList.remove("hidden");syncScrollLock();
@@ -759,7 +746,7 @@ var totalDrop=0;
 for(var i=0;i<ticks;i++){var drop=Math.random()<0.5?1:3;totalDrop+=drop;}
 var before=depositLevel;
 depositLevel=Math.max(1,depositLevel-totalDrop);
-if(depositLevel!==before){setTimeout(function(){var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="😭 Смайлик упал: "+before+" → "+depositLevel;document.body.appendChild(popup);setTimeout(function(){popup.remove();},4000);},1500);}
+if(depositLevel!==before){setTimeout(function(){var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="😭 "+before+" → "+depositLevel;document.body.appendChild(popup);setTimeout(function(){popup.remove();},4000);},1500);}
 lastDepositTimeKey=nowKey;
 saveGame();
 }
@@ -781,7 +768,7 @@ lastDepositTimeKey=nowKey;
 if(depositLevel!==before){
 updateDepositSideButton();
 var modal=$("modal-deposit");if(modal&&!modal.classList.contains("hidden"))renderDeposit();
-var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="😭 Смайлик упал: "+before+" → "+depositLevel;
+var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="😭 "+before+" → "+depositLevel;
 document.body.appendChild(popup);setTimeout(function(){popup.remove();},4000);
 saveGame();
 }}
@@ -795,8 +782,41 @@ if(el1)el1.checked=settings.showFloat;if(el2)el2.checked=settings.showGolden;if(
 document.body.classList.toggle("low-particles",settings.lowParticles);}
 function saveSettings(){localStorage.setItem("clicker-settings",JSON.stringify(settings));}
 
+// === ЯЗЫК ===
+function setupLangSwitch(){
+document.querySelectorAll(".lang-btn").forEach(function(btn){
+btn.onclick=function(){
+var code=btn.dataset.lang;
+if(!code||code===currentLang)return;
+setLang(code);
+playSound("ui");vibrate(10);
+};
+});
+}
+function showLangChoiceModal(){
+var m=$("modal-language");
+if(!m)return;
+m.classList.remove("hidden");
+syncScrollLock();
+}
+function setupLangChoice(){
+document.querySelectorAll("[data-choose-lang]").forEach(function(btn){
+btn.onclick=function(){
+var code=btn.dataset.chooseLang;
+setLang(code);
+var m=$("modal-language");
+if(m)m.classList.add("hidden");
+syncScrollLock();
+setTimeout(function(){
+if(!hasProfile()){showProfileModal();}
+},400);
+};
+});
+}
+
 // === ЗВУКИ ===
 var sounds={},bgMusic=null,bgMusic2=null,currentMusicIndex=0;
+var _musicPausedAt=0;
 function initSounds(){
 var names=["click","ui","achievement","chest","boss","eat"];
 names.forEach(function(n){try{sounds[n]=new Audio("sounds/"+n+".mp3");sounds[n].volume=0.4;}catch(e){}});
@@ -812,20 +832,54 @@ if(now-snd._lastPlay<80)return;
 snd._lastPlay=now;
 try{snd.currentTime=0;snd.play();}catch(e){}
 }
-function playMusic(){if(!settings.music)return;var track=(currentMusicIndex===0)?bgMusic:bgMusic2;if(!track)return;try{track.currentTime=0;track.play().catch(function(){});}catch(e){}}
-function playNextMusic(){if(!settings.music)return;var other=(currentMusicIndex===0)?bgMusic2:bgMusic;if(other){try{other.pause();other.currentTime=0;}catch(e){}}currentMusicIndex=1-currentMusicIndex;var track=(currentMusicIndex===0)?bgMusic:bgMusic2;if(!track)return;try{track.currentTime=0;track.play().catch(function(){});}catch(e){}}
-function stopMusic(){try{if(bgMusic)bgMusic.pause();}catch(e){}try{if(bgMusic2)bgMusic2.pause();}catch(e){}}
+function playMusic(){
+if(!settings.music)return;
+var track=(currentMusicIndex===0)?bgMusic:bgMusic2;
+if(!track)return;
+try{
+if(_musicPausedAt>0){try{track.currentTime=_musicPausedAt;}catch(e){}}
+track.play().catch(function(){});
+}catch(e){}
+}
+var _switchingTrack=false;
+function playNextMusic(){
+if(!settings.music)return;
+if(_switchingTrack)return;
+_switchingTrack=true;
+setTimeout(function(){_switchingTrack=false;},500);
+var other=(currentMusicIndex===0)?bgMusic2:bgMusic;
+if(other){try{other.pause();other.currentTime=0;}catch(e){}}
+currentMusicIndex=1-currentMusicIndex;
+_musicPausedAt=0;
+var track=(currentMusicIndex===0)?bgMusic:bgMusic2;
+if(!track)return;
+try{track.currentTime=0;track.play().catch(function(){});}catch(e){}
+}
+function stopMusic(){
+try{if(bgMusic&&!bgMusic.paused)_musicPausedAt=bgMusic.currentTime;}catch(e){}
+try{if(bgMusic2&&!bgMusic2.paused)_musicPausedAt=bgMusic2.currentTime;}catch(e){}
+try{if(bgMusic)bgMusic.pause();}catch(e){}
+try{if(bgMusic2)bgMusic2.pause();}catch(e){}
+}
 function unlockAudio(){
-for(var n in sounds){try{var p=sounds[n].play();if(p&&p.then){p.then(function(){sounds[n].pause();sounds[n].currentTime=0;}).catch(function(){});}}catch(e){}}
+for(var n in sounds){
+(function(name){
+var s=sounds[name];
+try{
+var p=s.play();
+if(p&&p.then){p.then(function(){try{s.pause();s.currentTime=0;}catch(e){}}).catch(function(){});}
+}catch(e){}
+})(n);
+}
 if(settings.music)playMusic();
-document.removeEventListener("touchstart",unlockAudio);document.removeEventListener("click",unlockAudio);}
+document.removeEventListener("touchstart",unlockAudio);document.removeEventListener("click",unlockAudio);
+}
 document.addEventListener("touchstart",unlockAudio,{once:true,passive:true});
 document.addEventListener("click",unlockAudio,{once:true});
 function handleVisibilityChange(){if(document.hidden)stopMusic();else{if(settings.music)playMusic();}}
 document.addEventListener("visibilitychange",handleVisibilityChange);
 window.addEventListener("pagehide",stopMusic);
 window.addEventListener("blur",stopMusic);
-window.addEventListener("beforeunload",stopMusic);
 
 // === ФОНЫ ===
 function applyBackground(){
@@ -835,17 +889,50 @@ var bg=BACKGROUNDS[activeBg];if(!bg)return;
 document.body.classList.add("has-bg",bg.cls);
 bgParticles=[];
 var pt=bg.particles;
-var baseCount=pt==="stars"?60:pt==="snow"?40:pt==="petals"?30:pt==="bubbles"?25:pt==="sparks"?35:pt==="lava"?30:pt==="nebula"?15:20;
+var baseCount=pt==="stars"?80:pt==="snow"?40:pt==="petals"?30:pt==="bubbles"?35:pt==="sparks"?40:pt==="lava"?30:pt==="nebula"?15:20;
 var count=settings.lowParticles?Math.floor(baseCount*0.4):baseCount;
-for(var i=0;i<count;i++){bgParticles.push({x:Math.random()*100,y:Math.random()*100,size:pt==="stars"?Math.random()*1.8+0.6:Math.random()*3+1.5,speed:pt==="sparks"?0.4+Math.random()*0.4:0.15+Math.random()*0.35,drift:Math.random()*0.3-0.15,rot:Math.random()*Math.PI*2,rotSpeed:Math.random()*0.04-0.02,alpha:0.4+Math.random()*0.6});}}
-function renderBgParticles(){
+for(var i=0;i<count;i++){bgParticles.push({x:Math.random()*100,y:Math.random()*100,size:pt==="stars"?Math.random()*1.8+0.6:Math.random()*3+1.5,speed:pt==="sparks"?0.4+Math.random()*0.4:0.15+Math.random()*0.35,drift:Math.random()*0.3-0.15,rot:Math.random()*Math.PI*2,rotSpeed:Math.random()*0.04-0.02,alpha:0.4+Math.random()*0.6});}
+_fishArray=[];_emberArray=[];_ufoState.visible=false;_ufoState.spawnAt=Date.now();_butterflyState.spawnAt=Date.now();
+}
+function ptColor(pt,far){
+if(far){
+if(pt==="stars")return "#aaa";
+if(pt==="sparks")return "#6a3a00";
+if(pt==="bubbles")return "#3a5a8a";
+if(pt==="petals")return "#8a5a70";
+if(pt==="snow")return "#8aa8c8";
+if(pt==="pulse")return "#4a0000";
+if(pt==="lava")return "#5a2a00";
+if(pt==="nebula")return "#3a1a5a";
+}
+return "#fff";
+}
+function renderBgParticles(now){
 if(!bgCanvas||!bgCtx)return;
+if(!now)now=performance.now();
+if(now-_lastBgFrame<42){bgAnimFrame=requestAnimationFrame(renderBgParticles);return;}
+_lastBgFrame=now;
 bgFrameCounter++;
-if(bgFrameCounter%2!==0){bgAnimFrame=requestAnimationFrame(renderBgParticles);return;}
 var W=bgCanvas.width,H=bgCanvas.height;
 bgCtx.clearRect(0,0,W,H);
 if(activeBg==="base"){bgAnimFrame=requestAnimationFrame(renderBgParticles);return;}
 var pt=BACKGROUNDS[activeBg].particles;
+bgParallax.x+=(bgParallax.targetX-bgParallax.x)*0.05;
+bgParallax.y+=(bgParallax.targetY-bgParallax.y)*0.05;
+bgCtx.save();
+bgCtx.globalAlpha=0.35;
+var offX1=bgParallax.x*0.2;
+var offY1=bgParallax.y*0.2;
+for(var i=0;i<bgParticles.length;i+=3){
+var p=bgParticles[i];
+var px=((p.x/100)*W+offX1+W)%W;
+var py=((p.y/100)*H+offY1+H)%H;
+bgCtx.fillStyle=ptColor(pt,true);
+bgCtx.beginPath();
+bgCtx.arc(px,py,p.size*0.7,0,Math.PI*2);
+bgCtx.fill();
+}
+bgCtx.restore();
 for(var i=0;i<bgParticles.length;i++){
 var p=bgParticles[i];
 if(pt==="stars"){p.alpha=0.4+Math.sin(Date.now()/600+i)*0.4;}
@@ -856,7 +943,9 @@ else if(pt==="snow"){p.y+=p.speed*0.25;p.x+=p.drift;p.rot+=p.rotSpeed*0.5;if(p.y
 else if(pt==="pulse"){p.alpha=0.3+Math.abs(Math.sin(Date.now()/1200+i))*0.5;}
 else if(pt==="lava"){p.y-=p.speed*0.35;p.x+=Math.sin(Date.now()/700+i)*0.2;if(p.y<-5){p.y=105;p.x=Math.random()*100;}}
 else if(pt==="nebula"){p.alpha=0.2+Math.abs(Math.sin(Date.now()/2000+i))*0.4;}
-var px=(p.x/100)*W,py=(p.y/100)*H,sz=p.size;
+var px=(p.x/100)*W+bgParallax.x*0.5;
+var py=(p.y/100)*H+bgParallax.y*0.5;
+var sz=p.size;
 bgCtx.save();bgCtx.globalAlpha=p.alpha;
 if(pt==="stars"){bgCtx.fillStyle="#fff";bgCtx.beginPath();bgCtx.arc(px,py,sz,0,Math.PI*2);bgCtx.fill();}
 else if(pt==="sparks"){bgCtx.fillStyle="#ff9500";bgCtx.fillRect(px,py,sz*0.6,sz*2);}
@@ -868,7 +957,67 @@ else if(pt==="lava"){bgCtx.fillStyle="rgba(255,100,0,.9)";bgCtx.beginPath();bgCt
 else if(pt==="nebula"){var g2=bgCtx.createRadialGradient(px,py,0,px,py,sz*20);g2.addColorStop(0,"rgba(160,100,255,.7)");g2.addColorStop(0.5,"rgba(80,50,200,.3)");g2.addColorStop(1,"rgba(80,50,200,0)");bgCtx.fillStyle=g2;bgCtx.beginPath();bgCtx.arc(px,py,sz*20,0,Math.PI*2);bgCtx.fill();}
 bgCtx.restore();
 }
+if(activeBg==="space"){drawUFO(W,H);}
+else if(activeBg==="ocean"){drawFish(W,H);}
+else if(activeBg==="flame"||activeBg==="volcano"){drawEmber(W,H);}
+else if(activeBg==="sakura"){drawButterfly(W,H);}
 bgAnimFrame=requestAnimationFrame(renderBgParticles);
+}
+function drawUFO(W,H){
+var now=Date.now();
+if(!_ufoState.visible&&now-_ufoState.spawnAt>30000){_ufoState.visible=true;_ufoState.x=-60;_ufoState.y=50+Math.random()*100;_ufoState.spawnAt=now;}
+if(_ufoState.visible){
+_ufoState.x+=_ufoState.speed;
+if(_ufoState.x>W+60){_ufoState.visible=false;_ufoState.spawnAt=now;}
+bgCtx.save();bgCtx.globalAlpha=0.7;bgCtx.translate(_ufoState.x,_ufoState.y);
+bgCtx.fillStyle="#a0ffb0";bgCtx.beginPath();bgCtx.arc(0,-8,14,Math.PI,0);bgCtx.fill();
+bgCtx.fillStyle="#6a6a8a";bgCtx.beginPath();bgCtx.ellipse(0,0,22,8,0,0,Math.PI*2);bgCtx.fill();
+bgCtx.fillStyle="#ff5252";bgCtx.beginPath();bgCtx.arc(-12,4,2.5,0,Math.PI*2);bgCtx.fill();
+bgCtx.fillStyle="#ffd54f";bgCtx.beginPath();bgCtx.arc(0,4,2.5,0,Math.PI*2);bgCtx.fill();
+bgCtx.fillStyle="#4fc3f7";bgCtx.beginPath();bgCtx.arc(12,4,2.5,0,Math.PI*2);bgCtx.fill();
+bgCtx.globalAlpha=0.2;var grad=bgCtx.createLinearGradient(0,8,0,60);grad.addColorStop(0,"rgba(160,255,180,.6)");grad.addColorStop(1,"rgba(160,255,180,0)");bgCtx.fillStyle=grad;
+bgCtx.beginPath();bgCtx.moveTo(-14,8);bgCtx.lineTo(14,8);bgCtx.lineTo(30,60);bgCtx.lineTo(-30,60);bgCtx.closePath();bgCtx.fill();
+bgCtx.restore();
+}
+}
+function drawFish(W,H){
+if(_fishArray.length===0){
+for(var i=0;i<3;i++){_fishArray.push({x:Math.random()*W,y:Math.random()*H,speed:0.3+Math.random()*0.5,dir:Math.random()<0.5?1:-1,color:["#ff9800","#ffeb3b","#4fc3f7"][i],size:8+Math.random()*6,phase:Math.random()*Math.PI*2});}
+}
+_fishArray.forEach(function(f){
+f.x+=f.speed*f.dir;f.y+=Math.sin(Date.now()/1000+f.phase)*0.3;
+if(f.x>W+30)f.x=-30;if(f.x<-30)f.x=W+30;
+bgCtx.save();bgCtx.globalAlpha=0.6;bgCtx.translate(f.x,f.y);bgCtx.scale(f.dir,1);
+bgCtx.fillStyle=f.color;bgCtx.beginPath();bgCtx.ellipse(0,0,f.size,f.size*0.6,0,0,Math.PI*2);bgCtx.fill();
+bgCtx.beginPath();bgCtx.moveTo(-f.size,0);bgCtx.lineTo(-f.size-6,-f.size*0.5);bgCtx.lineTo(-f.size-6,f.size*0.5);bgCtx.closePath();bgCtx.fill();
+bgCtx.fillStyle="#000";bgCtx.beginPath();bgCtx.arc(f.size*0.4,-f.size*0.2,1.5,0,Math.PI*2);bgCtx.fill();
+bgCtx.restore();
+});
+}
+function drawEmber(W,H){
+if(_emberArray.length===0){
+for(var i=0;i<15;i++){_emberArray.push({x:Math.random()*W,y:H+Math.random()*100,speed:0.5+Math.random()*1,size:1+Math.random()*2.5});}
+}
+_emberArray.forEach(function(e){
+e.y-=e.speed;if(e.y<-10){e.y=H+10;e.x=Math.random()*W;}
+bgCtx.save();bgCtx.globalAlpha=0.7;bgCtx.fillStyle="#ff6600";bgCtx.beginPath();bgCtx.arc(e.x,e.y,e.size,0,Math.PI*2);bgCtx.fill();bgCtx.restore();
+});
+}
+function drawButterfly(W,H){
+var now=Date.now();
+if(now-_butterflyState.spawnAt>15000){
+_butterflyState.x=Math.random()*W;_butterflyState.y=Math.random()*H;_butterflyState.spawnAt=now;
+}
+_butterflyState.x+=Math.sin(now/1000)*0.5;
+_butterflyState.y+=Math.cos(now/1200)*0.3;
+_butterflyState.angle+=0.05;
+bgCtx.save();bgCtx.globalAlpha=0.6;bgCtx.translate(_butterflyState.x,_butterflyState.y);
+var wingFlap=Math.sin(now/100)*0.6;
+bgCtx.fillStyle="#ff80ab";
+bgCtx.beginPath();bgCtx.ellipse(-6,-2,6,4,wingFlap,0,Math.PI*2);bgCtx.fill();
+bgCtx.beginPath();bgCtx.ellipse(6,-2,6,4,-wingFlap,0,Math.PI*2);bgCtx.fill();
+bgCtx.fillStyle="#4a148c";bgCtx.fillRect(-1,-3,2,6);
+bgCtx.restore();
 }
 function resizeBgCanvas(){if(!bgCanvas)return;bgCanvas.width=window.innerWidth;bgCanvas.height=window.innerHeight;}
 function startBgAnimation(){
@@ -876,8 +1025,18 @@ if(!bgCanvas){bgCanvas=$("bg-canvas");if(bgCanvas)bgCtx=bgCanvas.getContext("2d"
 resizeBgCanvas();
 if(bgAnimFrame)cancelAnimationFrame(bgAnimFrame);
 bgFrameCounter=0;
+_lastBgFrame=0;
 renderBgParticles();
 }
+function bgParallaxMove(x,y){
+var cx=window.innerWidth/2;
+var cy=window.innerHeight/2;
+bgParallax.targetX=(x-cx)*0.03;
+bgParallax.targetY=(y-cy)*0.03;
+}
+document.addEventListener("mousemove",function(e){bgParallaxMove(e.clientX,e.clientY);},{passive:true});
+document.addEventListener("touchmove",function(e){if(e.touches&&e.touches[0])bgParallaxMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+
 function renderBackgrounds(){
 var list=$("bg-list");if(!list)return;
 list.innerHTML="";
@@ -889,15 +1048,15 @@ if(activeBg===id)classes+=" active";
 if(!bg.owned)classes+=" locked";
 div.className=classes;div.dataset.bgid=id;
 var priceText="";
-if(activeBg===id)priceText='<div class="skin-price">✓ Активен</div>';
-else if(bg.owned)priceText='<div class="skin-price">Нажмите</div>';
+if(activeBg===id)priceText='<div class="skin-price">'+t("skins.active")+'</div>';
+else if(bg.owned)priceText='<div class="skin-price">'+t("skins.tap")+'</div>';
 else priceText='<div class="skin-price">'+bg.cost+' 💎</div>';
 div.innerHTML='<div class="bg-preview '+id+'"></div>'+'<div class="skin-name">'+bg.name+'</div>'+priceText;
 list.appendChild(div);}
 document.querySelectorAll("[data-bgid]").forEach(function(el){el.onclick=function(){
 var id=el.dataset.bgid;var bg=BACKGROUNDS[id];
 if(bg.owned){if(activeBg===id&&id!=="base"){activeBg="base";}else{activeBg=id;}playSound("ui");applyBackground();startBgAnimation();renderBackgrounds();saveGame();return;}
-if(crystals<bg.cost){alert("Недостаточно кристаллов!\nНужно: "+bg.cost+" 💎\nУ вас: "+crystals+" 💎");return;}
+if(crystals<bg.cost){alert(t("alert.not_enough_crystals",bg.cost,crystals));return;}
 crystals-=bg.cost;bg.owned=true;activeBg=id;
 playSound("ui");vibrate(10);applyBackground();startBgAnimation();renderBackgrounds();updateUI();
 var allOwned=true;var count=0;
@@ -952,17 +1111,17 @@ if(skin.special&&id==="gennadii"){previewStyle="background:radial-gradient(circl
 else if(skin.image){previewStyle="background:url('"+skin.image+"') center / cover no-repeat;";previewText="";}
 else{previewStyle="background:"+skin.bg+";";previewText="ТАП";}
 var priceText="";
-if(activeEmojiSkin===null&&activeSkin===id)priceText='<div class="skin-price">✓ Выбран</div>';
-else if(skin.owned)priceText='<div class="skin-price">Нажмите</div>';
-else if(skin.special)priceText='<div class="skin-price">Только промокод</div>';
+if(activeEmojiSkin===null&&activeSkin===id)priceText='<div class="skin-price">'+t("skins.selected")+'</div>';
+else if(skin.owned)priceText='<div class="skin-price">'+t("skins.tap")+'</div>';
+else if(skin.special)priceText='<div class="skin-price">'+t("skins.promo_only")+'</div>';
 else priceText='<div class="skin-price">'+SKIN_PRICE+' 💎</div>';
 div.innerHTML='<div class="skin-preview" style="'+previewStyle+'">'+previewText+'</div>'+'<div class="skin-name">'+skin.name+'</div>'+priceText;
 list.appendChild(div);}
 document.querySelectorAll(".skin-item[data-id]").forEach(function(el){el.onclick=function(){
 var id=el.dataset.id;var skin=skins[id];
 if(skin.owned){activeSkin=id;activeEmojiSkin=null;playSound("ui");saveSkins();applySkin();renderSkins();renderEmojiSkins();return;}
-if(skin.special){alert("Этот скин можно получить только через промокод!");return;}
-if(crystals<SKIN_PRICE){alert("Недостаточно кристаллов!\nНужно: "+SKIN_PRICE+" 💎\nУ вас: "+crystals+" 💎");return;}
+if(skin.special){alert(t("alert.promo_only"));return;}
+if(crystals<SKIN_PRICE){alert(t("alert.not_enough_crystals",SKIN_PRICE,crystals));return;}
 crystals-=SKIN_PRICE;skin.owned=true;activeSkin=id;activeEmojiSkin=null;playSound("ui");vibrate(10);addQuestProgress("skin",1);saveSkins();applySkin();renderSkins();renderEmojiSkins();updateUI();saveGame();};});}
 function renderEmojiSkins(){
 var list=$("emoji-skins-list");if(!list)return;list.innerHTML="";
@@ -974,15 +1133,15 @@ if(activeEmojiSkin===id)classes+=" active";
 if(!es.owned)classes+=" locked";
 div.className=classes;div.dataset.eid=id;
 var priceText="";
-if(activeEmojiSkin===id)priceText='<div class="skin-price">✓ Выбран</div>';
-else if(es.owned)priceText='<div class="skin-price">Нажмите</div>';
+if(activeEmojiSkin===id)priceText='<div class="skin-price">'+t("skins.selected")+'</div>';
+else if(es.owned)priceText='<div class="skin-price">'+t("skins.tap")+'</div>';
 else priceText='<div class="skin-price">'+es.cost+' 💎</div>';
 div.innerHTML='<div class="skin-preview" style="font-size:38px;background:#0e1a30;color:#fff">'+es.emoji+'</div>'+'<div class="skin-name">'+es.name+'</div>'+priceText;
 list.appendChild(div);}
 document.querySelectorAll("[data-eid]").forEach(function(el){el.onclick=function(){
 var id=el.dataset.eid;var es=EMOJI_SKINS[id];
 if(es.owned){activeEmojiSkin=(activeEmojiSkin===id)?null:id;playSound("ui");saveSkins();applySkin();renderSkins();renderEmojiSkins();return;}
-if(crystals<es.cost){alert("Недостаточно кристаллов!\nНужно: "+es.cost+" 💎\nУ вас: "+crystals+" 💎");return;}
+if(crystals<es.cost){alert(t("alert.not_enough_crystals",es.cost,crystals));return;}
 crystals-=es.cost;es.owned=true;activeEmojiSkin=id;playSound("ui");vibrate(10);saveSkins();applySkin();renderSkins();renderEmojiSkins();updateUI();saveGame();};});}
 function renderSmileSkins(){
 var list=$("smile-skins-list");if(!list)return;list.innerHTML="";
@@ -993,13 +1152,13 @@ if(isActive)classes+=" active";
 if(!isUnlocked)classes+=" locked";
 div.className=classes;
 var priceText="";
-if(!isUnlocked)priceText='<div class="skin-price">Только промокод</div>';
-else if(isActive)priceText='<div class="skin-price">✓ Включён</div>';
-else priceText='<div class="skin-price">Нажмите чтобы включить</div>';
-div.innerHTML='<div class="smile-skin-preview blood"><span>😈</span></div>'+'<div class="skin-name">Кровавая мутация</div>'+priceText;
+if(!isUnlocked)priceText='<div class="skin-price">'+t("skins.promo_only")+'</div>';
+else if(isActive)priceText='<div class="skin-price">'+t("skins.active")+'</div>';
+else priceText='<div class="skin-price">'+t("skins.tap")+'</div>';
+div.innerHTML='<div class="smile-skin-preview blood"><span>😈</span></div>'+'<div class="skin-name">'+t("skins.name_blood")+'</div>'+priceText;
 list.appendChild(div);
 div.onclick=function(){
-if(!smileSkinUnlocked){alert("Этот скин можно получить только через промокод!");return;}
+if(!smileSkinUnlocked){alert(t("alert.promo_only"));return;}
 smileSkinActive=!smileSkinActive;
 playSound("ui");renderSmileSkins();updateDepositSideButton();
 var modal=$("modal-deposit");if(modal&&!modal.classList.contains("hidden"))renderDeposit();
@@ -1007,6 +1166,38 @@ saveGame();};}
 function getItemBonus(){
 var sum=0;for(var id in ITEMS){var lvl=ownedItems[id]||0;if(typeof lvl==="boolean")lvl=lvl?1:0;if(lvl>0){sum+=ITEMS[id].bonuses[lvl-1];}}
 return 1+sum;}
+
+// === ТАП-ЭФФЕКТЫ ===
+function spawnTapRing(x,y){
+var lvl=1;
+if(upgrades.clicker.count>=500)lvl=5;
+else if(upgrades.clicker.count>=250)lvl=4;
+else if(upgrades.clicker.count>=100)lvl=3;
+else if(upgrades.clicker.count>=50)lvl=2;
+var ring=document.createElement("div");
+ring.className="tap-ring tap-ring-lvl"+lvl;
+ring.style.left=x+"px";ring.style.top=y+"px";
+ring.style.width="80px";ring.style.height="80px";
+document.body.appendChild(ring);
+setTimeout(function(){ring.remove();},500);
+}
+function spawnTapWave(x,y){
+if(settings.lowParticles)return;
+var wave=document.createElement("div");
+wave.className="tap-wave";
+wave.style.left=x+"px";wave.style.top=y+"px";
+document.body.appendChild(wave);
+setTimeout(function(){wave.remove();},600);
+}
+function spawnScreenShake(){
+if(settings.lowParticles)return;
+var page=document.querySelector(".page-active");
+if(!page)return;
+page.classList.remove("shake");
+void page.offsetWidth;
+page.classList.add("shake");
+setTimeout(function(){page.classList.remove("shake");},150);
+}
 
 // === ПРЕДМЕТЫ ===
 function renderItems(){
@@ -1019,18 +1210,18 @@ var isMax=lvl>=ITEM_MAX_LEVEL;var currentBonus=lvl>0?item.bonuses[lvl-1]:0;var n
 var nextCost=!isMax?Math.round(item.cost*ITEM_PRICE_MULT[lvl]):0;var canBuy=!isMax&&shards>=nextCost;
 var div=document.createElement("div");div.className="item-card"+(lvl>0?" owned":"");
 var effectLine="";
-if(lvl===0)effectLine="Не куплено · Ур. 0/3";
-else if(isMax)effectLine="Максимум · Ур. 3/3 · +"+Math.round(currentBonus*100)+"%";
-else effectLine="Ур. "+lvl+"/3 · +"+Math.round(currentBonus*100)+"% → +"+Math.round(nextBonus*100)+"%";
+if(lvl===0)effectLine=t("item.not_bought");
+else if(isMax)effectLine=t("item.max")+" · +"+Math.round(currentBonus*100)+"%";
+else effectLine=t("item.level_short")+" "+lvl+"/3 · +"+Math.round(currentBonus*100)+"% → +"+Math.round(nextBonus*100)+"%";
 var btnText="";
-if(isMax)btnText="✓ Максимум";else if(lvl===0)btnText=nextCost+" 🌑";else btnText="Улучшить: "+nextCost+" 🌑";
-var btnClass="item-buy"+(isMax?" owned-btn":"")+(btnText.length>10?" long-btn":"");
+if(isMax)btnText="✓ "+t("up.max_short");else if(lvl===0)btnText=nextCost+" 🌑";else btnText=t("item.upgrade_short")+": "+nextCost+" 🌑";
+var btnClass="item-buy"+(isMax?" owned-btn":"");
 div.innerHTML='<div class="item-icon">'+item.icon+'</div>'+'<div class="item-info">'+'<div class="item-name">'+item.name+'</div>'+'<div class="item-desc">'+item.desc+'</div>'+'<div class="item-effect">'+effectLine+'</div>'+'</div>'+'<button class="'+btnClass+'" data-id="'+id+'"'+(isMax||!canBuy?' disabled':'')+'>'+btnText+'</button>';
 list.appendChild(div);}
 document.querySelectorAll(".item-buy").forEach(function(btn){btn.onclick=function(){
 var id=btn.dataset.id;var item=ITEMS[id];var lvl=ownedItems[id]||0;if(typeof lvl==="boolean")lvl=lvl?1:0;
 if(lvl>=ITEM_MAX_LEVEL)return;var cost=Math.round(item.cost*ITEM_PRICE_MULT[lvl]);
-if(shards<cost){alert("Недостаточно осколков!\nНужно: "+cost+" 🌑\nУ вас: "+shards+" 🌑");return;}
+if(shards<cost){alert(t("alert.not_enough_shards",cost,shards));return;}
 shards-=cost;ownedItems[id]=lvl+1;playSound("ui");vibrate(10);addQuestProgress("item",1);renderItems();updateUI();saveGame();};});}
 
 // === МАГАЗИН ЗА КРИСТАЛЛЫ ===
@@ -1038,21 +1229,21 @@ function renderCrystalShop(){
 var list=$("crystal-list");if(!list)return;list.innerHTML="";
 for(var id in CRYSTAL_ITEMS){
 var item=CRYSTAL_ITEMS[id];var disabled=false;var statusText="";var btnText=item.cost+' 💎';
-if(id==="boost2"||id==="boost3"||id==="boost5"){statusText="В хранилище: "+(BOOSTERS[id]?BOOSTERS[id].storage:0);}
-else if(id==="coinsBag"){var gain=Math.floor(getCPS()*3600);statusText=gain>0?("Даст "+formatNumber(gain)+" монет"):"CPS пока 0";}
-else if(id==="depositUp"){if(!depositUnlocked||depositLevel>=25){disabled=true;statusText=!depositUnlocked?"Сначала купите вклад":"Вклад на максимуме";}else{statusText="Ур. "+depositLevel+" → "+(depositLevel+1);}}
-else if(id==="chest"){statusText="Сразу откроется";}
+if(id==="boost2"||id==="boost3"||id==="boost5"){statusText=t("crystal.in_storage")+" "+(BOOSTERS[id]?BOOSTERS[id].storage:0);}
+else if(id==="coinsBag"){var gain=Math.floor(getCPS()*3600);statusText=gain>0?(t("crystal.will_give")+" "+formatNumber(gain)+" "+t("common.coins_word")):t("crystal.cps_zero");}
+else if(id==="depositUp"){if(!depositUnlocked||depositLevel>=25){disabled=true;statusText=!depositUnlocked?t("crystal.buy_deposit_first"):t("crystal.deposit_max");}else{statusText=t("crystal.level_short")+" "+depositLevel+" → "+(depositLevel+1);}}
+else if(id==="chest"){statusText=t("crystal.will_open");}
 var div=document.createElement("div");div.className="item-card";
 div.innerHTML='<div class="item-icon">'+item.icon+'</div>'+'<div class="item-info">'+'<div class="item-name">'+item.name+'</div>'+'<div class="item-desc">'+item.desc+'</div>'+'<div class="item-effect">'+statusText+'</div>'+'</div>'+'<button class="item-buy crystal-buy" data-id="'+id+'"'+(disabled?' disabled':'')+'>'+btnText+'</button>';
 list.appendChild(div);}
 document.querySelectorAll(".crystal-buy").forEach(function(btn){if(btn.disabled){btn.onclick=null;return;}btn.onclick=function(){buyCrystalItem(btn.dataset.id);};});}
 function buyCrystalItem(id){
 var item=CRYSTAL_ITEMS[id];if(!item)return;
-if(id==="depositUp"){if(!depositUnlocked){alert("Сначала купите вклад в модалке смайлика!");return;}if(depositLevel>=25){alert("Вклад уже на максимуме (25 ур.)!");return;}}
-if(id==="boost2"||id==="boost3"||id==="boost5"){if(crystalBoostTimer>0&&crystalBoostMultiplier>1){alert("Буст уже активен, дождись окончания!");return;}}
-if(crystals<item.cost){alert("Недостаточно кристаллов!\nНужно: "+item.cost+" 💎\nУ вас: "+crystals+" 💎");return;}
+if(id==="depositUp"){if(!depositUnlocked){alert(t("crystal.buy_deposit_first"));return;}if(depositLevel>=25){alert(t("crystal.deposit_max"));return;}}
+if(id==="boost2"||id==="boost3"||id==="boost5"){if(crystalBoostTimer>0&&crystalBoostMultiplier>1){alert(t("alert.booster_active"));return;}}
+if(crystals<item.cost){alert(t("alert.not_enough_crystals",item.cost,crystals));return;}
 crystals-=item.cost;
-if(id==="coinsBag"){var gain=Math.floor(getCPS()*3600);coins+=gain;totalEarned+=gain;alert("💰 Получено "+formatNumber(gain)+" монет!");}
+if(id==="coinsBag"){var gain=Math.floor(getCPS()*3600);coins+=gain;totalEarned+=gain;alert(t("alert.offline_coins",formatNumber(gain)));}
 else if(id==="boost2"||id==="boost3"||id==="boost5"){addBoosterToStorage(id);}
 else if(id==="chest"){var r=getChestRewards();openChestAnimation(r.crystals,r.coins,r.shards,r.booster,function(){addCrystals(r.crystals);coins+=r.coins;totalEarned+=r.coins;shards+=r.shards;if(r.booster)addBoosterToStorage(r.booster);chestsOpened++;addQuestProgress("chest",1);updateUI();updateChestButton();checkAchievements();saveGame();});}
 else if(id==="depositUp"){depositLevel++;lastDepositTimeKey=getTimeKey();playSound("eat");addQuestProgress("deposit",1);updateDepositSideButton();}
@@ -1068,20 +1259,20 @@ var mb=$("modal-boosters");if(mb&&!mb.classList.contains("hidden"))renderBooster
 function showBoosterAddedPopup(id){
 var b=BOOSTERS[id];if(!b)return;
 var popup=document.createElement("div");popup.className="achievement-popup";
-popup.textContent=b.icon+" Бустер ×"+b.mult+" добавлен в хранилище";
+popup.textContent=b.icon+" "+t("booster.boost"+b.mult)+" "+t("crystal.in_storage")+" "+b.mult;
 document.body.appendChild(popup);setTimeout(function(){popup.remove();},3000);
 }
 function activateBooster(id){
 var b=BOOSTERS[id];if(!b)return;
-if(!b.storage||b.storage<=0){alert("Нет бустеров в наличии!");return;}
-if(crystalBoostTimer>0&&crystalBoostMultiplier>1){alert("Активен другой бустер — дождись окончания!");return;}
-b.storage--;crystalBoostMultiplier=b.mult;crystalBoostTimer=b.duration;crystalBoostName=b.icon+" Буст ×"+b.mult;
+if(!b.storage||b.storage<=0){alert(t("alert.booster_none"));return;}
+if(crystalBoostTimer>0&&crystalBoostMultiplier>1){alert(t("alert.booster_active"));return;}
+b.storage--;crystalBoostMultiplier=b.mult;crystalBoostTimer=b.duration;crystalBoostName=b.icon+" "+t("booster.boost"+b.mult);
 playSound("ui");updateBoostBanner();updateUI();renderCrystalShop();renderBoosters();saveGame();
 }
 function renderBoosters(){
 var list=$("boosters-list"),banner=$("booster-active-banner");
 if(!list)return;
-if(banner){if(crystalBoostTimer>0&&crystalBoostMultiplier>1){var m=Math.floor(crystalBoostTimer/60),s=crystalBoostTimer%60;banner.textContent="⚡ Активен ×"+crystalBoostMultiplier+" — осталось "+m+":"+(s<10?"0":"")+s;banner.classList.remove("hidden");}else{banner.classList.add("hidden");}}
+if(banner){if(crystalBoostTimer>0&&crystalBoostMultiplier>1){var m=Math.floor(crystalBoostTimer/60),s=crystalBoostTimer%60;banner.textContent="⚡ "+t("booster.active_label")+" ×"+crystalBoostMultiplier+" — "+t("booster.left_label")+" "+m+":"+(s<10?"0":"")+s;banner.classList.remove("hidden");}else{banner.classList.add("hidden");}}
 list.innerHTML="";
 for(var id in BOOSTERS){
 var b=BOOSTERS[id];var count=b.storage||0;
@@ -1091,11 +1282,11 @@ var classes="booster-card";
 if(count<=0)classes+=" empty";
 if(isActive)classes+=" active-booster";
 var div=document.createElement("div");div.className=classes;
-var btnText="Активировать";var btnDisabled=false;
-if(count<=0){btnText="Нет в наличии";btnDisabled=true;}
-else if(isAnotherActive){btnText="Активен другой";btnDisabled=true;}
-else if(isActive){btnText="Уже активен";btnDisabled=true;}
-div.innerHTML='<div class="booster-icon">'+b.icon+'</div>'+'<div class="booster-info">'+'<div class="booster-name">'+b.name+'</div>'+'<div class="booster-desc">'+b.desc+'</div>'+'<div class="booster-count">📦 В наличии: '+count+'</div>'+'</div>'+'<button class="booster-activate-btn" data-bid="'+id+'"'+(btnDisabled?' disabled':'')+'>'+btnText+'</button>';
+var btnText=t("booster.activate_btn");var btnDisabled=false;
+if(count<=0){btnText=t("booster.none");btnDisabled=true;}
+else if(isAnotherActive){btnText=t("booster.other_active");btnDisabled=true;}
+else if(isActive){btnText=t("booster.already");btnDisabled=true;}
+div.innerHTML='<div class="booster-icon">'+b.icon+'</div>'+'<div class="booster-info">'+'<div class="booster-name">'+b.name+'</div>'+'<div class="booster-desc">'+b.desc+'</div>'+'<div class="booster-count">📦 '+t("booster.in_stock")+': '+count+'</div>'+'</div>'+'<button class="booster-activate-btn" data-bid="'+id+'"'+(btnDisabled?' disabled':'')+'>'+btnText+'</button>';
 list.appendChild(div);}
 document.querySelectorAll(".booster-activate-btn").forEach(function(btn){if(btn.disabled){btn.onclick=null;return;}btn.onclick=function(){activateBooster(btn.dataset.bid);};});}
 function updateBoostBanner(){
@@ -1111,7 +1302,7 @@ function getGeneratorCost(){if(generatorLevel>=GENERATOR_MAX_LEVEL)return Infini
 function upgradeGenerator(){
 if(generatorLevel>=GENERATOR_MAX_LEVEL)return;
 var cost=getGeneratorCost();
-if(coins<cost){alert("Недостаточно монет!\nНужно: "+formatNumber(cost)+"\nУ вас: "+formatNumber(coins));return;}
+if(coins<cost){alert(t("alert.not_enough_coins",formatNumber(cost),formatNumber(coins)));return;}
 coins-=cost;generatorLevel++;generatorTimer=GENERATOR_DURATION;
 playSound("ui");vibrate(10);updateGeneratorButton();renderGenerator();updateUI();saveGame();}
 function updateGeneratorTimer(){
@@ -1123,17 +1314,17 @@ var before=generatorLevel;
 generatorLevel=Math.max(1,generatorLevel-drop);
 if(generatorLevel!==before){updateGeneratorButton();var modal=$("modal-generator");if(modal&&!modal.classList.contains("hidden"))renderGenerator();showGeneratorDropPopup(drop);}}
 updateGeneratorButton();}
-function showGeneratorDropPopup(drop){var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="⚡ Генератор упал на "+drop+" ур. (сейчас "+generatorLevel+")";document.body.appendChild(popup);setTimeout(function(){popup.remove();},3000);}
-function updateGeneratorButton(){var btn=$("generator-btn");if(!btn)return;var cps=getGeneratorCPS();var cpsText=(cps<1)?("1 тап / "+(1/cps).toFixed(1)+" сек"):(cps+" тап/сек");btn.textContent="⚡ Генератор: Ур. "+generatorLevel+" ("+cpsText+")";}
+function showGeneratorDropPopup(drop){var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="⚡ "+t("generator.level_word")+" −"+drop+" ("+t("generator.level_short")+". "+generatorLevel+")";document.body.appendChild(popup);setTimeout(function(){popup.remove();},3000);}
+function updateGeneratorButton(){var btn=$("generator-btn");if(!btn)return;var cps=getGeneratorCPS();var cpsText=(cps<1)?(t("generator.tap_in_sec")+(1/cps).toFixed(1)+t("common.seconds_short")):(cps+t("generator.tap_per_sec"));btn.textContent="⚡ "+t("main.generator_word")+": "+t("generator.level_short")+". "+generatorLevel+" ("+cpsText+")";}
 function renderGenerator(){
 var content=$("generator-content");if(!content)return;
 var cps=getGeneratorCPS();var isMax=generatorLevel>=GENERATOR_MAX_LEVEL;var nextCost=isMax?0:getGeneratorCost();
 var m=Math.floor(generatorTimer/60),s=generatorTimer%60;
-var cpsText=(cps<1)?("1 тап за "+(1/cps).toFixed(1)+" сек"):(cps+" тапов/сек");
+var cpsText=(cps<1)?(t("generator.tap_in_sec")+(1/cps).toFixed(1)+t("common.seconds_short")):(cps+t("generator.tap_per_sec_plural"));
 var progressPercent=(generatorTimer/GENERATOR_DURATION)*100;
-var html='<div class="generator-emoji">⚡</div>'+'<div class="generator-level">Уровень '+generatorLevel+' / '+GENERATOR_MAX_LEVEL+'</div>'+'<div class="generator-stat">Скорость: <b>'+cpsText+'</b></div>'+'<div class="generator-stat">До падения: <b>'+m+':'+(s<10?"0":"")+s+'</b></div>'+'<div class="generator-bar"><div class="generator-bar-fill" style="width:'+progressPercent+'%"></div></div>'+'<div class="generator-warning">⚠️ Раз в 3 минуты уровень падает на 1–5</div>';
-if(!isMax){html+='<div class="deposit-desc">Улучшить: <b>'+formatNumber(nextCost)+'</b> монет</div>'+'<button id="generator-upgrade-btn" class="deposit-btn" type="button">⚡ Улучшить</button>';}
-else{html+='<div class="deposit-happy">✨ Максимальный уровень!</div>';}
+var html='<div class="generator-emoji">⚡</div>'+'<div class="generator-level">'+t("generator.level_word")+' '+generatorLevel+' / '+GENERATOR_MAX_LEVEL+'</div>'+'<div class="generator-stat">'+t("generator.speed_label")+' <b>'+cpsText+'</b></div>'+'<div class="generator-stat">'+t("generator.drop_in")+' <b>'+m+':'+(s<10?"0":"")+s+'</b></div>'+'<div class="generator-bar"><div class="generator-bar-fill" style="width:'+progressPercent+'%"></div></div>'+'<div class="generator-warning">'+t("generator.warning_line")+'</div>';
+if(!isMax){html+='<div class="deposit-desc">'+t("generator.upgrade_price")+' <b>'+formatNumber(nextCost)+'</b> '+t("common.coins_word")+'</div>'+'<button id="generator-upgrade-btn" class="deposit-btn" type="button">⚡ '+t("generator.upgrade_btn_short")+'</button>';}
+else{html+='<div class="deposit-happy">'+t("generator.max_line")+'</div>';}
 content.innerHTML=html;
 var btn=$("generator-upgrade-btn");if(btn){btn.disabled=coins<nextCost;btn.onclick=upgradeGenerator;}}
 var cooldownInterval=null;
@@ -1158,22 +1349,22 @@ if(depositLevel<=5)btn.classList.add("lvl-hungry");else if(depositLevel<=15)btn.
 function renderDeposit(){
 var content=$("deposit-content");if(!content)return;
 if(!depositUnlocked){
-content.innerHTML='<div class="deposit-emoji">❓</div>'+'<div class="deposit-desc">Купите вклад за <b>1 Qa</b> монет, чтобы открыть смайлика.</div>'+'<div class="deposit-desc" style="color:#aaa;font-size:13px;">Смайлик будет расти с каждым вложением.</div>'+'<button id="deposit-buy-btn" class="deposit-btn" type="button">💰 Купить вклад за 1 Qa</button>';
+content.innerHTML='<div class="deposit-emoji">❓</div>'+'<div class="deposit-desc">'+t("deposit.buy_line")+'</div>'+'<div class="deposit-desc" style="color:#aaa;font-size:13px;">'+t("deposit.grow_hint")+'</div>'+'<button id="deposit-buy-btn" class="deposit-btn" type="button">💰 '+t("deposit.buy_btn")+'</button>';
 var btn=$("deposit-buy-btn");
 if(btn){btn.disabled=coins<DEPOSIT_LEVELS[0].cost;btn.onclick=function(){if(depositUnlocked)return;if(coins<DEPOSIT_LEVELS[0].cost)return;coins-=DEPOSIT_LEVELS[0].cost;depositUnlocked=true;depositLevel=1;lastDepositTimeKey=getTimeKey();playSound("eat");vibrate(10);renderDeposit();updateDepositSideButton();updateUI();saveGame();};}
 return;}
 var emoji=getCurrentDepositEmoji();var isHungry=depositLevel<=5;var isMax=depositLevel>=25;
 var skinClass="";
-if(smileSkinActive&&smileSkinUnlocked){skinClass=" skin-blood";if(depositLevel>=21)skinClass+=" gold-spark";}
+if(smileSkinActive&&smileSkinUnlocked){skinClass=" skin-blood";}
 var emojiHtml;
 if(smileSkinActive&&smileSkinUnlocked){emojiHtml='<div class="deposit-emoji'+skinClass+(isHungry?' hungry':'')+'" id="deposit-emoji-el"><span class="emoji-inner">'+emoji+'</span></div>';}
 else{emojiHtml='<div class="deposit-emoji'+(isHungry?' hungry':'')+'" id="deposit-emoji-el">'+emoji+'</div>';}
-var html=emojiHtml+'<div class="deposit-level">Уровень '+depositLevel+' / 25</div>';
-if(isHungry)html+='<div class="deposit-warning">😭 Голодный! Ест 5M монет в секунду</div>';
-else if(isMax)html+='<div class="deposit-happy">✨ Полный вклад! Смайлик сыт и доволен.</div>';
-else html+='<div class="deposit-happy">Смайлик доволен</div>';
-if(!isMax){var nextCost=DEPOSIT_LEVELS[depositLevel].cost;html+='<div class="deposit-desc">Следующий уровень: <b>'+formatNumber(nextCost)+'</b> монет</div>'+'<button id="deposit-buy-btn" class="deposit-btn" type="button">💰 Вложить '+formatNumber(nextCost)+'</button>';}
-else{html+='<div class="deposit-desc" style="color:#4caf50;">Достигнут максимум!</div>';}
+var html=emojiHtml+'<div class="deposit-level">'+t("deposit.level_word")+' '+depositLevel+' / 25</div>';
+if(isHungry)html+='<div class="deposit-warning">'+t("deposit.hungry_line")+'</div>';
+else if(isMax)html+='<div class="deposit-happy">'+t("deposit.full_line")+'</div>';
+else html+='<div class="deposit-happy">'+t("deposit.happy_line")+'</div>';
+if(!isMax){var nextCost=DEPOSIT_LEVELS[depositLevel].cost;html+='<div class="deposit-desc">'+t("deposit.next_line")+' <b>'+formatNumber(nextCost)+'</b> '+t("common.coins_word")+'</div>'+'<button id="deposit-buy-btn" class="deposit-btn" type="button">💰 '+t("deposit.invest_btn")+' '+formatNumber(nextCost)+'</button>';}
+else{html+='<div class="deposit-desc" style="color:#4caf50;">'+t("deposit.max_reached")+'</div>';}
 content.innerHTML=html;
 var btn2=$("deposit-buy-btn");
 if(btn2){var need=DEPOSIT_LEVELS[depositLevel].cost;btn2.disabled=coins<need;btn2.onclick=function(){var currentNeed=DEPOSIT_LEVELS[depositLevel].cost;if(depositLevel>=25)return;if(coins<currentNeed)return;coins-=currentNeed;depositLevel++;lastDepositTimeKey=getTimeKey();playSound("eat");vibrate(10);addQuestProgress("deposit",1);updateDepositSideButton();updateUI();renderDeposit();saveGame();};}
@@ -1194,19 +1385,19 @@ $("boss-result").textContent="";$("boss-result").className="";
 $("boss-start").style.display="none";updateBossUI();
 if(bossTimerInterval)clearInterval(bossTimerInterval);
 bossTimerInterval=setInterval(function(){if(!bossActive)return;bossTimeLeft-=0.05;bossClickCooldown-=0.05;if(bossClickCooldown<0)bossClickCooldown=0;if(bossTimeLeft<=0){bossTimeLeft=0;loseBoss();}updateBossUI();},50);}
-function updateBossUI(){var fill=$("boss-hp-fill"),text=$("boss-hp-text"),timer=$("boss-timer");if(fill)fill.style.width=(bossHP/bossMaxHP*100)+"%";if(text)text.textContent=bossHP+" / "+bossMaxHP;if(timer)timer.textContent="⏱ "+bossTimeLeft.toFixed(1)+" с";}
+function updateBossUI(){var fill=$("boss-hp-fill"),text=$("boss-hp-text"),timer=$("boss-timer");if(fill)fill.style.width=(bossHP/bossMaxHP*100)+"%";if(text)text.textContent=bossHP+" / "+bossMaxHP;if(timer)timer.textContent="⏱ "+bossTimeLeft.toFixed(1);}
 function winBoss(){
 bossActive=false;if(bossTimerInterval){clearInterval(bossTimerInterval);bossTimerInterval=null;}
 var res=$("boss-result");
-if(!bossRewardClaimed){bossRewardClaimed=true;shards+=25;if(res){res.textContent="🏆 Победа! +25 🌑 кровавых осколков!";res.className="win";}}
-else{if(res){res.textContent="🏆 Победа! (награда уже получена ранее)";res.className="win";}}
-$("boss-start").style.display="block";$("boss-start").textContent="🔁 Ещё раз";
+if(!bossRewardClaimed){bossRewardClaimed=true;shards+=25;if(res){res.textContent=t("boss.win");res.className="win";}}
+else{if(res){res.textContent=t("boss.win_again");res.className="win";}}
+$("boss-start").style.display="block";$("boss-start").textContent=t("boss.again");
 playSound("achievement");vibrate(50);updateUI();saveGame();}
 function loseBoss(){
 bossActive=false;if(bossTimerInterval){clearInterval(bossTimerInterval);bossTimerInterval=null;}
 var penalty=10000000000000000000;var lost=Math.min(coins,penalty);coins-=lost;
-var res=$("boss-result");if(res){res.textContent="💀 Провал! −"+formatNumber(lost)+" монет.";res.className="lose";}
-$("boss-start").style.display="block";$("boss-start").textContent="🔁 Попробовать снова";
+var res=$("boss-result");if(res){res.textContent=t("boss.lose").replace("{lost}",formatNumber(lost));res.className="lose";}
+$("boss-start").style.display="block";$("boss-start").textContent=t("boss.retry");
 playSound("ui");updateUI();saveGame();}
 function bossEmojiClick(){bossClickCount++;if(bossClickTimer)clearTimeout(bossClickTimer);bossClickTimer=setTimeout(function(){bossClickCount=0;},1500);if(bossClickCount>=3){bossClickCount=0;openBossModal();}}
 function openBossModal(){
@@ -1214,7 +1405,7 @@ var modal=$("modal-boss");if(!modal)return;
 var depositModal=$("modal-deposit");if(depositModal)depositModal.classList.add("hidden");
 bossActive=false;bossHP=bossMaxHP;bossTimeLeft=45.0;
 $("boss-result").textContent="";$("boss-result").className="";
-$("boss-start").style.display="block";$("boss-start").textContent="🔥 Начать бой";
+$("boss-start").style.display="block";$("boss-start").textContent=t("boss.start");
 updateBossUI();modal.classList.remove("hidden");syncScrollLock();playSound("boss");}
 
 // === ТРЕВОГА ===
@@ -1229,14 +1420,14 @@ function checkRewardTab(){
 var tab=$("tab-reward");if(!tab)return;
 if(rewardClaimed){tab.classList.add("hidden");return;}
 if(upgrades.clicker.count>=228){
-if(!rewardTabShown){tab.classList.remove("hidden");rewardTabShown=true;var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="🏅 Ты прокачал Кликер до 228! Открой вкладку «Награда»!";document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);playSound("achievement");}}
+if(!rewardTabShown){tab.classList.remove("hidden");rewardTabShown=true;var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent=t("reward.tab_msg");document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);playSound("achievement");}}
 else{tab.classList.add("hidden");rewardTabShown=false;}}
 function claimReward(){
 if(rewardClaimed)return;
 shards+=25;
 rewardClaimed=true;
-var res=$("reward-result");if(res){res.textContent="🎉 Ты получил +25 🌑 кровавых осколков!";res.style.color="#4caf50";}
-var btn=$("reward-claim");if(btn){btn.disabled=true;btn.textContent="✅ Получено";}
+var res=$("reward-result");if(res){res.textContent=t("reward.claimed");res.style.color="#4caf50";}
+var btn=$("reward-claim");if(btn){btn.disabled=true;btn.textContent="✅ "+t("quests.claimed");}
 playSound("achievement");vibrate(20);updateUI();saveGame();
 setTimeout(function(){var tab=$("tab-reward");if(tab)tab.classList.add("hidden");var modal=$("modal-reward");if(modal)modal.classList.add("hidden");syncScrollLock();},2000);}
 
@@ -1272,18 +1463,18 @@ playSound("achievement");vibrate(15);renderQuests();updateUI();saveGame();}
 function renderQuests(){
 var list=$("quests-list"),timerEl=$("quests-timer");if(!list)return;
 checkQuestsUpdate();
-if(timerEl){var now=new Date();var reset=new Date();reset.setHours(6,0,0,0);if(now.getHours()>=6)reset.setDate(reset.getDate()+1);var diffMs=reset-now;var hours=Math.floor(diffMs/(1000*60*60));var mins=Math.floor((diffMs%(1000*60*60))/(1000*60));timerEl.textContent="⏰ Сброс через "+hours+" ч "+mins+" мин";}
+if(timerEl){var now=new Date();var reset=new Date();reset.setHours(6,0,0,0);if(now.getHours()>=6)reset.setDate(reset.getDate()+1);var diffMs=reset-now;var hours=Math.floor(diffMs/(1000*60*60));var mins=Math.floor((diffMs%(1000*60*60))/(1000*60));timerEl.textContent=t("quests.reset")+" "+hours+t("common.hours_short")+mins+t("common.minutes_short");}
 list.innerHTML="";if(!quests||quests.length===0)generateQuests();
 quests.forEach(function(id){
 var type=QUEST_TYPES[id];if(!type)return;
 var progress=questProgress[id]||0;var isClaimed=isQuestClaimed(id);var isDone=progress>=type.goal;
 var classes="quest-card";if(isClaimed)classes+=" claimed";else if(isDone)classes+=" done";
 var div=document.createElement("div");div.className=classes;
-var percent=Math.min(100,(progress/type.goal)*100);var rewardText="Награда: "+type.reward+" "+type.rewardType;
+var percent=Math.min(100,(progress/type.goal)*100);var rewardText=t("ach.reward")+": "+type.reward+" "+type.rewardType;
 var buttonHtml="";
-if(isClaimed)buttonHtml='<div class="quest-claimed-label">✅ Получено</div>';
-else if(isDone)buttonHtml='<button class="quest-claim-btn" data-id="'+id+'">🎁 Забрать награду</button>';
-else buttonHtml='<button class="quest-claim-btn" disabled>Ещё не выполнено</button>';
+if(isClaimed)buttonHtml='<div class="quest-claimed-label">'+t("quests.claimed")+'</div>';
+else if(isDone)buttonHtml='<button class="quest-claim-btn" data-id="'+id+'">'+t("quests.claim")+'</button>';
+else buttonHtml='<button class="quest-claim-btn" disabled>'+t("quests.not_done")+'</button>';
 div.innerHTML='<div class="quest-header">'+'<div class="quest-icon">'+type.icon+'</div>'+'<div class="quest-name">'+type.name+'</div>'+'<div class="quest-progress-text">'+formatNumber(progress)+" / "+formatNumber(type.goal)+'</div>'+'</div>'+'<div class="quest-progress-bar">'+'<div class="quest-progress-fill" style="width:'+percent+'%"></div>'+'</div>'+'<div class="quest-reward">'+rewardText+'</div>'+buttonHtml;
 list.appendChild(div);});
 document.querySelectorAll(".quest-claim-btn").forEach(function(btn){btn.onclick=function(){var id=btn.dataset.id;if(id)claimQuest(id);};});}
@@ -1291,31 +1482,30 @@ document.querySelectorAll(".quest-claim-btn").forEach(function(btn){btn.onclick=
 // === ЛИДЕРБОРД ===
 function submitLeaderboardScore(){
 var submitBtn=$("leader-submit");if(!submitBtn)return;
-if(!db){alert("❌ Лидерборд не подключён.");return;}
-if(!hasProfile()){alert("❌ Сначала задай ник в профиле!");showProfileModal();return;}
+if(!db){alert(t("alert.leaderboard_no_firebase"));return;}
+if(!hasProfile()){alert(t("alert.leaderboard_no_nick"));showProfileModal();return;}
 ensureProfileId();
 var name=profile.nickname;var score=Math.floor(totalEarned);var entryId=profile.id;
-submitBtn.disabled=true;submitBtn.textContent="Отправка...";
+submitBtn.disabled=true;submitBtn.textContent=t("common.loading");
 db.ref("leaderboard/"+entryId).set({name:name,score:score,id:entryId,timestamp:Date.now()}).then(function(){
-alert("✅ Рекорд отправлен!\n\nНик: "+name+"\nID: "+entryId+"\nОчки: "+formatNumber(score));
-submitBtn.disabled=false;submitBtn.textContent="📤 Отправить рекорд";loadLeaderboard();
-}).catch(function(err){alert("❌ Ошибка: "+err.message);submitBtn.disabled=false;submitBtn.textContent="📤 Отправить рекорд";});}
+alert(t("leaders.sent"));
+submitBtn.disabled=false;submitBtn.textContent=t("leaders.submit");loadLeaderboard();
+}).catch(function(err){alert("❌ "+err.message);submitBtn.disabled=false;submitBtn.textContent=t("leaders.submit");});}
 function loadLeaderboard(){
 var list=$("leaders-list");if(!list)return;
-if(!db){list.innerHTML='<p style="text-align:center;color:#ff5252;padding:20px;">Лидерборд не подключён</p>';return;}
-list.innerHTML='<p class="leaders-loading">Загрузка...</p>';
+if(!db){list.innerHTML='<p style="text-align:center;color:#ff5252;padding:20px;">'+t("leaders.not_connected")+'</p>';return;}
+list.innerHTML='<p class="leaders-loading">'+t("leaders.loading")+'</p>';
 db.ref("leaderboard").orderByChild("score").limitToLast(25).once("value").then(function(snapshot){
-var entries=[];snapshot.forEach(function(cs){var data=cs.val();entries.push({name:data.name||"Аноним",score:data.score||0,id:data.id||""});});
-if(entries.length===0){list.innerHTML='<p style="text-align:center;color:#aaa;padding:20px;">Пока нет рекордов. Будь первым! 🏆</p>';return;}
+var entries=[];snapshot.forEach(function(cs){var data=cs.val();entries.push({name:data.name||"Anon",score:data.score||0,id:data.id||""});});
+if(entries.length===0){list.innerHTML='<p style="text-align:center;color:#aaa;padding:20px;">'+t("leaders.empty")+'</p>';return;}
 entries.sort(function(a,b){return b.score-a.score;});
 if(hasProfile()&&profile.id){var myRank=-1;for(var ri=0;ri<entries.length;ri++){if(entries[ri].id===profile.id){myRank=ri+1;break;}}if(myRank>=1&&myRank<=3){var key="leader_top"+myRank;if(!unlocked[key]){unlocked[key]=true;checkAchievements();saveGame();}}}
 var html="";var medals=["🥇","🥈","🥉"];
 entries.slice(0,25).forEach(function(entry,index){
 var rank=index+1;var rankClass=rank<=3?" rank-"+rank:"";var medal=rank<=3?medals[rank-1]:rank;
-var displayName=entry.name;if(entry.id){displayName=entry.name+" ("+entry.id+")";}
-html+='<div class="leader-row'+rankClass+'">'+'<div class="leader-rank">'+medal+'</div>'+'<div class="leader-name">'+escapeHtml(displayName)+'</div>'+'<div class="leader-score">'+formatNumber(entry.score)+'</div>'+'</div>';
+html+='<div class="leader-row'+rankClass+'">'+'<div class="leader-rank">'+medal+'</div>'+'<div class="leader-name">'+escapeHtml(entry.name)+'</div>'+'<div class="leader-score">'+formatNumber(entry.score)+'</div>'+'</div>';
 });
-list.innerHTML=html;}).catch(function(err){list.innerHTML='<p style="text-align:center;color:#ff5252;padding:20px;">Ошибка загрузки: '+err.message+'</p>';});}
+list.innerHTML=html;}).catch(function(err){list.innerHTML='<p style="text-align:center;color:#ff5252;padding:20px;">'+err.message+'</p>';});}
 function escapeHtml(text){var div=document.createElement("div");div.textContent=text;return div.innerHTML;}
 
 // === КОЛЕСО ===
@@ -1341,27 +1531,27 @@ txt.setAttribute("fill","#fff");txt.setAttribute("font-size","10");txt.setAttrib
 txt.textContent=WHEEL_SECTORS[i].label;
 rotor.appendChild(txt);}}
 var freeBtn=$("wheel-spin-free"),paidBtn=$("wheel-spin-paid");
-if(freeBtn){if(wheelFreeUsed){freeBtn.disabled=true;freeBtn.textContent="🎁 Завтра";}else{freeBtn.disabled=false;freeBtn.textContent="🎁 Крутить бесплатно";}}
+if(freeBtn){if(wheelFreeUsed){freeBtn.disabled=true;freeBtn.textContent=t("wheel.free_used");}else{freeBtn.disabled=false;freeBtn.textContent=t("wheel.spin_free");}}
 if(paidBtn){
-if(wheelFreeUsed&&!wheelPaidUsed){var price=getWheelPrice();paidBtn.disabled=false;paidBtn.textContent="💰 Крутить за "+price.text;}
-else if(!wheelFreeUsed){paidBtn.disabled=true;paidBtn.textContent="💰 Сначала бесплатный";}
-else{paidBtn.disabled=true;paidBtn.textContent="💰 Завтра";}}
+if(wheelFreeUsed&&!wheelPaidUsed){var price=getWheelPrice();paidBtn.disabled=false;paidBtn.textContent="💰 "+t("wheel.spin_for")+" "+price.text;}
+else if(!wheelFreeUsed){paidBtn.disabled=true;paidBtn.textContent="💰 "+t("wheel.first_free");}
+else{paidBtn.disabled=true;paidBtn.textContent=t("wheel.paid_used");}}
 var timerEl=$("wheel-timer");
-if(timerEl){if(wheelFreeUsed&&wheelPaidUsed){timerEl.textContent="Следующие спины — завтра в 9:00";}else if(!wheelFreeUsed){timerEl.textContent="1 бесплатный + 1 платный спин в день";}else{timerEl.textContent="Доступен платный спин";}}}
+if(timerEl){if(wheelFreeUsed&&wheelPaidUsed){timerEl.textContent=t("wheel.timer_tomorrow");}else if(!wheelFreeUsed){timerEl.textContent=t("wheel.timer_available");}else{timerEl.textContent=t("wheel.timer_paid");}}}
 function getWheelPrice(){if(coins<1e18)return {key:"qa",text:"1 Qa",value:1e15};if(coins<1e21)return {key:"qi",text:"1 Qi",value:1e18};return {key:"sx",text:"1 Sx",value:1e21};}
 function openWheel(){var overlay=$("wheel-overlay");if(!overlay)return;$("wheel-result").textContent="";renderWheel();overlay.classList.remove("hidden");syncScrollLock();}
 function closeWheel(){var overlay=$("wheel-overlay");if(overlay)overlay.classList.add("hidden");syncScrollLock();}
 function spinWheel(isFree){
 if(wheelSpinning)return;
 var price;
-if(!isFree){checkWheelReset();if(!wheelFreeUsed){alert("Сначала используй бесплатный спин!");return;}if(wheelPaidUsed){alert("Платный спин уже использован!");return;}price=getWheelPrice();if(coins<price.value){alert("Недостаточно монет!\nНужно: "+price.text);return;}coins-=price.value;wheelPaidUsed=true;}
-else{checkWheelReset();if(wheelFreeUsed){alert("Бесплатный спин уже использован!");return;}wheelFreeUsed=true;}
+if(!isFree){checkWheelReset();if(!wheelFreeUsed){alert(t("wheel.first_free"));return;}if(wheelPaidUsed){alert(t("wheel.paid_used_alert"));return;}price=getWheelPrice();if(coins<price.value){alert(t("wheel.no_coins").replace("{need}",price.text));return;}coins-=price.value;wheelPaidUsed=true;}
+else{checkWheelReset();if(wheelFreeUsed){alert(t("wheel.free_used_alert"));return;}wheelFreeUsed=true;}
 wheelSpinning=true;
 if(!unlocked.wheel_first){unlocked.wheel_first=true;checkAchievements();}
 var sectorIdx=Math.floor(Math.random()*12);
 var rotor=$("wheel-rotor");if(!rotor){wheelSpinning=false;return;}
 var sectorAngle=360/12;
-var targetRotation=sectorIdx*sectorAngle+sectorAngle/2;
+var targetRotation=-(sectorIdx*sectorAngle+sectorAngle/2);
 var totalRotation=360*5+((targetRotation%360)+360)%360;
 var currentRot=window.__wheelRot||0;var fullRot=currentRot+totalRotation;window.__wheelRot=fullRot;
 rotor.style.transition="transform 5s cubic-bezier(.17,.67,.3,1)";
@@ -1371,13 +1561,13 @@ playSound("ui");
 setTimeout(function(){var sector=WHEEL_SECTORS[sectorIdx];applyWheelReward(sector);wheelSpinning=false;renderWheel();saveGame();},5100);}
 function applyWheelReward(sector){
 var resultEl=$("wheel-result");var text="";
-if(sector.type==="coins"){var gain=Math.floor(coins*sector.value);if(sector.value<0){gain=Math.floor(coins*Math.abs(sector.value));coins=Math.max(0,coins-gain);text="💀 Потеряно "+formatNumber(gain)+" монет!";}else{coins+=gain;totalEarned+=gain;text="💰 Получено "+formatNumber(gain)+" монет!";}}
-else if(sector.type==="gems"){addCrystals(sector.value);text="💎 +"+sector.value+" кристаллов!";}
-else if(sector.type==="shards"){shards+=sector.value;text="🌑 +"+sector.value+" осколков!";}
-else if(sector.type==="negGems"){var lost=Math.min(crystals,Math.abs(sector.value));crystals-=lost;text="💀 −"+lost+" кристаллов!";}
-else if(sector.type==="negShards"){var lostS=Math.min(shards,Math.abs(sector.value));shards-=lostS;text="💀 −"+lostS+" осколков!";}
-else if(sector.type==="negCoins"){var lostC=Math.floor(coins*Math.abs(sector.value));coins=Math.max(0,coins-lostC);text="💀 −"+formatNumber(lostC)+" монет!";}
-else{text="❌ Пусто. В следующий раз повезёт!";}
+if(sector.type==="coins"){var gain=Math.floor(coins*sector.value);if(sector.value<0){gain=Math.floor(coins*Math.abs(sector.value));coins=Math.max(0,coins-gain);text=t("wheel.result_negcoins").replace("{n}",formatNumber(gain));}else{coins+=gain;totalEarned+=gain;text=t("wheel.result_coins").replace("{n}",formatNumber(gain));}}
+else if(sector.type==="gems"){addCrystals(sector.value);text=t("wheel.result_gems").replace("{n}",sector.value);}
+else if(sector.type==="shards"){shards+=sector.value;text=t("wheel.result_shards").replace("{n}",sector.value);}
+else if(sector.type==="negGems"){var lost=Math.min(crystals,Math.abs(sector.value));crystals-=lost;text=t("wheel.result_neggems").replace("{n}",lost);}
+else if(sector.type==="negShards"){var lostS=Math.min(shards,Math.abs(sector.value));shards-=lostS;text=t("wheel.result_negshards").replace("{n}",lostS);}
+else if(sector.type==="negCoins"){var lostC=Math.floor(coins*Math.abs(sector.value));coins=Math.max(0,coins-lostC);text=t("wheel.result_negcoins").replace("{n}",formatNumber(lostC));}
+else{text=t("wheel.result_empty");}
 if(resultEl)resultEl.textContent=text;
 playSound(sector.type==="empty"?"ui":"achievement");updateUI();}
 
@@ -1403,19 +1593,19 @@ txt.textContent=DAILY_PRIZES[i].label;
 rotor.appendChild(txt);}}
 var spinBtn=$("daily-spin"),timerEl=$("daily-timer");
 var today=getTodayKeyDaily();
-if(spinBtn){if(dailyLastUsed===today){spinBtn.disabled=true;spinBtn.textContent="✅ Сегодня получено";}else{spinBtn.disabled=false;spinBtn.textContent="🎁 Крутить!";}}
-if(timerEl){if(dailyLastUsed===today){timerEl.textContent="Следующая награда — завтра в 9:00";}else{timerEl.textContent="1 бесплатный спин в день!";}}}
+if(spinBtn){if(dailyLastUsed===today){spinBtn.disabled=true;spinBtn.textContent="✅ "+t("daily.done_today");}else{spinBtn.disabled=false;spinBtn.textContent=t("daily.spin");}}
+if(timerEl){if(dailyLastUsed===today){timerEl.textContent=t("daily.timer_tomorrow");}else{timerEl.textContent=t("daily.timer_today");}}}
 function openDaily(){var overlay=$("daily-overlay");if(!overlay)return;$("daily-result").textContent="";renderDailyWheel();overlay.classList.remove("hidden");syncScrollLock();}
 function closeDaily(){var overlay=$("daily-overlay");if(overlay)overlay.classList.add("hidden");syncScrollLock();}
 function spinDaily(){
 if(dailySpinning)return;
 var today=getTodayKeyDaily();
-if(dailyLastUsed===today){alert("Сегодня уже крутил! Завтра снова.");return;}
+if(dailyLastUsed===today){alert(t("daily.already"));return;}
 dailySpinning=true;
 var prizeIdx=Math.floor(Math.random()*7);
 var rotor=$("daily-wheel-rotor");if(!rotor){dailySpinning=false;return;}
 var sectorAngle=360/7;
-var targetRotation=prizeIdx*sectorAngle+sectorAngle/2;
+var targetRotation=-(prizeIdx*sectorAngle+sectorAngle/2);
 var totalRotation=360*5+((targetRotation%360)+360)%360;
 var currentRot=window.__dailyRot||0;var fullRot=currentRot+totalRotation;window.__dailyRot=fullRot;
 rotor.style.transition="transform 5s cubic-bezier(.17,.67,.3,1)";
@@ -1425,10 +1615,10 @@ playSound("ui");
 setTimeout(function(){var prize=DAILY_PRIZES[prizeIdx];applyDailyReward(prize);dailyLastUsed=today;if(!unlocked.daily_first){unlocked.daily_first=true;checkAchievements();}dailySpinning=false;renderDailyWheel();saveGame();},5100);}
 function applyDailyReward(prize){
 var resultEl=$("daily-result");var text="";
-if(prize.type==="coins"){coins+=prize.value;totalEarned+=prize.value;text="💰 Получено "+formatNumber(prize.value)+" монет!";}
-else if(prize.type==="gems"){addCrystals(prize.value);text="💎 +"+prize.value+" кристаллов!";}
-else if(prize.type==="shards"){shards+=prize.value;text="🌑 +"+prize.value+" осколков!";}
-else if(prize.type==="boost"){var ids=["boost2","boost3","boost5"];var bid=ids[Math.floor(Math.random()*3)];addBoosterToStorage(bid);text="⚡ Бустер ×"+BOOSTERS[bid].mult+" добавлен в хранилище!";}
+if(prize.type==="coins"){coins+=prize.value;totalEarned+=prize.value;text=t("daily.result_coins").replace("{n}",formatNumber(prize.value));}
+else if(prize.type==="gems"){addCrystals(prize.value);text=t("daily.result_gems").replace("{n}",prize.value);}
+else if(prize.type==="shards"){shards+=prize.value;text=t("daily.result_shards").replace("{n}",prize.value);}
+else if(prize.type==="boost"){var ids=["boost2","boost3","boost5"];var bid=ids[Math.floor(Math.random()*3)];addBoosterToStorage(bid);text=t("daily.result_boost").replace("{n}",BOOSTERS[bid].mult);}
 if(resultEl)resultEl.textContent=text;
 playSound("achievement");updateUI();}
 
@@ -1439,16 +1629,16 @@ function resetMinigameUI(){
 minigameTaps=0;minigameTimer=MINIGAME_DURATION;minigameActive=false;
 $("minigame-count").textContent="0";$("minigame-timer").textContent="10.0";$("minigame-timer").classList.remove("urgent");
 $("minigame-result").textContent="";$("minigame-result").className="";$("minigame-best-val").textContent=minigameBest;
-var startBtn=$("minigame-start");if(startBtn){startBtn.disabled=false;startBtn.textContent="▶️ Начать";}
+var startBtn=$("minigame-start");if(startBtn){startBtn.disabled=false;startBtn.textContent=t("minigame.start");}
 var tapBtn=$("minigame-tap-btn");if(tapBtn)tapBtn.disabled=true;
 var timerInfo=$("minigame-timer-info");
-if(timerInfo){var now=Date.now();var left=MINIGAME_COOLDOWN-(now-minigameLastUsed);if(left<=0){timerInfo.textContent="Можно играть!";}else{var mins=Math.floor(left/60000),secs=Math.floor((left%60000)/1000);timerInfo.textContent="Следующая игра через "+mins+"м "+secs+"с";}}}
+if(timerInfo){var now=Date.now();var left=MINIGAME_COOLDOWN-(now-minigameLastUsed);if(left<=0){timerInfo.textContent=t("minigame.ready");}else{var mins=Math.floor(left/60000),secs=Math.floor((left%60000)/1000);timerInfo.textContent=t("minigame.next")+" "+mins+"м "+secs+"с";}}}
 function startMinigame(){
 var now=Date.now();
-if(now-minigameLastUsed<MINIGAME_COOLDOWN){var left=MINIGAME_COOLDOWN-(now-minigameLastUsed);var mins=Math.floor(left/60000),secs=Math.floor((left%60000)/1000);alert("Рано! Следующая игра через "+mins+"м "+secs+"с");return;}
+if(now-minigameLastUsed<MINIGAME_COOLDOWN){var left=MINIGAME_COOLDOWN-(now-minigameLastUsed);var mins=Math.floor(left/60000),secs=Math.floor((left%60000)/1000);alert(t("minigame.too_early").replace("{t}",mins+"м "+secs+"с"));return;}
 minigameActive=true;minigameTaps=0;minigameTimer=MINIGAME_DURATION;minigameLastUsed=now;
 $("minigame-count").textContent="0";$("minigame-result").textContent="";$("minigame-result").className="";
-var startBtn=$("minigame-start");if(startBtn){startBtn.disabled=true;startBtn.textContent="⏳ Играем...";}
+var startBtn=$("minigame-start");if(startBtn){startBtn.disabled=true;startBtn.textContent=t("minigame.playing");}
 var tapBtn=$("minigame-tap-btn");if(tapBtn)tapBtn.disabled=false;
 playSound("ui");
 if(minigameTimerInterval)clearInterval(minigameTimerInterval);
@@ -1458,7 +1648,7 @@ function finishMinigame(){
 minigameActive=false;
 if(minigameTimerInterval){clearInterval(minigameTimerInterval);minigameTimerInterval=null;}
 var tapBtn=$("minigame-tap-btn");if(tapBtn)tapBtn.disabled=true;
-var startBtn=$("minigame-start");if(startBtn){startBtn.disabled=false;startBtn.textContent="🔁 Ещё раз";}
+var startBtn=$("minigame-start");if(startBtn){startBtn.disabled=false;startBtn.textContent=t("minigame.restart");}
 var resultEl=$("minigame-result");
 var isNewRecord=false;
 if(minigameTaps>minigameBest){minigameBest=minigameTaps;isNewRecord=true;}
@@ -1469,33 +1659,33 @@ else if(minigameTaps>=80)reward=25;
 else if(minigameTaps>=50)reward=10;
 else if(minigameTaps>=30)reward=5;
 if(reward>0){addCrystals(reward);updateUI();}
-if(isNewRecord){if(resultEl){resultEl.textContent="🎉 НОВЫЙ РЕКОРД! "+minigameTaps+" тапов! +"+reward+" 💎";resultEl.className="win";}}
-else{if(resultEl){resultEl.textContent="Тапов: "+minigameTaps+". "+(reward>0?("Награда: +"+reward+" 💎"):"Попробуй ещё!");resultEl.className="";}}
+if(isNewRecord){if(resultEl){resultEl.textContent=t("minigame.result_new").replace("{taps}",minigameTaps).replace("{reward}",reward);resultEl.className="win";}}
+else{if(resultEl){resultEl.textContent=t("minigame.result").replace("{taps}",minigameTaps).replace("{reward}",reward>0?t("minigame.result_reward").replace("{n}",reward):t("minigame.result_try"));resultEl.className="";}}
 playSound(reward>0?"achievement":"ui");checkAchievements();saveGame();resetMinigameUI();}
 
 // === ГЛОБАЛЬНЫЕ УЛУЧШЕНИЯ ===
 function buildGlobalEffectText(gu){
 var total=gu.amount*gu.count;
-if(gu.count===0)return "Сейчас: не активно";
-if(gu.effect==="click")return "Сейчас: +"+total+" к клику";
-if(gu.effect==="bloodShard")return "Сейчас: +"+(total*100).toFixed(0)+"% к шансу";
-if(gu.effect==="absoluteMult"||gu.effect==="genesisMult")return "Сейчас: +"+(total*100).toFixed(0)+"% к прибыли";
+if(gu.count===0)return t("globalup.inactive");
+if(gu.effect==="click")return t("globalup.now_click")+total;
+if(gu.effect==="bloodShard")return t("globalup.now_chance")+(total*100).toFixed(0)+"%";
+if(gu.effect==="absoluteMult"||gu.effect==="genesisMult")return t("globalup.now_income")+(total*100).toFixed(0)+"%";
 return "";}
 function renderGlobalShop(){
-var list=$("global-shop-list");if(!list){console.warn("global-shop-list не найден");return;}
+var list=$("global-shop-list");if(!list)return;
 list.innerHTML="";
 for(var id in globalUpgrades){
 var gu=globalUpgrades[id];
 var isMax=gu.count>=gu.maxLevel;
 var div=document.createElement("div");div.className="item";
 var nextCost=isMax?"—":formatNumber(gu.cost);
-var btnHtml=isMax?'<button class="buy" disabled style="background:#4caf50;color:#fff">✓ Максимум</button>':'<button class="buy" data-gid="'+id+'">Купить: '+nextCost+'</button>';
+var btnHtml=isMax?'<button class="buy" disabled style="background:#4caf50;color:#fff">✓ '+t("up.max_short")+'</button>':'<button class="buy" data-gid="'+id+'">'+t("up.buy_short")+': '+nextCost+'</button>';
 var effectText=buildGlobalEffectText(gu);
-div.innerHTML='<div class="info">'+'<div class="name">'+gu.name+'</div>'+'<div class="desc">'+gu.desc+'</div>'+'<div class="owned">Уровень: <span id="gowned-'+id+'">'+gu.count+'</span> / '+gu.maxLevel+'</div>'+'<div class="owned" style="color:#4fc3f7">'+effectText+'</div>'+'</div>'+'<div class="right">'+btnHtml+'</div>';
+div.innerHTML='<div class="info">'+'<div class="name">'+gu.name+'</div>'+'<div class="desc">'+gu.desc+'</div>'+'<div class="owned">'+t("up.level_label")+' <span id="gowned-'+id+'">'+gu.count+'</span> / '+gu.maxLevel+'</div>'+'<div class="owned" style="color:#4fc3f7">'+effectText+'</div>'+'</div>'+'<div class="right">'+btnHtml+'</div>';
 list.appendChild(div);}
 document.querySelectorAll(".buy[data-gid]").forEach(function(btn){btn.onclick=function(){var id=btn.dataset.gid;var gu=globalUpgrades[id];if(!gu)return;if(gu.count>=gu.maxLevel)return;if(coins>=gu.cost){coins-=gu.cost;gu.count++;gu.cost=Math.floor(gu.baseCost*Math.pow(GLOBAL_UPGRADE_COST_MULT,gu.count));playSound("ui");vibrate(10);updateUI();renderGlobalShop();checkAchievements();saveGame();}};});}
 function updateGlobalShopUI(){
-for(var id in globalUpgrades){var gu=globalUpgrades[id];var el=$("gowned-"+id);if(el)el.textContent=gu.count;var btn=document.querySelector('.buy[data-gid="'+id+'"]');if(btn){if(gu.count>=gu.maxLevel){btn.disabled=true;btn.textContent="✓ Максимум";btn.style.background="#4caf50";btn.style.color="#fff";}else{btn.disabled=coins<gu.cost;}}}}
+for(var id in globalUpgrades){var gu=globalUpgrades[id];var el=$("gowned-"+id);if(el)el.textContent=gu.count;var btn=document.querySelector('.buy[data-gid="'+id+'"]');if(btn){if(gu.count>=gu.maxLevel){btn.disabled=true;btn.textContent="✓ "+t("up.max_short");btn.style.background="#4caf50";btn.style.color="#fff";}else{btn.disabled=coins<gu.cost;}}}}
 
 // === ГУЛАУ ===
 function startGulau(){gulauActive=true;gulauTimer=15*60;$("gulau-info").style.display="block";updateGulauTimer();}
@@ -1506,7 +1696,7 @@ function endGulau(){gulauActive=false;gulauTimer=0;$("gulau-info").style.display
 function exportSave(){
 try{
 var raw=localStorage.getItem(SAVE_KEY);
-if(!raw){alert("Нет сохранения для экспорта.");return;}
+if(!raw){alert(t("alert.export_empty"));return;}
 var data=JSON.parse(raw);
 data.exportDate=Date.now();
 try{var skinsRaw=localStorage.getItem("clicker-skins");if(skinsRaw)data._skins=JSON.parse(skinsRaw);}catch(e){}
@@ -1522,17 +1712,17 @@ var json=JSON.stringify(data);
 var encoded=btoa(unescape(encodeURIComponent(json)));
 var box=$("export-box"),text=$("export-text");
 if(box&&text){text.value=encoded;box.classList.remove("hidden");}
-}catch(e){alert("Ошибка экспорта: "+e.message);}}
-function copyExport(){var text=$("export-text");if(!text)return;text.select();text.setSelectionRange(0,999999);try{document.execCommand("copy");alert("✅ Скопировано!");}catch(e){try{navigator.clipboard.writeText(text.value);alert("✅ Скопировано!");}catch(err){alert("Не удалось скопировать. Выделите текст и скопируйте вручную.");}}}
+}catch(e){alert(t("alert.export_error").replace("{0}",e.message));}}
+function copyExport(){var text=$("export-text");if(!text)return;text.select();text.setSelectionRange(0,999999);try{document.execCommand("copy");alert(t("alert.export_copied"));}catch(e){try{navigator.clipboard.writeText(text.value);alert(t("alert.export_copied"));}catch(err){alert(t("alert.export_copy_fail"));}}}
 function importSave(){
 var text=$("import-text"),result=$("import-result");if(!text||!result)return;
 var code=text.value.trim();result.className="";
-if(!code){result.textContent="Вставьте код сохранения.";result.classList.add("error");return;}
+if(!code){result.textContent=t("alert.import_empty");result.classList.add("error");return;}
 try{
 var json=decodeURIComponent(escape(atob(code)));
 var data=JSON.parse(json);
-if(!data||typeof data.coins==="undefined")throw new Error("Неверный формат");
-if(!confirm("⚠️ Текущий прогресс будет заменён.\nПродолжить?"))return;
+if(!data||typeof data.coins==="undefined")throw new Error(t("alert.import_bad_format"));
+if(!confirm(t("alert.import_confirm")))return;
 window.__resetting=true;
 if(data._skins){try{localStorage.setItem("clicker-skins",JSON.stringify(data._skins));}catch(e){}}
 if(data._usedPromos){try{localStorage.setItem("clicker-used-promos",JSON.stringify(data._usedPromos));}catch(e){}}
@@ -1553,9 +1743,9 @@ delete data._boostersStorage;delete data._emojiSkinsOwned;delete data._skinsOwne
 delete data._bgOwned;delete data._activeBg;delete data._activeSkin;delete data._activeEmojiSkin;
 delete data._dailyLastUsed;delete data._minigameBest;delete data._minigameLastUsed;
 localStorage.setItem(SAVE_KEY,JSON.stringify(data));
-result.textContent="✅ Прогресс загружен! Перезагрузка...";result.classList.add("success");
+result.textContent=t("alert.import_loaded");result.classList.add("success");
 setTimeout(function(){location.reload();},800);
-}catch(e){result.textContent="❌ Ошибка: "+e.message;result.classList.add("error");}}
+}catch(e){result.textContent=t("alert.import_error").replace("{0}",e.message);result.classList.add("error");}}
 
 // === ЕЖЕДНЕВНЫЙ БОНУС ===
 function checkDailyBonus(){
@@ -1563,8 +1753,8 @@ if(!settings.showDaily)return;var last=localStorage.getItem("lastDaily");var str
 if(!last||now-parseInt(last)>=oneDay){
 if(last&&now-parseInt(last)>2*oneDay)streak=0;
 streak+=1;var bonus=Math.max(100,Math.floor(getCPS()*60));coins+=bonus;totalEarned+=bonus;
-var text="🎁 Ежедневный бонус (день "+streak+"): "+formatNumber(bonus)+" монет!";
-if(streak%7===0){addCrystals(5);text+="\n💎 +5 кристаллов за серию 7 дней!";}
+var text=t("alert.daily_bonus").replace("{0}",streak).replace("{1}",formatNumber(bonus));
+if(streak%7===0){addCrystals(5);text+="\n"+t("alert.daily_bonus_week");}
 localStorage.setItem("lastDaily",now.toString());localStorage.setItem("dailyStreak",streak.toString());
 setTimeout(function(){alert(text);updateUI();},500);}}
 
@@ -1605,7 +1795,7 @@ bloodMoonActive=true;
 var d=new Date();var mins=d.getMinutes();var secs=d.getSeconds();
 bloodMoonTimer=Math.max(0,(30-mins)*60-secs);
 document.body.classList.add("blood-moon");$("blood-info").style.display="block";
-var banner=document.createElement("div");banner.className="blood-banner";banner.innerHTML="🌕 КРОВАВАЯ ЛУНА 🌕<br>Доход x2!";banner.id="blood-banner";
+var banner=document.createElement("div");banner.className="blood-banner";banner.innerHTML=t("event.blood_moon");banner.id="blood-banner";
 document.body.appendChild(banner);setTimeout(function(){var b=$("blood-banner");if(b)b.remove();},5000);
 playSound("ui");updateUI();}
 function endBloodMoon(){bloodMoonActive=false;bloodMoonTimer=0;document.body.classList.remove("blood-moon");$("blood-info").style.display="none";var b=$("blood-banner");if(b)b.remove();}
@@ -1645,15 +1835,15 @@ if(theftTimer%THEFT_TICK_INTERVAL===0){var lost=Math.floor(coins*THEFT_PERCENT);
 updateTheftBanner();
 },1000);
 var banner=$("theft-banner");
-if(!banner){banner=document.createElement("div");banner.id="theft-banner";banner.className="blood-banner";banner.style.background="linear-gradient(135deg,#4a0000,#8b0000,#b71c1c)";banner.style.top="auto";banner.style.bottom="20px";banner.innerHTML="🚨 КРАЖА! 🚨<br><span id='theft-timer-txt'>10:00</span> · Украдено: <span id='theft-lost-txt'>0</span>";document.body.appendChild(banner);}
-if(!resumeTimer){playSound("alarm");var popup=document.createElement("div");popup.className="achievement-popup";popup.style.background="linear-gradient(135deg,#8b0000,#b71c1c)";popup.style.color="#fff";popup.textContent="🚨 Ивент «КРАЖА» начался! Потеряно будет ~22% монет.";document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);}
+if(!banner){banner=document.createElement("div");banner.id="theft-banner";banner.className="blood-banner";banner.style.background="linear-gradient(135deg,#4a0000,#8b0000,#b71c1c)";banner.style.top="auto";banner.style.bottom="20px";banner.innerHTML="🚨 <span id='theft-timer-txt'>10:00</span> · <span id='theft-lost-txt'>0</span>";document.body.appendChild(banner);}
+if(!resumeTimer){playSound("alarm");var popup=document.createElement("div");popup.className="achievement-popup";popup.style.background="linear-gradient(135deg,#8b0000,#b71c1c)";popup.style.color="#fff";popup.textContent=t("event.theft_start");document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);}
 saveTheftState();}
 function endTheft(){
 theftActive=false;
 if(theftTickTimer){clearInterval(theftTickTimer);theftTickTimer=null;}
 clearTheftState();
 var banner=$("theft-banner");if(banner)banner.remove();
-var popup=document.createElement("div");popup.className="achievement-popup";popup.style.background="linear-gradient(135deg,#4a0000,#b71c1c)";popup.style.color="#fff";popup.textContent="🚨 Кража закончилась. Всего украдено: "+formatNumber(theftTotalLost)+" монет";document.body.appendChild(popup);setTimeout(function(){popup.remove();},6000);
+var popup=document.createElement("div");popup.className="achievement-popup";popup.style.background="linear-gradient(135deg,#4a0000,#b71c1c)";popup.style.color="#fff";popup.textContent=t("event.theft_end").replace("{n}",formatNumber(theftTotalLost));document.body.appendChild(popup);setTimeout(function(){popup.remove();},6000);
 theftTotalLost=0;
 updateUI();saveGame();}
 function updateTheftBanner(){var t=$("theft-timer-txt"),l=$("theft-lost-txt");if(t){var m=Math.floor(theftTimer/60);var s=theftTimer%60;t.textContent=m+":"+(s<10?"0":"")+s;}if(l)l.textContent=formatNumber(theftTotalLost);}
@@ -1666,37 +1856,76 @@ if(!theftActive){if(remaining>0){lastTheftKey=key;startTheft(remaining,0);}}
 else{if(remaining>0&&theftTimer!==remaining){theftTimer=remaining;updateTheftBanner();}}}
 else{if(theftActive)endTheft();}}
 function restoreTheftIfNeeded(){if(theftRestored)return;theftRestored=true;loadTheftState();}
-
 // === ПРОМОКОДЫ ===
+var INFINITE_PROMOS=["PHOENIX_SECRET","DRAGON15"];
+var ADMIN_PROMO="#%₽223300HAI";
+var ADMIN_PASSWORD="keyisloked";
+var ADMIN_IDS=["u_1790687044368_j0ic","u_1790687777315_g6nn"];
+var adminState={boost:{active:false,mult:1,endsAt:0,label:""},listeners:{boost:null,messages:null},giftsProcessed:false,lastCmdTime:0,promoUnlocked:false};
+
 var PROMOS={
-"BLOOD":{reward:function(){shards+=10;return "🌑 +10 кровавых осколков!";}},
-"CRYSTAL":{reward:function(){addCrystals(20);return "💎 +20 кристаллов!";}},
-"GOLD2024":{reward:function(){coins+=100000;totalEarned+=100000;return "💰 +100 000 монет!";}},
-"SECRET":{reward:function(){skins.ruby.owned=true;saveSkins();renderSkins();return "🔴 Открыт скин «Рубиновый»!";}},
-"ARTEM":{reward:function(){addCrystals(50);shards+=5;return "💎 +50 кристаллов и 🌑 +5 осколков!";}},
-"#GULAU":{reward:function(){startGulau();return "🔥 #Gulau активирован! ×5 тапов на 15 минут!";}},
-"CHEST":{reward:function(){resetChestCooldown();return "🎁 Сундук снова доступен!";}},
-"#PAHAN":{reward:function(){unlockPahan();return "🔥 Автокликер от Pahi разблокирован! Смотри в Настройках.";}},
-"COINS":{reward:function(){coins+=1000000;totalEarned+=1000000;return "💰 +1 000 000 монет!";}},
-"MONEY":{reward:function(){coins+=100000000;totalEarned+=100000000;return "💰 +100 000 000 монет!";}},
-"GOLD":{reward:function(){coins+=1000000000;totalEarned+=1000000000;return "💰 +1 000 000 000 монет!";}},
-"GEMS":{reward:function(){addCrystals(25);return "💎 +25 кристаллов!";}},
-"DIAMOND":{reward:function(){addCrystals(50);return "💎 +50 кристаллов!";}},
-"BLOOD2":{reward:function(){shards+=15;return "🌑 +15 кровавых осколков!";}},
-"SHARDS":{reward:function(){shards+=30;return "🌑 +30 кровавых осколков!";}},
-"LEGEND":{reward:function(){coins+=10000000;totalEarned+=10000000;addCrystals(10);shards+=5;return "🏆 +10M монет, +10 💎, +5 🌑!";}},
-"SMILE":{reward:function(){smileSkinUnlocked=true;smileSkinActive=true;renderSmileSkins();updateDepositSideButton();var modal=$("modal-deposit");if(modal&&!modal.classList.contains("hidden"))renderDeposit();return "🎭 Скин смайлика вклада открыт и активирован!";}},
-"#GENNADII":{reward:function(){skins.gennadii.owned=true;saveSkins();renderSkins();return "🔥 Открыт эксклюзивный скин кнопки «GENNADII»!";}},
-"KROCHLUPIC":{reward:function(){var amount=3.5e27;coins+=amount;totalEarned+=amount;return "💰 +3.5 Oc монет!";}},
-"SUPERKROCH":{reward:function(){var amount=4.5e30;coins+=amount;totalEarned+=amount;return "💰 +4.5 No монет!";}}};
+"BLOOD":{reward:function(){shards+=10;return "🌑 +10!";}},
+"CRYSTAL":{reward:function(){addCrystals(20);return "💎 +20!";}},
+"GOLD2024":{reward:function(){coins+=100000;totalEarned+=100000;return "💰 +100K!";}},
+"SECRET":{reward:function(){skins.ruby.owned=true;saveSkins();renderSkins();return "🔴 Ruby!";}},
+"ARTEM":{reward:function(){addCrystals(50);shards+=5;return "💎 +50, 🌑 +5!";}},
+"#GULAU":{reward:function(){startGulau();return "🔥 #Gulau!";}},
+"CHEST":{reward:function(){resetChestCooldown();return "🎁 Chest!";}},
+"#PAHAN":{reward:function(){unlockPahan();return "🔥 Pahan!";}},
+"COINS":{reward:function(){coins+=1000000;totalEarned+=1000000;return "💰 +1M!";}},
+"MONEY":{reward:function(){coins+=100000000;totalEarned+=100000000;return "💰 +100M!";}},
+"GOLD":{reward:function(){coins+=1000000000;totalEarned+=1000000000;return "💰 +1B!";}},
+"GEMS":{reward:function(){addCrystals(25);return "💎 +25!";}},
+"DIAMOND":{reward:function(){addCrystals(50);return "💎 +50!";}},
+"BLOOD2":{reward:function(){shards+=15;return "🌑 +15!";}},
+"SHARDS":{reward:function(){shards+=30;return "🌑 +30!";}},
+"LEGEND":{reward:function(){coins+=10000000;totalEarned+=10000000;addCrystals(10);shards+=5;return "🏆 +10M!";}},
+"SMILE":{reward:function(){smileSkinUnlocked=true;smileSkinActive=true;renderSmileSkins();updateDepositSideButton();var m=$("modal-deposit");if(m&&!m.classList.contains("hidden"))renderDeposit();return "🎭 Smile!";}},
+"#GENNADII":{reward:function(){skins.gennadii.owned=true;saveSkins();renderSkins();return "🔥 GENNADII!";}},
+"KROCHLUPIC":{reward:function(){var a=3.5e27;coins+=a;totalEarned+=a;return "💰 +3.5 Oc!";}},
+"SUPERKROCH":{reward:function(){var a=4.5e30;coins+=a;totalEarned+=a;return "💰 +4.5 No!";}},
+"DRAGON15":{reward:function(){
+if(!hasProfile()){return "❌ "+t("alert.set_nickname");}
+if(petTotalCount()>=PET_STORAGE_MAX){return "❌ "+t("alert.pet_storage_full");}
+var id=petGenerateId();
+petsState.storage.push({id:id,type:"dragon",tempExpiresAt:Date.now()+15*60*1000});
+petRenderAll();saveGame();
+setTimeout(function(){for(var i=0;i<petsState.storage.length;i++){var p=petsState.storage[i];if(p.id===id&&p.tempExpiresAt){petsState.storage.splice(i,1);petRenderAll();saveGame();var pop=document.createElement("div");pop.className="achievement-popup";pop.style.background="linear-gradient(135deg,#8b0000,#c62828)";pop.style.color="#fff";pop.textContent="⏰ Dragon!";document.body.appendChild(pop);setTimeout(function(){pop.remove();},4000);break;}}},15*60*1000);
+return "🐉 Dragon 15min!";
+}},
+"PHOENIX_SECRET":{reward:function(){
+if(ADMIN_IDS.indexOf(profile.id)===-1){return "❌ Invalid";}
+if(!hasProfile()){return "❌ "+t("alert.set_nickname");}
+if(petTotalCount()>=PET_STORAGE_MAX){return "❌ "+t("alert.pet_storage_full");}
+petsState.storage.push({id:petGenerateId(),type:"phoenix"});
+petRenderAll();saveGame();
+try{playSound("achievement");vibrate(60);}catch(e){}
+return "🦅 Phoenix!";
+}}};
+
+PROMOS[ADMIN_PROMO]={reward:function(){
+if(!hasProfile()){return "❌ "+t("alert.set_nickname");}
+adminState.promoUnlocked=true;
+try{localStorage.setItem("clicker-admin-unlocked","1");}catch(e){}
+adminSetup();
+return t("admin.promo_unlocked");
+}};
+
+function loadAdminState(){try{if(localStorage.getItem("clicker-admin-unlocked")==="1"){adminState.promoUnlocked=true;}}catch(e){}}
+
 function activatePromo(){
 var input=$("promo-input"),result=$("promo-result");if(!input||!result)return;
-var code=input.value.trim().toUpperCase();result.className="";
-if(!code){result.textContent="Введите код.";result.classList.add("error");return;}
+var raw=input.value.trim();var code=raw.toUpperCase();result.className="";
+if(!code){result.textContent=t("promo.enter_code");result.classList.add("error");return;}
 if(!PROMOS[code]){var alt=code.indexOf("#")===0?code.slice(1):("#"+code);if(PROMOS[alt])code=alt;}
-if(usedPromos[code]){result.textContent="Этот код уже использован.";result.classList.add("error");return;}
-if(!PROMOS[code]){result.textContent="Неверный код.";result.classList.add("error");return;}
-var text=PROMOS[code].reward();usedPromos[code]=true;result.textContent=text;result.classList.add("success");input.value="";
+if(!PROMOS[code]&&PROMOS[raw])code=raw;
+if(usedPromos[code]){result.textContent=t("promo.used");result.classList.add("error");return;}
+if(!PROMOS[code]){result.textContent=t("promo.invalid");result.classList.add("error");return;}
+var text=PROMOS[code].reward();
+if(INFINITE_PROMOS.indexOf(code)===-1&&code!==ADMIN_PROMO&&text.indexOf("❌")!==0){usedPromos[code]=true;try{localStorage.setItem("clicker-used-promos",JSON.stringify(usedPromos));}catch(e){}}
+result.textContent=text;
+if(text.indexOf("❌")!==0)result.classList.add("success");else result.classList.add("error");
+input.value="";
 playSound("achievement");vibrate(20);updateUI();renderSkins();saveGame();}
 
 // === PAHAN ===
@@ -1707,8 +1936,6 @@ if(!pahanUnlocked)return;if(pahanActive)return;
 pahanActive=true;pahanTimer=PAHAN_DURATION;
 var btn=$("pahan-btn");if(btn){btn.classList.add("hidden");btn.disabled=true;}
 playSound("achievement");
-var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="🔥 Автокликер от Pahi запущен на 10 секунд!";
-document.body.appendChild(popup);setTimeout(function(){popup.remove();},3000);
 if(pahanTickInterval)clearInterval(pahanTickInterval);
 pahanTickInterval=setInterval(function(){if(!pahanActive)return;coins+=PAHAN_REWARD_PER_TAP;totalEarned+=PAHAN_REWARD_PER_TAP;totalTaps+=1;addQuestProgress("taps",1);addQuestProgress("earn",PAHAN_REWARD_PER_TAP);updateUI();},500);
 if(pahanTimerInterval)clearInterval(pahanTimerInterval);
@@ -1718,10 +1945,7 @@ function stopPahan(){
 pahanActive=false;pahanTimer=0;
 if(pahanTickInterval){clearInterval(pahanTickInterval);pahanTickInterval=null;}
 if(pahanTimerInterval){clearInterval(pahanTimerInterval);pahanTimerInterval=null;}
-pahanUnlocked=false;updatePahanButton();
-var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="⏸️ Pahan остановлен. Автокликер использован.";
-document.body.appendChild(popup);setTimeout(function(){popup.remove();},2500);
-saveGame();}
+pahanUnlocked=false;updatePahanButton();saveGame();}
 
 // === ЛОГО-СЕКРЕТ ===
 function setupLogoSecret(){
@@ -1733,196 +1957,153 @@ logoClickTimer=setTimeout(function(){logoClicks=0;},1500);
 if(logoClicks>=7){logoClicks=0;logoCooldown=Date.now()+10*60*1000;shards+=5;addCrystals(1);
 logo.style.transition="transform 0.3s, color 0.3s";logo.style.transform="scale(1.2)";logo.style.color="#ff1744";
 setTimeout(function(){logo.style.transform="scale(1)";logo.style.color="";},400);
-var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="🌑 Секрет активирован! +5 осколков, +1 кристалл";
+var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="🌑 Secret! +5 🌑, +1 💎";
 document.body.appendChild(popup);setTimeout(function(){popup.remove();},3000);
 playSound("achievement");vibrate(15);updateUI();saveGame();}};}
 
 // === КЛИКЕР 67 ===
 var SECRET_TAPS_NEEDED=6767,SECRET_ACTIVATION_COST=67000000000000000000;
-function setupAdvancedButton(){var btn=$("advanced-btn");if(!btn)return;btn.onclick=function(){var sure=confirm("⚠️ Уверены, что хотите это видеть?");if(!sure)return;var reallySure=confirm("⚠️⚠️ Точно?");if(!reallySure)return;openSecretMenu();};}
+function setupAdvancedButton(){var btn=$("advanced-btn");if(!btn)return;btn.onclick=function(){var s=confirm("⚠️ Sure?");if(!s)return;var r=confirm("⚠️⚠️ Really?");if(!r)return;openSecretMenu();};}
 function openSecretMenu(){var modal=$("modal-secret");if(!modal)return;var sm=$("modal-settings");if(sm)sm.classList.add("hidden");updateSecretUI();modal.classList.remove("hidden");syncScrollLock();}
 function updateSecretUI(){
 var locked=$("secret-locked"),unlockedEl=$("secret-unlocked"),tapsEl=$("secret-taps"),progressEl=$("secret-progress"),toggleBtn=$("secret-toggle"),statusEl=$("secret-status");
 if(!locked||!unlockedEl)return;
 if(secretUnlocked){locked.style.display="none";unlockedEl.style.display="block";
-if(secretAutoClicker){toggleBtn.textContent="🔥 Активировать ещё (67 Qa)";toggleBtn.classList.remove("secret-on");toggleBtn.classList.add("secret-off");toggleBtn.disabled=true;var m=Math.floor(secretAutoClickerTimer/60);var s=secretAutoClickerTimer%60;statusEl.textContent="🔥 Автокликер активен — 67 кликов/сек. Осталось: "+m+":"+(s<10?"0":"")+s;statusEl.style.color="#4caf50";}
-else{toggleBtn.textContent="🔥 Активировать (67 Qa)";toggleBtn.classList.remove("secret-off");toggleBtn.classList.add("secret-on");toggleBtn.disabled=coins<SECRET_ACTIVATION_COST;statusEl.textContent="Разблокирован. Активация: 67 Qa за 30 минут.";statusEl.style.color="#aaa";}}
-else{locked.style.display="block";unlockedEl.style.display="none";if(tapsEl)tapsEl.textContent=formatNumber(totalTaps);var percent=Math.min(100,(totalTaps/SECRET_TAPS_NEEDED)*100);if(progressEl)progressEl.style.width=percent+"%";}}
+if(secretAutoClicker){toggleBtn.textContent=t("secret.activate_again");toggleBtn.disabled=true;var m=Math.floor(secretAutoClickerTimer/60);var s=secretAutoClickerTimer%60;statusEl.textContent=t("secret.active").replace("{time}",m+":"+(s<10?"0":"")+s);statusEl.style.color="#4caf50";}
+else{toggleBtn.textContent=t("secret.activate");toggleBtn.disabled=coins<SECRET_ACTIVATION_COST;statusEl.textContent=t("secret.status_default");statusEl.style.color="#aaa";}}
+else{locked.style.display="block";unlockedEl.style.display="none";if(tapsEl)tapsEl.textContent=formatNumber(totalTaps);var p=Math.min(100,(totalTaps/SECRET_TAPS_NEEDED)*100);if(progressEl)progressEl.style.width=p+"%";}}
 function tryUnlockSecret(){
 if(secretUnlocked)return;
-if(totalTaps<SECRET_TAPS_NEEDED){var left=SECRET_TAPS_NEEDED-totalTaps;alert("❌ Ещё рано!\nНужно сделать "+formatNumber(SECRET_TAPS_NEEDED)+" тапов.\nОсталось: "+formatNumber(left));return;}
-secretUnlocked=true;playSound("achievement");var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="🔥 Кликер 67 разблокирован!";document.body.appendChild(popup);setTimeout(function(){popup.remove();},4000);updateSecretUI();saveGame();}
-function activateSecretAutoClicker(){if(!secretUnlocked)return;if(secretAutoClicker)return;if(coins<SECRET_ACTIVATION_COST){alert("❌ Недостаточно монет!\nНужно: 67 Qa\nУ вас: "+formatNumber(coins));return;}coins-=SECRET_ACTIVATION_COST;secretAutoClicker=true;secretAutoClickerTimer=30*60;startSecretAutoClicker();playSound("achievement");updateSecretUI();updateUI();saveGame();}
-function startSecretAutoClicker(){if(secretClickerInterval)return;secretClickerInterval=setInterval(function(){if(!checkTapLimit())return;var value=getClickValue();var add=value*2;coins+=add;totalEarned+=add;var tapsToAdd=gulauActive?10:2;totalTaps+=tapsToAdd;var shardChanceAC=0.02+globalUpgrades.bloodLuck.count*globalUpgrades.bloodLuck.amount;if(bloodMoonActive&&Math.random()<shardChanceAC)shards+=1;updateUI();},30);}
+if(totalTaps<SECRET_TAPS_NEEDED){var left=SECRET_TAPS_NEEDED-totalTaps;alert(t("secret.too_early").replace("{need}",formatNumber(SECRET_TAPS_NEEDED)).replace("{left}",formatNumber(left)));return;}
+secretUnlocked=true;playSound("achievement");var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent=t("secret.unlocked");document.body.appendChild(popup);setTimeout(function(){popup.remove();},4000);updateSecretUI();saveGame();}
+function activateSecretAutoClicker(){if(!secretUnlocked)return;if(secretAutoClicker)return;if(coins<SECRET_ACTIVATION_COST){alert(t("secret.no_coins"));return;}coins-=SECRET_ACTIVATION_COST;secretAutoClicker=true;secretAutoClickerTimer=30*60;startSecretAutoClicker();playSound("achievement");updateSecretUI();updateUI();saveGame();}
+function startSecretAutoClicker(){if(secretClickerInterval)return;secretClickerInterval=setInterval(function(){if(!checkTapLimit())return;var v=getClickValue();var a=v*2;coins+=a;totalEarned+=a;totalTaps+=gulauActive?10:2;var sc=0.02+globalUpgrades.bloodLuck.count*globalUpgrades.bloodLuck.amount;if(bloodMoonActive&&Math.random()<sc)shards+=1;updateUI();},30);}
 function stopSecretAutoClicker(){if(secretClickerInterval){clearInterval(secretClickerInterval);secretClickerInterval=null;}secretAutoClicker=false;secretAutoClickerTimer=0;}
 
 // === УТИЛИТЫ ===
-function formatTime(seconds){if(seconds<60)return seconds+" с";if(seconds<3600)return Math.floor(seconds/60)+" мин";var h=Math.floor(seconds/3600);var m=Math.floor((seconds%3600)/60);return h+" ч "+m+" мин";}
+function formatTime(seconds){if(seconds<60)return seconds+t("common.seconds_short");if(seconds<3600)return Math.floor(seconds/60)+t("common.minutes_short");var h=Math.floor(seconds/3600);var m=Math.floor((seconds%3600)/60);return h+t("common.hours_short")+m+t("common.minutes_short");}
 function getCPS(){
 var cps=0;
 for(var id in upgrades){if(upgrades[id].effect==="auto"){var amount=upgrades[id].count*upgrades[id].amount;if(id==="genesis"){amount*=1+globalUpgrades.genesisBoost.count*globalUpgrades.genesisBoost.amount;}else if(id==="absolute"){amount*=1+globalUpgrades.absoluteBoost.count*globalUpgrades.absoluteBoost.amount;}cps+=amount;}}
 var moonBonus=bloodMoonActive?2:1;
 var petBonus=1+(typeof petGetIncomeBonus==="function"?petGetIncomeBonus():0);
 var superBonus=(typeof superEventActive!=="undefined"&&superEventActive)?superEventCoinMult:1;
-return cps*goldenMultiplier*moonBonus*eventMultiplier*crystalBoostMultiplier*getItemBonus()*petBonus*superBonus;}
+var adminBonus=(typeof adminGetBoostMult==="function")?adminGetBoostMult():1;
+var clanBonus=1;
+if(typeof clanGetBonus==="function")clanBonus=1+clanGetBonus();
+return cps*goldenMultiplier*moonBonus*eventMultiplier*crystalBoostMultiplier*getItemBonus()*petBonus*superBonus*adminBonus*clanBonus;}
 function getClickValue(){
 var base=coinsPerClick+getCPS()*0.05+globalUpgrades.superClicker.count;
 var moonBonus=bloodMoonActive?2:1;
 var petBonus=1+(typeof petGetIncomeBonus==="function"?petGetIncomeBonus():0);
 var superBonus=(typeof superEventActive!=="undefined"&&superEventActive)?superEventTapMult:1;
-return base*goldenMultiplier*moonBonus*eventMultiplier*crystalBoostMultiplier*getItemBonus()*petBonus*superBonus;}
+var adminBonus=(typeof adminGetBoostMult==="function")?adminGetBoostMult():1;
+return base*goldenMultiplier*moonBonus*eventMultiplier*crystalBoostMultiplier*getItemBonus()*petBonus*superBonus*adminBonus;}
 
 // === ЗОЛОТАЯ МОНЕТКА ===
 function spawnGoldenCoin(){
 if(!settings.showGolden)return;if($("golden-coin"))return;
 var coin=document.createElement("div");coin.id="golden-coin";coin.textContent="🪙";
 coin.style.left=Math.random()*Math.max(0,window.innerWidth-80)+"px";coin.style.top=Math.random()*Math.max(0,window.innerHeight-80)+"px";
-coin.onclick=function(){goldenMultiplier=7;goldenTimer=30;var text="🌟 x7 доход на 30 секунд!";if(Math.random()<0.2){addCrystals(1);text="🌟 x7 доход + 💎 1 кристалл!";}var banner=document.createElement("div");banner.id="golden-bonus";banner.textContent=text;document.body.appendChild(banner);playSound("ui");coin.remove();addQuestProgress("golden",1);updateUI();saveGame();};
+coin.onclick=function(){goldenMultiplier=7;goldenTimer=30;var text="🌟 x7!";if(Math.random()<0.2){addCrystals(1);text="🌟 x7 + 💎!";}var b=document.createElement("div");b.id="golden-bonus";b.textContent=text;document.body.appendChild(b);playSound("ui");coin.remove();addQuestProgress("golden",1);updateUI();saveGame();};
 document.body.appendChild(coin);
 setTimeout(function(){if(coin.parentNode)coin.remove();},8000);}
 
-// === СЕКРЕТНЫЙ ЗОЛОТОЙ ТАП ===
 var goldenSecretTimer=null,goldenSecretActive=false,_lastGoldenSecretSlot=-1;
 function startGoldenSecretSchedule(){if(goldenSecretTimer)clearInterval(goldenSecretTimer);goldenSecretTimer=setInterval(function(){if(goldenSecretActive)return;var d=new Date();var m=d.getMinutes();var h=d.getHours();if(m===0||m===30){var slot=h*2+(m===30?1:0);if(slot!==_lastGoldenSecretSlot){_lastGoldenSecretSlot=slot;activateGoldenSecret();}}},5000);}
 function activateGoldenSecret(){if(goldenSecretActive)return;goldenSecretActive=true;var btn=$("click-btn");if(btn)btn.classList.add("golden-tap");setTimeout(function(){deactivateGoldenSecret();},30*1000);}
 function deactivateGoldenSecret(){goldenSecretActive=false;var btn=$("click-btn");if(btn)btn.classList.remove("golden-tap");}
-function onGoldenSecretTap(){if(!goldenSecretActive)return false;goldenSecretActive=false;var btn=$("click-btn");if(btn)btn.classList.remove("golden-tap");addCrystals(1);if(!unlocked._goldenSecretCount)unlocked._goldenSecretCount=0;unlocked._goldenSecretCount++;var popup=document.createElement("div");popup.className="achievement-popup";popup.style.background="linear-gradient(135deg,#ffd54f,#ff8f00)";popup.style.color="#1a1a2e";popup.textContent="✨ Золотой тап! +1 💎 (всего: "+unlocked._goldenSecretCount+")";document.body.appendChild(popup);setTimeout(function(){popup.remove();},3500);playSound("achievement");updateUI();checkAchievements();saveGame();return true;}
+function onGoldenSecretTap(){if(!goldenSecretActive)return false;goldenSecretActive=false;var btn=$("click-btn");if(btn)btn.classList.remove("golden-tap");addCrystals(1);if(!unlocked._goldenSecretCount)unlocked._goldenSecretCount=0;unlocked._goldenSecretCount++;var p=document.createElement("div");p.className="achievement-popup";p.style.background="linear-gradient(135deg,#ffd54f,#ff8f00)";p.style.color="#1a1a2e";p.textContent="✨ +1 💎";document.body.appendChild(p);setTimeout(function(){p.remove();},3500);playSound("achievement");updateUI();checkAchievements();saveGame();return true;}
 
 // === ЭФФЕКТЫ ===
-function showFloatPlus(x,y,amount){if(!settings.showFloat)return;var el=document.createElement("div");el.className="float-plus";if(amount<1000)el.classList.add("color-small");else if(amount<1000000)el.classList.add("color-medium");else if(amount<1000000000)el.classList.add("color-large");else el.classList.add("color-huge");el.textContent="+"+formatNumber(amount);el.style.left=x+"px";el.style.top=y+"px";document.body.appendChild(el);setTimeout(function(){el.remove();},800);}
-function spawnTapParticles(x,y){var now=Date.now();if(window.__lastParticleTime&&now-window.__lastParticleTime<250)return;window.__lastParticleTime=now;var count=settings.lowParticles?2:(3+Math.floor(Math.random()*2));for(var i=0;i<count;i++){var p=document.createElement("div");p.className="tap-particle";p.textContent="⭐";var angle=(Math.PI*2/count)*i+(Math.random()*0.6-0.3);var dist=40+Math.random()*35;p.style.setProperty("--dx",(Math.cos(angle)*dist)+"px");p.style.setProperty("--dy",(Math.sin(angle)*dist)+"px");p.style.setProperty("--rot",(Math.random()*720-360)+"deg");p.style.left=x+"px";p.style.top=y+"px";p.style.fontSize=(10+Math.random()*6)+"px";document.body.appendChild(p);setTimeout(function(){p.remove();},600);}}
-function pulseCounter(){var el=$("counter");if(!el)return;var nowPulse=Date.now();if(window.__pulseCooldown&&nowPulse-window.__pulseCooldown<200&&nowPulse>=window.__pulseCooldown)return;window.__pulseCooldown=nowPulse;el.classList.remove("pulse");void el.offsetWidth;el.classList.add("pulse");setTimeout(function(){el.classList.remove("pulse");},200);}
-function setCoinsAnimated(newValue){var el=$("coins");if(!el)return;var current=lastDisplayedCoins;if(newValue<=current){el.textContent=formatNumber(newValue);lastDisplayedCoins=newValue;return;}var diff=newValue-current;if(diff<50){el.textContent=formatNumber(newValue);lastDisplayedCoins=newValue;return;}var steps=Math.min(12,Math.max(3,Math.floor(diff/500)+3));var step=0;var startValue=current;if(window.__coinsAnimInterval){clearInterval(window.__coinsAnimInterval);window.__coinsAnimInterval=null;}window.__coinsAnimInterval=setInterval(function(){step++;if(step>=steps){el.textContent=formatNumber(newValue);lastDisplayedCoins=newValue;clearInterval(window.__coinsAnimInterval);window.__coinsAnimInterval=null;return;}var v=startValue+(diff*(step/steps));el.textContent=formatNumber(v);lastDisplayedCoins=v;},50);}
-function showShardDrop(x,y){var el=document.createElement("div");el.className="shard-drop";el.textContent="🌑 +1 осколок!";el.style.left=x+"px";el.style.top=y+"px";document.body.appendChild(el);setTimeout(function(){el.remove();},1500);}
+function showFloatPlus(x,y,amount,isCrit){if(!settings.showFloat)return;var el=document.createElement("div");el.className="float-plus";if(isCrit){el.classList.add("crit");el.textContent="+"+formatNumber(amount)+"!";}else{if(amount<1000)el.classList.add("color-small");else if(amount<1000000)el.classList.add("color-medium");else if(amount<1000000000)el.classList.add("color-large");else el.classList.add("color-huge");el.textContent="+"+formatNumber(amount);}el.style.left=x+"px";el.style.top=y+"px";document.body.appendChild(el);setTimeout(function(){el.remove();},900);}
+function spawnTapParticles(x,y){var now=Date.now();if(window.__lastParticleTime&&now-window.__lastParticleTime<250)return;window.__lastParticleTime=now;var c=settings.lowParticles?2:(3+Math.floor(Math.random()*2));for(var i=0;i<c;i++){var p=document.createElement("div");p.className="tap-particle";p.textContent="⭐";var a=(Math.PI*2/c)*i+(Math.random()*0.6-0.3);var d=40+Math.random()*35;p.style.setProperty("--dx",(Math.cos(a)*d)+"px");p.style.setProperty("--dy",(Math.sin(a)*d)+"px");p.style.setProperty("--rot",(Math.random()*720-360)+"deg");p.style.left=x+"px";p.style.top=y+"px";p.style.fontSize=(10+Math.random()*6)+"px";document.body.appendChild(p);setTimeout(function(){p.remove();},600);}}
+function pulseCounter(){var el=$("counter");if(!el)return;var n=Date.now();if(window.__pulseCooldown&&n-window.__pulseCooldown<200&&n>=window.__pulseCooldown)return;window.__pulseCooldown=n;el.classList.remove("pulse");void el.offsetWidth;el.classList.add("pulse");setTimeout(function(){el.classList.remove("pulse");},200);}
+function setCoinsAnimated(n){var el=$("coins");if(!el)return;var c=lastDisplayedCoins;if(n<=c){el.textContent=formatNumber(n);lastDisplayedCoins=n;return;}var diff=n-c;if(diff<50){el.textContent=formatNumber(n);lastDisplayedCoins=n;return;}var steps=Math.min(12,Math.max(3,Math.floor(diff/500)+3));var s=0;var sv=c;if(window.__coinsAnimInterval){clearInterval(window.__coinsAnimInterval);window.__coinsAnimInterval=null;}window.__coinsAnimInterval=setInterval(function(){s++;if(s>=steps){el.textContent=formatNumber(n);lastDisplayedCoins=n;clearInterval(window.__coinsAnimInterval);window.__coinsAnimInterval=null;return;}var v=sv+(diff*(s/steps));el.textContent=formatNumber(v);lastDisplayedCoins=v;},50);}
+function showShardDrop(x,y){var el=document.createElement("div");el.className="shard-drop";el.textContent="🌑 +1";el.style.left=x+"px";el.style.top=y+"px";document.body.appendChild(el);setTimeout(function(){el.remove();},1500);}
 
 // === ДОСТИЖЕНИЯ ===
 var achFilter="all";
-function isAchievementKey(key){return key.charAt(0)!=="_";}
+function isAchievementKey(k){return k.charAt(0)!=="_";}
 function renderAchievements(){
 var list=$("achievements-list");if(!list)return;list.innerHTML="";
 var counts={bronze:0,silver:0,gold:0,none:0,ub:0,us:0,ug:0,un:0};
-achievements.forEach(function(a){var tier=a.tier||"none";var totalKey=tier==="bronze"?"bronze":tier==="silver"?"silver":tier==="gold"?"gold":"none";counts[totalKey]++;if(unlocked[a.id]){var uKey=tier==="bronze"?"ub":tier==="silver"?"us":tier==="gold"?"ug":"un";counts[uKey]++;}});
+achievements.forEach(function(a){var tier=a.tier||"none";var tk=tier==="bronze"?"bronze":tier==="silver"?"silver":tier==="gold"?"gold":"none";counts[tk]++;if(unlocked[a.id]){var uk=tier==="bronze"?"ub":tier==="silver"?"us":tier==="gold"?"ug":"un";counts[uk]++;}});
 var summary=document.createElement("div");summary.className="ach-summary";
-summary.innerHTML='<div class="ach-sum-item bronze">🥉 Бронза: <b>'+counts.ub+' / '+counts.bronze+'</b></div>'+'<div class="ach-sum-item silver">🥈 Серебро: <b>'+counts.us+' / '+counts.silver+'</b></div>'+'<div class="ach-sum-item gold">🥇 Золото: <b>'+counts.ug+' / '+counts.gold+'</b></div>';
+summary.innerHTML='<div class="ach-sum-item bronze">🥉 <b>'+counts.ub+' / '+counts.bronze+'</b></div>'+'<div class="ach-sum-item silver">🥈 <b>'+counts.us+' / '+counts.silver+'</b></div>'+'<div class="ach-sum-item gold">🥇 <b>'+counts.ug+' / '+counts.gold+'</b></div>';
 list.appendChild(summary);
-achievements.forEach(function(a){
-if(achFilter!=="all"&&(a.tier||"none")!==achFilter)return;
-var div=document.createElement("div");var classes="achievement";
-if(unlocked[a.id])classes+=" unlocked";
-if(a.tier)classes+=" tier-"+a.tier;
-div.className=classes;
-var tierBadge=a.tier==="gold"?"🥇":a.tier==="silver"?"🥈":a.tier==="bronze"?"🥉":"";
-var reward=a.tier==="gold"?5:a.tier==="silver"?3:1;
-div.innerHTML='<div class="icon">'+a.icon+'</div>'+'<div class="info">'+'<div class="title">'+(tierBadge?tierBadge+" ":"")+a.title+'</div>'+'<div class="desc">'+a.desc+' · +'+reward+' 💎</div>'+'</div>';
-list.appendChild(div);});}
-function setupAchFilters(){var btns=document.querySelectorAll(".ach-filter");btns.forEach(function(btn){btn.onclick=function(){btns.forEach(function(b){b.classList.remove("active");});btn.classList.add("active");achFilter=btn.dataset.tier||"all";renderAchievements();};});}
-function checkAchievements(){
-var didUnlock=false;
-achievements.forEach(function(a){
-if(!unlocked[a.id]&&a.check()){
-unlocked[a.id]=true;
-var reward=a.tier==="gold"?5:a.tier==="silver"?3:1;
-addCrystals(reward);
-showAchievementPopup(a,reward);
-didUnlock=true;
-}
-});
-if(didUnlock)saveGame();
-}
-function showAchievementPopup(a,reward){var tierIcon=a.tier==="gold"?"🥇":a.tier==="silver"?"🥈":a.tier==="bronze"?"🥉":"";var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent=(tierIcon?tierIcon+" ":"")+a.icon+" "+a.title+" (+"+reward+" 💎)";document.body.appendChild(popup);playSound("achievement");vibrate(20);setTimeout(function(){popup.remove();},2500);}
+achievements.forEach(function(a){if(achFilter!=="all"&&(a.tier||"none")!==achFilter)return;var div=document.createElement("div");var c="achievement";if(unlocked[a.id])c+=" unlocked";if(a.tier)c+=" tier-"+a.tier;div.className=c;var tb=a.tier==="gold"?"🥇":a.tier==="silver"?"🥈":a.tier==="bronze"?"🥉":"";var rw=a.tier==="gold"?5:a.tier==="silver"?3:1;div.innerHTML='<div class="icon">'+a.icon+'</div>'+'<div class="info">'+'<div class="title">'+(tb?tb+" ":"")+a.title+'</div>'+'<div class="desc">'+a.desc+' · +'+rw+' 💎</div>'+'</div>';list.appendChild(div);});}
+function setupAchFilters(){var btns=document.querySelectorAll(".ach-filter");btns.forEach(function(b){b.onclick=function(){btns.forEach(function(x){x.classList.remove("active");});b.classList.add("active");achFilter=b.dataset.tier||"all";renderAchievements();};});}
+function checkAchievements(){if(window.__checkingAch)return;window.__checkingAch=true;try{var d=false;achievements.forEach(function(a){if(!unlocked[a.id]&&a.check()){unlocked[a.id]=true;var rw=a.tier==="gold"?5:a.tier==="silver"?3:1;addCrystals(rw);showAchievementPopup(a,rw);d=true;}});if(d)saveGame();}finally{window.__checkingAch=false;}}
+function showAchievementPopup(a,rw){var tb=a.tier==="gold"?"🥇":a.tier==="silver"?"🥈":a.tier==="bronze"?"🥉":"";var p=document.createElement("div");p.className="achievement-popup";p.textContent=(tb?tb+" ":"")+a.icon+" "+a.title+" (+"+rw+" 💎)";document.body.appendChild(p);playSound("achievement");vibrate(20);setTimeout(function(){p.remove();},2500);}
 
 // === МАГАЗИН ===
-function buildCpsLine(up){
-var unit=(up.effect==="click")?"/тап":"/сек";
-var current=up.count*up.amount;
-var isMax=up.count>=UPGRADE_MAX_LEVEL;
-if(isMax)return "<b>"+formatNumber(current)+unit+"</b>";
-var next=current+up.amount;
-return "<b>"+formatNumber(current)+unit+"</b> → "+formatNumber(next)+unit;}
+function buildCpsLine(up){var u=(up.effect==="click")?"/t":"/s";var c=up.count*up.amount;var isMax=up.count>=UPGRADE_MAX_LEVEL;if(isMax)return "<b>"+formatNumber(c)+u+"</b>";return "<b>"+formatNumber(c)+u+"</b> → "+formatNumber(c+up.amount)+u;}
 function renderShop(){
 var list=$("shop-list");if(!list)return;list.innerHTML="";
 var milestones=[50,100,250,500];
 for(var id in upgrades){var up=upgrades[id];var div=document.createElement("div");div.className="item";
-var isMax=up.count>=UPGRADE_MAX_LEVEL;
-var milestoneHtml="";
-milestones.forEach(function(m){if(up.count>=m)milestoneHtml+='<span class="milestone-badge">🏅</span>';});
-var upMult=up.buyMult||1;
-var multButtons='<div class="mult-row">';
-multButtons+='<button class="mult-btn'+(upMult===1?" active":"")+'" data-mult="1" data-uid="'+id+'">×1</button>';
-if(up.unlocked10){multButtons+='<button class="mult-btn'+(upMult===10?" active":"")+'" data-mult="10" data-uid="'+id+'">×10</button>';}
-else{multButtons+='<button class="mult-btn locked" data-unlock10="'+id+'">×10 🔒'+BUY_UNLOCK_10+'💎</button>';}
-if(up.unlocked25){multButtons+='<button class="mult-btn'+(upMult===25?" active":"")+'" data-mult="25" data-uid="'+id+'">×25</button>';}
-else{multButtons+='<button class="mult-btn locked" data-unlock25="'+id+'">×25 🔒'+BUY_UNLOCK_25+'💎</button>';}
-multButtons+='</div>';
-var btnHtml=isMax?'<button class="buy" data-id="'+id+'" disabled style="background:#4caf50;color:#fff">✓ Максимум</button>':'<div class="buy-wrap">'+multButtons+'<button class="buy" data-id="'+id+'">Купить ×'+upMult+'</button></div>';
-var costLine=isMax?'':' • 💰 <span id="cost-'+id+'">'+formatNumber(up.cost)+'</span>';
-div.innerHTML='<div class="info">'+'<div class="name">'+up.name+' '+milestoneHtml+'</div>'+'<div class="desc">'+up.desc+'</div>'+'<div class="cps-info" id="cpsline-'+id+'">'+buildCpsLine(up)+'</div>'+'</div>'+'<div class="right">'+'<div class="owned">Куплено: <span id="owned-'+id+'">0</span> / '+UPGRADE_MAX_LEVEL+costLine+'</div>'+btnHtml+'</div>';
+var isMax=up.count>=UPGRADE_MAX_LEVEL;var mh="";
+milestones.forEach(function(m){if(up.count>=m)mh+='<span class="milestone-badge">🏅</span>';});
+var uM=up.buyMult||1;var mb='<div class="mult-row">';
+mb+='<button class="mult-btn'+(uM===1?" active":"")+'" data-mult="1" data-uid="'+id+'">×1</button>';
+if(up.unlocked10){mb+='<button class="mult-btn'+(uM===10?" active":"")+'" data-mult="10" data-uid="'+id+'">×10</button>';}
+else{mb+='<button class="mult-btn locked" data-unlock10="'+id+'">×10 🔒'+BUY_UNLOCK_10+'💎</button>';}
+if(up.unlocked25){mb+='<button class="mult-btn'+(uM===25?" active":"")+'" data-mult="25" data-uid="'+id+'">×25</button>';}
+else{mb+='<button class="mult-btn locked" data-unlock25="'+id+'">×25 🔒'+BUY_UNLOCK_25+'💎</button>';}
+mb+='</div>';
+var bh=isMax?'<button class="buy" data-id="'+id+'" disabled style="background:#4caf50;color:#fff">✓ '+t("up.max_short")+'</button>':'<div class="buy-wrap">'+mb+'<button class="buy" data-id="'+id+'">'+t("up.buy_short")+' ×'+uM+'</button></div>';
+var cl=isMax?'':' • 💰 <span id="cost-'+id+'">'+formatNumber(up.cost)+'</span>';
+div.innerHTML='<div class="info"><div class="name">'+up.name+' '+mh+'</div><div class="desc">'+up.desc+'</div><div class="cps-info" id="cpsline-'+id+'">'+buildCpsLine(up)+'</div></div><div class="right"><div class="owned">'+t("up.bought")+' <span id="owned-'+id+'">0</span> / '+UPGRADE_MAX_LEVEL+cl+'</div>'+bh+'</div>';
 list.appendChild(div);}
-document.querySelectorAll(".buy[data-id]").forEach(function(btn){btn.onclick=function(){
-var id=btn.dataset.id;var up=upgrades[id];if(!up)return;
-if(up.count>=UPGRADE_MAX_LEVEL)return;
-var maxToBuy=up.buyMult||1;
-if(up.count+maxToBuy>UPGRADE_MAX_LEVEL)maxToBuy=UPGRADE_MAX_LEVEL-up.count;
-var totalCost=0;
-for(var i=0;i<maxToBuy;i++){totalCost+=Math.floor(up.baseCost*Math.pow(UPGRADE_COST_MULT,up.count+i));}
-if(coins<totalCost){alert("Недостаточно монет!\nНужно: "+formatNumber(totalCost)+"\nУ вас: "+formatNumber(coins));return;}
-coins-=totalCost;
-for(var i=0;i<maxToBuy;i++){up.count++;if(up.effect==="click")coinsPerClick+=up.amount;}
-up.cost=up.count>=UPGRADE_MAX_LEVEL?Infinity:Math.floor(up.baseCost*Math.pow(UPGRADE_COST_MULT,up.count));
-addQuestProgress("upgrades",maxToBuy);playSound("ui");vibrate(10);updateUI();checkRewardTab();saveGame();
-};});
-document.querySelectorAll(".mult-btn[data-mult]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var m=parseInt(btn.dataset.mult);var id=btn.dataset.uid;var up=upgrades[id];if(!up)return;if(m===10&&!up.unlocked10)return;if(m===25&&!up.unlocked25)return;up.buyMult=m;renderShop();saveGame();};});
-document.querySelectorAll(".mult-btn[data-unlock10]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var id=btn.dataset.unlock10;var up=upgrades[id];if(!up)return;if(up.unlocked10)return;if(crystals<BUY_UNLOCK_10){alert("Недостаточно кристаллов!\nНужно: "+BUY_UNLOCK_10+" 💎\nУ вас: "+crystals+" 💎");return;}if(!confirm("Разблокировать ×10 для «"+up.name+"» за "+BUY_UNLOCK_10+" 💎?"))return;crystals-=BUY_UNLOCK_10;up.unlocked10=true;up.buyMult=10;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});
-document.querySelectorAll(".mult-btn[data-unlock25]").forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var id=btn.dataset.unlock25;var up=upgrades[id];if(!up)return;if(up.unlocked25)return;if(crystals<BUY_UNLOCK_25){alert("Недостаточно кристаллов!\nНужно: "+BUY_UNLOCK_25+" 💎\nУ вас: "+crystals+" 💎");return;}if(!confirm("Разблокировать ×25 для «"+up.name+"» за "+BUY_UNLOCK_25+" 💎?"))return;crystals-=BUY_UNLOCK_25;up.unlocked25=true;up.buyMult=25;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});}
+document.querySelectorAll(".buy[data-id]").forEach(function(btn){btn.onclick=function(){var id=btn.dataset.id;var up=upgrades[id];if(!up)return;if(up.count>=UPGRADE_MAX_LEVEL)return;var m=up.buyMult||1;if(up.count+m>UPGRADE_MAX_LEVEL)m=UPGRADE_MAX_LEVEL-up.count;var tc=0;for(var i=0;i<m;i++){tc+=Math.floor(up.baseCost*Math.pow(UPGRADE_COST_MULT,up.count+i));}if(coins<tc){alert(t("alert.not_enough_coins",formatNumber(tc),formatNumber(coins)));return;}coins-=tc;for(var i=0;i<m;i++){up.count++;if(up.effect==="click")coinsPerClick+=up.amount;}up.cost=up.count>=UPGRADE_MAX_LEVEL?Infinity:Math.floor(up.baseCost*Math.pow(UPGRADE_COST_MULT,up.count));var ie=btn.closest(".item");if(ie){ie.classList.remove("just-bought");void ie.offsetWidth;ie.classList.add("just-bought");setTimeout(function(){ie.classList.remove("just-bought");},600);}addQuestProgress("upgrades",m);playSound("ui");vibrate(10);updateUI();checkRewardTab();saveGame();};});
+document.querySelectorAll(".mult-btn[data-mult]").forEach(function(b){b.onclick=function(e){e.stopPropagation();var m=parseInt(b.dataset.mult);var id=b.dataset.uid;var up=upgrades[id];if(!up)return;if(m===10&&!up.unlocked10)return;if(m===25&&!up.unlocked25)return;up.buyMult=m;renderShop();saveGame();};});
+document.querySelectorAll(".mult-btn[data-unlock10]").forEach(function(b){b.onclick=function(e){e.stopPropagation();var id=b.dataset.unlock10;var up=upgrades[id];if(!up||up.unlocked10)return;if(crystals<BUY_UNLOCK_10){alert(t("alert.not_enough_crystals",BUY_UNLOCK_10,crystals));return;}if(!confirm(t("up.unlock10_confirm").replace("{price}",BUY_UNLOCK_10)))return;crystals-=BUY_UNLOCK_10;up.unlocked10=true;up.buyMult=10;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});
+document.querySelectorAll(".mult-btn[data-unlock25]").forEach(function(b){b.onclick=function(e){e.stopPropagation();var id=b.dataset.unlock25;var up=upgrades[id];if(!up||up.unlocked25)return;if(crystals<BUY_UNLOCK_25){alert(t("alert.not_enough_crystals",BUY_UNLOCK_25,crystals));return;}if(!confirm(t("up.unlock25_confirm").replace("{price}",BUY_UNLOCK_25)))return;crystals-=BUY_UNLOCK_25;up.unlocked25=true;up.buyMult=25;playSound("ui");vibrate(10);updateUI();renderShop();saveGame();};});}
 
-// === ЛИЧНЫЙ РЕКОРД ===
-function checkPersonalRecord(){var now=Date.now();if(now-lastRecordCheck<3000)return;lastRecordCheck=now;if(coins>personalBestCoins){personalBestCoins=coins;saveGame();}}
+function checkPersonalRecord(){var n=Date.now();if(n-lastRecordCheck<3000)return;lastRecordCheck=n;if(coins>personalBestCoins){personalBestCoins=coins;saveGame();}}
 
 // === UI ===
+var _lastBannerCheck=0,_lastNoteCheck=0;
 function updateUI(){
 setCoinsAnimated(coins);
 $("cps").textContent=formatNumber(getCPS())+(goldenMultiplier>1?" (x7!)":"");
 $("crystals").textContent=crystals;
-var shardsEl=$("shards");if(shardsEl)shardsEl.textContent=shards;
+var s=$("shards");if(s)s.textContent=shards;
 var ib=$("item-bonus");if(ib)ib.textContent="+"+Math.round((getItemBonus()-1)*100)+"%";
-var now=Date.now();
-if(now-lastShopUpdate>500||now<lastShopUpdate){
-lastShopUpdate=now;
-for(var id in upgrades){var up=upgrades[id];var owned=$("owned-"+id),cost=$("cost-"+id);if(owned)owned.textContent=up.count;if(cost)cost.textContent=formatNumber(up.cost);var cpsLine=$("cpsline-"+id);if(cpsLine)cpsLine.innerHTML=buildCpsLine(up);var btn=document.querySelector('.buy[data-id="'+id+'"]');if(btn){if(up.count>=UPGRADE_MAX_LEVEL){btn.disabled=true;btn.textContent="✓ Максимум";btn.style.background="#4caf50";btn.style.color="#fff";}else{btn.disabled=coins<up.cost;}}}
+var n=Date.now();
+if(n-lastShopUpdate>500||n<lastShopUpdate){
+lastShopUpdate=n;
+for(var id in upgrades){var up=upgrades[id];var o=$("owned-"+id),c=$("cost-"+id);if(o)o.textContent=up.count;if(c)c.textContent=formatNumber(up.cost);var cl=$("cpsline-"+id);if(cl)cl.innerHTML=buildCpsLine(up);var btn=document.querySelector('.buy[data-id="'+id+'"]');if(btn){if(up.count>=UPGRADE_MAX_LEVEL){btn.disabled=true;btn.textContent="✓ "+t("up.max_short");btn.style.background="#4caf50";btn.style.color="#fff";}else{btn.disabled=coins<up.cost;}}}
 updateGlobalShopUI();
 }
-var secretModal=$("modal-secret");if(secretModal&&!secretModal.classList.contains("hidden"))updateSecretUI();
-var itemsModal=$("modal-items");if(itemsModal&&!itemsModal.classList.contains("hidden")){var shardsEl2=$("items-shards"),crystalsEl2=$("items-crystals");if(shardsEl2)shardsEl2.textContent=shards;if(crystalsEl2)crystalsEl2.textContent=crystals;}
-checkNotesUnlock();
-var depModal=$("modal-deposit");
-if(depModal&&!depModal.classList.contains("hidden")){var depBtn=$("deposit-buy-btn");if(depBtn&&depositUnlocked&&depositLevel<25){var nD=DEPOSIT_LEVELS[depositLevel].cost;depBtn.disabled=coins<nD;}}}
+var sm=$("modal-secret");if(sm&&!sm.classList.contains("hidden"))updateSecretUI();
+if(n-_lastNoteCheck>5000){_lastNoteCheck=n;checkNotesUnlock();}
+var dm=$("modal-deposit");if(dm&&!dm.classList.contains("hidden")){var db2=$("deposit-buy-btn");if(db2&&depositUnlocked&&depositLevel<25){var nd=DEPOSIT_LEVELS[depositLevel].cost;db2.disabled=coins<nd;}}
+if(typeof dmUpdateSideBadge==="function")dmUpdateSideBadge();
+if(n-_lastBannerCheck>5000){_lastBannerCheck=n;if(typeof checkBannersUnlock==="function")checkBannersUnlock();}}
 
-// === СТАТИСТИКА ===
 function updateStats(){
 $("stat-coins").textContent=formatNumber(coins);$("stat-earned").textContent=formatNumber(totalEarned);$("stat-taps").textContent=formatNumber(totalTaps);$("stat-cps").textContent=formatNumber(getCPS());$("stat-per-click").textContent=formatNumber(getClickValue());$("stat-crystals").textContent=crystals;
-var statShards=$("stat-shards");if(statShards)statShards.textContent=shards;
-var statShardsTotal=$("stat-shards-total");if(statShardsTotal)statShardsTotal.textContent=formatNumber(totalShardsEarned);
-var statTime=$("stat-time");if(statTime)statTime.textContent=formatTime(totalPlayTime);
-var achCount=0;
-for(var id in unlocked){if(!isAchievementKey(id))continue;if(unlocked[id])achCount++;}
-$("stat-ach").textContent=achCount;
-var totalEl=$("stat-ach-total");if(totalEl)totalEl.textContent=achievements.length;
-var recEl=$("stat-record");if(recEl)recEl.textContent=formatNumber(personalBestCoins);
-var mgEl=$("stat-minigame");if(mgEl)mgEl.textContent=minigameBest;}
+var ss=$("stat-shards");if(ss)ss.textContent=shards;
+var sst=$("stat-shards-total");if(sst)sst.textContent=formatNumber(totalShardsEarned);
+var st=$("stat-time");if(st)st.textContent=formatTime(totalPlayTime);
+var ac=0;for(var id in unlocked){if(!isAchievementKey(id))continue;if(unlocked[id])ac++;}
+$("stat-ach").textContent=ac;
+var te=$("stat-ach-total");if(te)te.textContent=achievements.length;
+var re=$("stat-record");if(re)re.textContent=formatNumber(personalBestCoins);
+var mg=$("stat-minigame");if(mg)mg.textContent=minigameBest;}
 
-// === ПЕЧЕНЬКА ===
 function getTodayKeyFortune(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
-function updateFortuneButton(){var btn=$("fortune-btn");if(!btn)return;var last=localStorage.getItem(FORTUNE_KEY)||"";var today=getTodayKeyFortune();if(last===today){btn.disabled=true;btn.textContent="🥠 До завтра";btn.classList.remove("available");}else{btn.disabled=false;btn.textContent="🥠 Что сегодня?";btn.classList.add("available");}}
+function updateFortuneButton(){var btn=$("fortune-btn");if(!btn)return;var last=localStorage.getItem(FORTUNE_KEY)||"";var t2=getTodayKeyFortune();if(last===t2){btn.disabled=true;btn.textContent=t("main.fortune_wait");btn.classList.remove("available");}else{btn.disabled=false;btn.textContent=t("main.fortune");btn.classList.add("available");}}
 function showFortune(){
 var btn=$("fortune-btn");if(!btn||btn.disabled)return;
 var last=localStorage.getItem(FORTUNE_KEY)||"";var today=getTodayKeyFortune();
-if(last===today)return;
-localStorage.setItem(FORTUNE_KEY,today);
+if(last===today)return;localStorage.setItem(FORTUNE_KEY,today);
 var text=FORTUNES[Math.floor(Math.random()*FORTUNES.length)];
 var popup=document.createElement("div");popup.className="fortune-popup";
-popup.innerHTML='<div class="fortune-emoji">🥠</div>'+'<div class="fortune-label">Печенька говорит:</div>'+'<div class="fortune-text">«'+text+'»</div>'+'<button class="fortune-close">Спасибо, печенька!</button>';
-document.body.appendChild(popup);
-playSound("ui");
+popup.innerHTML='<div class="fortune-emoji">🥠</div><div class="fortune-label">'+t("fortune.label")+'</div><div class="fortune-text">«'+text+'»</div><button class="fortune-close">'+t("fortune.close")+'</button>';
+document.body.appendChild(popup);playSound("ui");
 popup.querySelector(".fortune-close").onclick=function(){popup.remove();};
 setTimeout(function(){if(popup.parentNode)popup.remove();},30000);
 updateFortuneButton();}
@@ -1930,171 +2111,112 @@ updateFortuneButton();}
 // === ТАП ===
 $("click-btn").onclick=function(e){
 if(!checkTapLimit())return;
-var cd=getGeneratorCooldownMs();
-var now=Date.now();
-if(generatorLevel<20 && cd>50 && now-lastClickTime<cd)return;
-lastClickTime=now;
-$("click-btn").classList.remove("tap-ready");
+var cd=getGeneratorCooldownMs();var now=Date.now();
+if(generatorLevel<20&&cd>50&&now-lastClickTime<cd)return;
+lastClickTime=now;$("click-btn").classList.remove("tap-ready");
 if(goldenSecretActive){onGoldenSecretTap();}
 var value=getClickValue();coins+=value;totalEarned+=value;
 var tapsToAdd=gulauActive?5:1;totalTaps+=tapsToAdd;addQuestProgress("taps",tapsToAdd);
-var rect=e.target.getBoundingClientRect();
-var x=rect.left+rect.width/2+(Math.random()*40-20);var y=rect.top+rect.height/2;
-showFloatPlus(x,y,value);spawnTapParticles(x,y);pulseCounter();
-var shardChance=0.01+globalUpgrades.bloodLuck.count*globalUpgrades.bloodLuck.amount;
-if(typeof petGetShardTapBonus==="function")shardChance+=petGetShardTapBonus();
-if(typeof superEventActive!=="undefined"&&superEventActive)shardChance+=superEventShardBonus;
-if(bloodMoonActive&&Math.random()<shardChance){shards+=1;showShardDrop(x,y);}
-var petGemChance=(typeof petGetGemTapChance==="function")?petGetGemTapChance():0;
-if(petGemChance>0&&Math.random()<petGemChance){addCrystals(1);var gemPopup=document.createElement("div");gemPopup.className="float-plus color-huge";gemPopup.textContent="+1 💎";gemPopup.style.left=x+"px";gemPopup.style.top=y+"px";document.body.appendChild(gemPopup);setTimeout(function(){gemPopup.remove();},800);}
+var rect=e.target.getBoundingClientRect();var x=rect.left+rect.width/2+(Math.random()*40-20);var y=rect.top+rect.height/2;
+spawnTapRing(x,y);spawnTapWave(x,y);
+var isCrit=Math.random()<0.05;if(isCrit){value*=2;coins+=value;totalEarned+=value;spawnScreenShake();}
+showFloatPlus(x,y,value,isCrit);spawnTapParticles(x,y);pulseCounter();
+var sc=0.01+globalUpgrades.bloodLuck.count*globalUpgrades.bloodLuck.amount;
+if(typeof petGetShardTapBonus==="function")sc+=petGetShardTapBonus();
+if(typeof superEventActive!=="undefined"&&superEventActive)sc+=superEventShardBonus;
+if(bloodMoonActive&&Math.random()<sc){shards+=1;showShardDrop(x,y);}
+var pg=(typeof petGetGemTapChance==="function")?petGetGemTapChance():0;
+if(pg>0&&Math.random()<pg){addCrystals(1);var gp=document.createElement("div");gp.className="float-plus color-huge";gp.textContent="+1 💎";gp.style.left=x+"px";gp.style.top=y+"px";document.body.appendChild(gp);setTimeout(function(){gp.remove();},800);}
 playSound("click");
 if(window.__coinsAnimInterval){clearInterval(window.__coinsAnimInterval);window.__coinsAnimInterval=null;}
-lastDisplayedCoins=coins;
-$("coins").textContent=formatNumber(coins);
+lastDisplayedCoins=coins;$("coins").textContent=formatNumber(coins);
 $("cps").textContent=formatNumber(getCPS())+(goldenMultiplier>1?" (x7!)":"");
-resetAlarmTimer();};
+resetAlarmTimer();if(typeof khrPetHookTap==="function")khrPetHookTap();};
 
-// === ОБРАБОТЧИКИ ===
-var fortuneBtn=$("fortune-btn");if(fortuneBtn){fortuneBtn.onclick=function(){playSound("ui");showFortune();};}
-var depositSideBtn=$("deposit-side-btn");if(depositSideBtn){depositSideBtn.onclick=function(){playSound("ui");renderDeposit();$("modal-deposit").classList.remove("hidden");syncScrollLock();updateDepositSideButton();};}
-var generatorBtn=$("generator-btn");if(generatorBtn){generatorBtn.onclick=function(){playSound("ui");renderGenerator();$("modal-generator").classList.remove("hidden");syncScrollLock();};}
+var fb=$("fortune-btn");if(fb)fb.onclick=function(){playSound("ui");showFortune();};
+var dsb=$("deposit-side-btn");if(dsb)dsb.onclick=function(){playSound("ui");renderDeposit();$("modal-deposit").classList.remove("hidden");syncScrollLock();updateDepositSideButton();};
+var gb=$("generator-btn");if(gb)gb.onclick=function(){playSound("ui");renderGenerator();$("modal-generator").classList.remove("hidden");syncScrollLock();};
 
-// === СУНДУК ===
 var CHEST_COOLDOWN=60*60*1000;
 function resetChestCooldown(){try{localStorage.removeItem("lastChest");}catch(e){}updateChestButton();}
-function updateChestButton(){var btn=$("chest-btn");if(!btn)return;var last=parseInt(localStorage.getItem("lastChest")||"0");var left=CHEST_COOLDOWN-(Date.now()-last);if(left<=0){btn.disabled=false;btn.textContent="🎁 Сундук";}else{btn.disabled=true;var mins=Math.floor(left/60000);var secs=Math.floor((left%60000)/1000);btn.textContent="🎁 "+mins+"м "+secs+"с";}}
-function getChestRewards(){var cps=getCPS();var coinsReward=Math.max(500,Math.floor(cps*1800));var crystalsReward=5+Math.floor(Math.random()*11);var shardsReward=15+Math.floor(Math.random()*26);var boosterRoll=Math.floor(Math.random()*3);var boosterIds=["boost2","boost3","boost5"];var booster=boosterIds[boosterRoll];return {coins:coinsReward,crystals:crystalsReward,shards:shardsReward,booster:booster};}
-var chestBtn=$("chest-btn");
-if(chestBtn){chestBtn.onclick=function(){
-var last=parseInt(localStorage.getItem("lastChest")||"0");if(Date.now()-last<CHEST_COOLDOWN)return;
-var r=getChestRewards();
-openChestAnimation(r.crystals,r.coins,r.shards,r.booster,function(){
-addCrystals(r.crystals);coins+=r.coins;totalEarned+=r.coins;shards+=r.shards;
-if(r.booster)addBoosterToStorage(r.booster);
-chestsOpened++;
-localStorage.setItem("lastChest",Date.now().toString());addQuestProgress("chest",1);
-updateUI();updateChestButton();checkAchievements();saveGame();});};}
+function updateChestButton(){var btn=$("chest-btn");if(!btn)return;var last=parseInt(localStorage.getItem("lastChest")||"0");var left=CHEST_COOLDOWN-(Date.now()-last);if(left<=0){btn.disabled=false;btn.textContent=t("main.chest");}else{btn.disabled=true;var m=Math.floor(left/60000);var s=Math.floor((left%60000)/1000);btn.textContent="🎁 "+m+"м "+s+"с";}}
+function getChestRewards(){var c=getCPS();return {coins:Math.max(500,Math.floor(c*1800)),crystals:5+Math.floor(Math.random()*11),shards:15+Math.floor(Math.random()*26),booster:["boost2","boost3","boost5"][Math.floor(Math.random()*3)]};}
+var cb=$("chest-btn");if(cb)cb.onclick=function(){var last=parseInt(localStorage.getItem("lastChest")||"0");if(Date.now()-last<CHEST_COOLDOWN)return;var r=getChestRewards();openChestAnimation(r.crystals,r.coins,r.shards,r.booster,function(){addCrystals(r.crystals);coins+=r.coins;totalEarned+=r.coins;shards+=r.shards;if(r.booster)addBoosterToStorage(r.booster);chestsOpened++;localStorage.setItem("lastChest",Date.now().toString());addQuestProgress("chest",1);updateUI();updateChestButton();checkAchievements();saveGame();});};
 
-// === КОЛЕСО ===
-var wheelBtn=$("wheel-btn");if(wheelBtn){wheelBtn.onclick=function(){playSound("ui");openWheel();};}
-var wheelCloseBtn=$("wheel-close");if(wheelCloseBtn){wheelCloseBtn.onclick=function(){playSound("ui");closeWheel();};}
-var wheelFreeBtn=$("wheel-spin-free");if(wheelFreeBtn){wheelFreeBtn.onclick=function(){spinWheel(true);};}
-var wheelPaidBtn=$("wheel-spin-paid");if(wheelPaidBtn){wheelPaidBtn.onclick=function(){spinWheel(false);};}
+var wb=$("wheel-btn");if(wb)wb.onclick=function(){playSound("ui");openWheel();};
+var wc=$("wheel-close");if(wc)wc.onclick=function(){playSound("ui");closeWheel();};
+var wf=$("wheel-spin-free");if(wf)wf.onclick=function(){spinWheel(true);};
+var wp=$("wheel-spin-paid");if(wp)wp.onclick=function(){spinWheel(false);};
+var db2=$("daily-btn");if(db2)db2.onclick=function(){playSound("ui");openDaily();};
+var dc=$("daily-close");if(dc)dc.onclick=function(){playSound("ui");closeDaily();};
+var dsp=$("daily-spin");if(dsp)dsp.onclick=function(){spinDaily();};
+var mb2=$("minigame-btn");if(mb2)mb2.onclick=function(){playSound("ui");openMinigame();};
+var mc=$("minigame-close");if(mc)mc.onclick=function(){playSound("ui");closeMinigame();};
+var ms=$("minigame-start");if(ms)ms.onclick=function(){startMinigame();};
+var mt=$("minigame-tap-btn");if(mt)mt.onclick=function(){tapMinigame();};
 
-// === ЕЖЕДНЕВКА ===
-var dailyBtn=$("daily-btn");if(dailyBtn){dailyBtn.onclick=function(){playSound("ui");openDaily();};}
-var dailyCloseBtn=$("daily-close");if(dailyCloseBtn){dailyCloseBtn.onclick=function(){playSound("ui");closeDaily();};}
-var dailySpinBtn=$("daily-spin");if(dailySpinBtn){dailySpinBtn.onclick=function(){spinDaily();};}
-
-// === МИНИ-ИГРА ===
-var minigameBtn=$("minigame-btn");if(minigameBtn){minigameBtn.onclick=function(){playSound("ui");openMinigame();};}
-var minigameCloseBtn=$("minigame-close");if(minigameCloseBtn){minigameCloseBtn.onclick=function(){playSound("ui");closeMinigame();};}
-var minigameStartBtn=$("minigame-start");if(minigameStartBtn){minigameStartBtn.onclick=function(){startMinigame();};}
-var minigameTapBtn=$("minigame-tap-btn");if(minigameTapBtn){minigameTapBtn.onclick=function(){tapMinigame();};}
-
-// === АНИМАЦИЯ СУНДУКА ===
-function openChestAnimation(crystalsReward,coinsReward,shardsReward,boosterReward,onCollect){
-var overlay=$("chest-overlay"),scene=$("chest-scene"),rewards=$("chest-rewards"),collectBtn=$("chest-collect");
-if(!overlay||!scene||!rewards||!collectBtn){onCollect();return;}
-overlay.classList.remove("hidden");syncScrollLock();
-scene.classList.remove("shaking","opened");rewards.innerHTML="";collectBtn.classList.add("hidden");collectBtn.onclick=null;
+function openChestAnimation(cr,co,sh,bo,onC){
+var o=$("chest-overlay"),s=$("chest-scene"),r=$("chest-rewards"),b=$("chest-collect");
+if(!o||!s||!r||!b){onC();return;}
+o.classList.remove("hidden");syncScrollLock();s.classList.remove("shaking","opened");r.innerHTML="";b.classList.add("hidden");b.onclick=null;
 playSound("chest");vibrate(30);
-setTimeout(function(){scene.classList.add("shaking");
-setTimeout(function(){scene.classList.remove("shaking");
-var flash=document.createElement("div");flash.className="chest-flash";document.body.appendChild(flash);setTimeout(function(){flash.remove();},400);
-scene.classList.add("opened");
-var rewardHtml="";
-rewardHtml+='<div class="chest-reward-item">💎 +'+crystalsReward+'</div>';
-rewardHtml+='<div class="chest-reward-item delay-1">💰 +'+formatNumber(coinsReward)+'</div>';
-rewardHtml+='<div class="chest-reward-item delay-2">🌑 +'+shardsReward+'</div>';
-if(boosterReward&&BOOSTERS[boosterReward]){rewardHtml+='<div class="chest-reward-item delay-3">⚡ Бустер ×'+BOOSTERS[boosterReward].mult+'!</div>';}
-rewards.innerHTML=rewardHtml;
-setTimeout(function(){collectBtn.classList.remove("hidden");collectBtn.onclick=function(){collectBtn.onclick=null;overlay.classList.add("hidden");syncScrollLock();onCollect();};},2200);},1500);},500);}
+setTimeout(function(){s.classList.add("shaking");setTimeout(function(){s.classList.remove("shaking");var f=document.createElement("div");f.className="chest-flash";document.body.appendChild(f);setTimeout(function(){f.remove();},400);s.classList.add("opened");var h="";h+='<div class="chest-reward-item">💎 +'+cr+'</div>';h+='<div class="chest-reward-item delay-1">💰 +'+formatNumber(co)+'</div>';h+='<div class="chest-reward-item delay-2">🌑 +'+sh+'</div>';if(bo&&BOOSTERS[bo]){h+='<div class="chest-reward-item delay-3">⚡ ×'+BOOSTERS[bo].mult+'</div>';}r.innerHTML=h;setTimeout(function(){b.classList.remove("hidden");b.onclick=function(){b.onclick=null;o.classList.add("hidden");syncScrollLock();onC();};},2200);},1500);},500);}
 
-// === ВКЛАДКИ ===
-document.querySelectorAll(".tab-btn").forEach(function(btn){btn.onclick=function(){
-playSound("ui");var tab=btn.dataset.tab;var modal=$("modal-"+tab);
-if(modal){if(tab==="stats")updateStats();if(tab==="skins"){renderSkins();renderEmojiSkins();renderBackgrounds();renderSmileSkins();}if(tab==="achievements")renderAchievements();if(tab==="items"){renderItems();renderCrystalShop();renderGlobalShop();}if(tab==="leaders"){updateLeaderboardName();loadLeaderboard();}if(tab==="quests")renderQuests();if(tab==="note")renderNoteList();if(tab==="boosters")renderBoosters();modal.classList.remove("hidden");syncScrollLock();}};});
+document.querySelectorAll(".tab-btn").forEach(function(btn){btn.onclick=function(){playSound("ui");var tab=btn.dataset.tab;var m=$("modal-"+tab);if(m){if(tab==="stats")updateStats();if(tab==="skins"){renderSkins();renderEmojiSkins();renderBackgrounds();renderSmileSkins();}if(tab==="achievements")renderAchievements();if(tab==="items"){renderItems();renderCrystalShop();renderGlobalShop();}if(tab==="leaders"){updateLeaderboardName();loadLeaderboard();}if(tab==="quests")renderQuests();if(tab==="note")renderNoteList();if(tab==="boosters")renderBoosters();if(tab==="friends")openFriendsModal();m.classList.remove("hidden");syncScrollLock();}};});
 document.querySelectorAll(".modal-close").forEach(function(btn){btn.onclick=function(){playSound("ui");var id=btn.dataset.close;var el=$(id);if(el)el.classList.add("hidden");syncScrollLock();};});
-document.querySelectorAll(".modal").forEach(function(modal){modal.onclick=function(e){if(e.target===modal){modal.classList.add("hidden");syncScrollLock();}};});
+document.querySelectorAll(".modal").forEach(function(m){m.onclick=function(e){if(e.target===m){m.classList.add("hidden");syncScrollLock();}};});
 
-// === ПЕРЕКЛЮЧАТЕЛЬ МАГАЗИНА ===
-document.querySelectorAll(".items-tab").forEach(function(btn){
-btn.onclick=function(){
-document.querySelectorAll(".items-tab").forEach(function(b){b.classList.remove("active");});
-btn.classList.add("active");
-var tab=btn.dataset.itab;
-var shopList=$("shop-list"),globalList=$("global-shop-list");
-if(tab==="upgrades"){shopList.style.display="block";globalList.style.display="none";}
-else{shopList.style.display="none";globalList.style.display="block";renderGlobalShop();}
-};
-});
+document.querySelectorAll(".items-tab").forEach(function(btn){btn.onclick=function(){document.querySelectorAll(".items-tab").forEach(function(b){b.classList.remove("active");});btn.classList.add("active");var tab=btn.dataset.itab;var s=$("shop-list"),g=$("global-shop-list");if(tab==="upgrades"){s.style.display="block";g.style.display="none";}else{s.style.display="none";g.style.display="block";renderGlobalShop();}};});
 
-// === НАСТРОЙКИ ===
-var optFloat=$("opt-float"),optGolden=$("opt-golden"),optDaily=$("opt-daily"),optSound=$("opt-sound"),optMusic=$("opt-music"),optLowP=$("opt-lowparticles"),optKhr=$("opt-krohlupic");
-if(optFloat)optFloat.onchange=function(){settings.showFloat=this.checked;saveSettings();};
-if(optGolden)optGolden.onchange=function(){settings.showGolden=this.checked;saveSettings();};
-if(optDaily)optDaily.onchange=function(){settings.showDaily=this.checked;saveSettings();};
-if(optSound)optSound.onchange=function(){settings.sound=this.checked;saveSettings();};
-if(optMusic)optMusic.onchange=function(){settings.music=this.checked;saveSettings();if(settings.music)playMusic();else stopMusic();};
-if(optLowP)optLowP.onchange=function(){settings.lowParticles=this.checked;document.body.classList.toggle("low-particles",settings.lowParticles);saveSettings();applyBackground();};
-if(optKhr)optKhr.onchange=function(){settings.krohlupic=this.checked;khrState.enabled=this.checked;saveSettings();};
-var promoBtn=$("promo-btn");if(promoBtn)promoBtn.onclick=activatePromo;
-var promoInput=$("promo-input");if(promoInput)promoInput.addEventListener("keydown",function(e){if(e.key==="Enter")activatePromo();});
-var exportBtn=$("export-btn");if(exportBtn)exportBtn.onclick=exportSave;
-var copyBtn=$("copy-btn");if(copyBtn)copyBtn.onclick=copyExport;
-var exportClose=$("export-close");if(exportClose)exportClose.onclick=function(){var box=$("export-box");if(box)box.classList.add("hidden");};
-var importBtn=$("import-btn");if(importBtn)importBtn.onclick=function(){var box=$("import-box");if(box)box.classList.toggle("hidden");};
-var importLoad=$("import-load");if(importLoad)importLoad.onclick=importSave;
-var importCancel=$("import-cancel");if(importCancel)importCancel.onclick=function(){var box=$("import-box");if(box)box.classList.add("hidden");};
-var rewardClaimBtn=$("reward-claim");if(rewardClaimBtn)rewardClaimBtn.onclick=claimReward;
-var leaderSubmitBtn=$("leader-submit");if(leaderSubmitBtn)leaderSubmitBtn.onclick=submitLeaderboardScore;
-var secretUnlockBtn=$("secret-unlock");if(secretUnlockBtn)secretUnlockBtn.onclick=tryUnlockSecret;
-var secretToggleBtn=$("secret-toggle");if(secretToggleBtn)secretToggleBtn.onclick=activateSecretAutoClicker;
+var optF=$("opt-float"),optG=$("opt-golden"),optD=$("opt-daily"),optS=$("opt-sound"),optM=$("opt-music"),optL=$("opt-lowparticles"),optK=$("opt-krohlupic");
+if(optF)optF.onchange=function(){settings.showFloat=this.checked;saveSettings();};
+if(optG)optG.onchange=function(){settings.showGolden=this.checked;saveSettings();};
+if(optD)optD.onchange=function(){settings.showDaily=this.checked;saveSettings();};
+if(optS)optS.onchange=function(){settings.sound=this.checked;saveSettings();};
+if(optM)optM.onchange=function(){settings.music=this.checked;saveSettings();if(settings.music)playMusic();else stopMusic();};
+if(optL)optL.onchange=function(){settings.lowParticles=this.checked;document.body.classList.toggle("low-particles",settings.lowParticles);saveSettings();applyBackground();};
+if(optK)optK.onchange=function(){settings.krohlupic=this.checked;khrState.enabled=this.checked;if(this.checked){if(typeof khrPetInit==="function")khrPetInit();}else{var el=document.getElementById("krohlupic-pet");if(el)el.classList.add("hidden");document.body.classList.add("no-krohlupic");khrPetState.visible=false;}saveSettings();};
 
-// === ИНИЦИАЛИЗАЦИЯ ===
-setupAdvancedButton();
-setupProfileSave();
-setupProfileCopy();
-setupTutorial();
-setupNoteBack();
-setupAchFilters();
-var profileBtn=$("profile-side-btn");if(profileBtn){profileBtn.onclick=function(){playSound("ui");showProfileModal();};}
-var pahanBtn=$("pahan-btn");if(pahanBtn){pahanBtn.onclick=function(){playSound("ui");activatePahan();};}
+var pb=$("promo-btn");if(pb)pb.onclick=activatePromo;
+var pi=$("promo-input");if(pi)pi.addEventListener("keydown",function(e){if(e.key==="Enter")activatePromo();});
+var eb=$("export-btn");if(eb)eb.onclick=exportSave;
+var cpb=$("copy-btn");if(cpb)cpb.onclick=copyExport;
+var ec=$("export-close");if(ec)ec.onclick=function(){var b=$("export-box");if(b)b.classList.add("hidden");};
+var ib2=$("import-btn");if(ib2)ib2.onclick=function(){var b=$("import-box");if(b)b.classList.toggle("hidden");};
+var il=$("import-load");if(il)il.onclick=importSave;
+var ic=$("import-cancel");if(ic)ic.onclick=function(){var b=$("import-box");if(b)b.classList.add("hidden");};
+var rc=$("reward-claim");if(rc)rc.onclick=claimReward;
+var ls=$("leader-submit");if(ls)ls.onclick=submitLeaderboardScore;
+var su=$("secret-unlock");if(su)su.onclick=tryUnlockSecret;
+var st=$("secret-toggle");if(st)st.onclick=activateSecretAutoClicker;
+
+setupAdvancedButton();setupProfileSave();setupProfileCopy();setupTutorial();setupNoteBack();setupAchFilters();
+var pfb=$("profile-side-btn");if(pfb)pfb.onclick=function(){playSound("ui");showProfileModal();};
+var pnb=$("pahan-btn");if(pnb)pnb.onclick=function(){playSound("ui");activatePahan();};
 updatePahanButton();
 
-// === СБРОС ===
 function setupResetButton(){
-var btn=$("settings-reset");if(!btn)return;
-var step=0;var timer=null;
+var btn=$("settings-reset");if(!btn)return;var step=0;var timer=null;
 btn.onclick=function(e){
 e.preventDefault();e.stopPropagation();step++;
-if(step===1){btn.textContent="⚠️ Нажмите ещё раз (1/2)";btn.style.background="#ff5722";
-if(timer)clearTimeout(timer);timer=setTimeout(function(){step=0;btn.textContent="Сбросить весь прогресс";btn.style.background="#b33a3a";},3000);return;}
-if(step===2){clearTimeout(timer);btn.textContent="🗑️ Удаляю...";btn.style.background="#8a0000";
+if(step===1){btn.textContent="⚠️ (1/2)";btn.style.background="#ff5722";if(timer)clearTimeout(timer);timer=setTimeout(function(){step=0;btn.textContent=t("settings.reset");btn.style.background="#b33a3a";},3000);return;}
+if(step===2){clearTimeout(timer);btn.textContent="🗑️";btn.style.background="#8a0000";
 try{window.__resetting=true;
 coins=0;coinsPerClick=1;totalEarned=0;totalShardsEarned=0;totalTaps=0;totalPlayTime=0;crystals=0;goldenMultiplier=1;goldenTimer=0;
-shards=0;bloodMoonActive=false;bloodMoonTimer=0;
-eventMultiplier=1;eventTimer=0;eventName="";currentEventKey="";
+shards=0;bloodMoonActive=false;bloodMoonTimer=0;eventMultiplier=1;eventTimer=0;eventName="";currentEventKey="";
 crystalBoostMultiplier=1;crystalBoostTimer=0;crystalBoostName="";
 unlocked={};ownedItems={};chestsOpened=0;personalBestCoins=0;
 secretUnlocked=false;secretAutoClicker=false;secretAutoClickerTimer=0;
-depositUnlocked=false;depositLevel=0;generatorLevel=1;generatorTimer=GENERATOR_DURATION;
-lastDepositTimeKey="";
-smileSkinUnlocked=false;smileSkinActive=false;
-gulauActive=false;gulauTimer=0;
+depositUnlocked=false;depositLevel=0;generatorLevel=1;generatorTimer=GENERATOR_DURATION;lastDepositTimeKey="";
+smileSkinUnlocked=false;smileSkinActive=false;gulauActive=false;gulauTimer=0;
 bossActive=false;bossHP=150;bossTimeLeft=45;bossRewardClaimed=false;
-rewardClaimed=false;rewardTabShown=false;noteShown=false;note1Shown=false;note2Shown=false;note3Shown=false;
-note4Shown=false;note5Shown=false;note6Shown=false;note7Shown=false;
-notesUnlocked={};
+rewardClaimed=false;rewardTabShown=false;noteShown=false;
+note1Shown=false;note2Shown=false;note3Shown=false;note4Shown=false;note5Shown=false;note6Shown=false;note7Shown=false;notesUnlocked={};
 pahanUnlocked=false;pahanActive=false;pahanTimer=0;
 quests=[];questsDate="";questsClaimed=0;questProgress={};
 theftActive=false;theftTimer=0;theftTotalLost=0;lastTheftKey="";
 wheelFreeUsed=false;wheelPaidUsed=false;wheelLastResetDay="";
-dailyLastUsed="";
-minigameBest=0;minigameLastUsed=0;
-goldenSecretActive=false;
-activeBg="base";
+dailyLastUsed="";minigameBest=0;minigameLastUsed=0;goldenSecretActive=false;activeBg="base";
 for(var bid in BOOSTERS){BOOSTERS[bid].storage=0;}
 for(var bgid in BACKGROUNDS){BACKGROUNDS[bgid].owned=(bgid==="base");}
 for(var esid in EMOJI_SKINS){EMOJI_SKINS[esid].owned=false;}
@@ -2108,329 +2230,297 @@ stopSecretAutoClicker();
 for(var id in upgrades){upgrades[id].count=0;upgrades[id].cost=upgrades[id].baseCost;upgrades[id].unlocked10=false;upgrades[id].unlocked25=false;upgrades[id].buyMult=1;}
 for(var gid in globalUpgrades){globalUpgrades[gid].count=0;globalUpgrades[gid].cost=globalUpgrades[gid].baseCost;}
 for(var sid in skins){skins[sid].owned=(sid==="gold");}
-activeSkin="gold";
-applyBackground();
-if(typeof petsState!=="undefined"){petsState.storage=[];petsState.active=null;petsState.nest=null;petsState.hunger=100;petsState.xp=0;petsState.food={strawberry:0,banana:0,orange:0};}
-try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem("lastDaily");localStorage.removeItem("dailyStreak");localStorage.removeItem("clicker-settings");localStorage.removeItem("clicker-skins");localStorage.removeItem("lastChest");localStorage.removeItem(FORTUNE_KEY);localStorage.removeItem("clicker-theft-state");localStorage.removeItem("clicker-used-promos");}catch(err){}
-setTimeout(function(){alert("✅ Прогресс полностью сброшен! Страница перезагрузится.");location.reload();},300);
-}catch(err){alert("❌ Ошибка: "+err.message);btn.textContent="Сбросить весь прогресс";btn.style.background="#b33a3a";step=0;window.__resetting=false;}}};}
+activeSkin="gold";applyBackground();
+try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem("lastDaily");localStorage.removeItem("dailyStreak");localStorage.removeItem("clicker-settings");localStorage.removeItem("clicker-skins");localStorage.removeItem("lastChest");localStorage.removeItem(FORTUNE_KEY);localStorage.removeItem("clicker-theft-state");localStorage.removeItem("clicker-used-promos");localStorage.removeItem("clicker-lang");localStorage.removeItem("fnfLastPlayed");localStorage.removeItem("clicker-shortid-cache");localStorage.removeItem("clicker-banners");localStorage.removeItem("clicker-season");localStorage.removeItem("clicker-admin-unlocked");}catch(err){}
+setTimeout(function(){alert("✅");location.reload();},300);
+}catch(err){alert("❌ "+err.message);btn.textContent=t("settings.reset");btn.style.background="#b33a3a";step=0;window.__resetting=false;}}};}
 
 // === СТРАНИЦЫ ===
 var currentPage=1,totalPages=2;
-function showPage(n){
-if(n<1)n=totalPages;if(n>totalPages)n=1;currentPage=n;
-document.querySelectorAll(".page").forEach(function(page,i){if(i+1===n)page.classList.add("page-active");else page.classList.remove("page-active");});
-document.querySelectorAll(".page-dot").forEach(function(dot){if(parseInt(dot.dataset.page)===n)dot.classList.add("active");else dot.classList.remove("active");});
-var almBtn=$("almanac-btn");
-if(almBtn){
-if(n===2)almBtn.classList.remove("hidden");
-else almBtn.classList.add("hidden");
-}
-if(bgCanvas)resizeBgCanvas();window.scrollTo({top:0,behavior:"smooth"});}
+function showPage(n){if(n<1)n=totalPages;if(n>totalPages)n=1;currentPage=n;document.querySelectorAll(".page").forEach(function(p,i){if(i+1===n)p.classList.add("page-active");else p.classList.remove("page-active");});document.querySelectorAll(".page-dot").forEach(function(d){if(parseInt(d.dataset.page)===n)d.classList.add("active");else d.classList.remove("active");});var a=$("almanac-btn");if(a){if(n===2)a.classList.remove("hidden");else a.classList.add("hidden");}if(bgCanvas)resizeBgCanvas();window.scrollTo({top:0,behavior:"smooth"});}
 function nextPage(){showPage(currentPage+1);}
 function prevPage(){showPage(currentPage-1);}
-var pagePrev=$("page-prev"),pageNext=$("page-next");
-if(pagePrev)pagePrev.onclick=prevPage;if(pageNext)pageNext.onclick=nextPage;
-document.querySelectorAll(".page-dot").forEach(function(dot){dot.onclick=function(){var n=parseInt(dot.dataset.page);if(n)showPage(n);};});
-
-// === СВАЙПЫ ===
-var touchStartX=0,touchEndX=0,touchStartY=0,touchEndY=0;
-document.addEventListener("touchstart",function(e){touchStartX=e.changedTouches[0].screenX;touchStartY=e.changedTouches[0].screenY;},{passive:true});
-document.addEventListener("touchend",function(e){
-touchEndX=e.changedTouches[0].screenX;touchEndY=e.changedTouches[0].screenY;
-var dx=touchEndX-touchStartX;var dy=touchEndY-touchStartY;
-if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(document.querySelector(".modal:not(.hidden)"))return;if(dx<0)nextPage();else prevPage();}
-},{passive:true});
-document.addEventListener("keydown",function(e){if(e.key==="ArrowLeft")prevPage();if(e.key==="ArrowRight")nextPage();});
+var pp=$("page-prev"),pn=$("page-next");if(pp)pp.onclick=prevPage;if(pn)pn.onclick=nextPage;
+document.querySelectorAll(".page-dot").forEach(function(d){d.onclick=function(){var n=parseInt(d.dataset.page);if(n)showPage(n);};});
+var tsX=0,teX=0,tsY=0,teY=0;
+document.addEventListener("touchstart",function(e){tsX=e.changedTouches[0].screenX;tsY=e.changedTouches[0].screenY;},{passive:true});
+document.addEventListener("touchend",function(e){teX=e.changedTouches[0].screenX;teY=e.changedTouches[0].screenY;var dx=teX-tsX,dy=teY-tsY;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(document.querySelector(".modal:not(.hidden)"))return;if(dx<0)nextPage();else prevPage();}},{passive:true});
 window.addEventListener("resize",resizeBgCanvas);
 window.addEventListener("orientationchange",function(){setTimeout(resizeBgCanvas,200);});
 
 // === КРОХЛЮПИК ===
-var KHR_QUOTES={coins_100:"Смотри, у нас уже 100! Это начало чего-то большого.",coins_1k:"1 000 монет! Я так горд. Правда. Я серьёзно.",coins_100k:"100K? Эй, а ты быстро растёшь!",coins_1m:"Миллион! Похоже, ты и вправду справишься.",coins_1b:"Миллиард. Знаешь, у нас даже стулья в офисе появились!",coins_1t:"Триллион… Неловко спрашивать, но это ведь много?",coins_1qa:"Квадриллион! Ты когда-нибудь спишь?",coins_1qi:"Квинтиллион. Я даже произносить это боюсь.",coins_1sp:"Я думал, мы никогда не дойдём. А ты взял — и дошёл.",coins_1no:"Но... Как... Это же цифра, которой не должно быть на балансе. Ох.",taps_10:"Раз, два, три... Ой, я не успеваю считать!",taps_100:"Ты так стараешься. Я это ценю.",taps_1k:"У тебя палец не болит? Мой бы болел.",taps_10k:"10 000! Ты машина, что ли?",taps_100k:"У меня лапки устали смотреть.",taps_1m:"Миллион тапов. Я даже не знаю, что сказать.",up_farm:"Ферма! Теперь монеты идут сами. Удобно!",up_factory:"Фабрика работает. Мы расширяемся, знаешь?",up_bank:"Банк! Скоро будем брать кредиты.",up_space:"Космос! Я слышал, там есть другие кликеры.",up_galaxy:"Ого. Ты строишь не бизнес, а вселенную.",up_genesis:"Генезис… Это начало. Или конец? Я не уверен.",ach_first:"Достижение! Ты молодец. Серьёзно.",ach_50:"Половина достижений! Ты упорный.",ach_all:"Ты... собрал всё. Я горд. И немного напуган.",ev_theft_start:"Кража! Прячь монеты! Скорее!",ev_theft_end:"Фух. Обошлось. Кажется.",ev_bloodmoon:"Смотри, луна красная! Доход ×2, но будь осторожен.",note_found:"Ещё одна записка? Кто их пишет?..",cute_1:"Я тут подумал... ты хороший.",cute_2:"Иногда мне нравится просто смотреть, как ты тапаешь.",cute_3:"У тебя отличный вкус на апгрейды, знаешь?",cute_4:"Мне нравится быть с тобой в одной команде.",cute_5:"Заяц-программист из меня так себе, но я стараюсь.",strange_1:"Слушай... а ты помнишь, откуда я появился? Я — нет. Странно.",strange_2:"Иногда мне кажется, что за тобой наблюдают. Но это, наверное, ничего.",strange_3:"Я вчера слышал звук. Такой, знаешь... будто кто-то тапает не здесь.",strange_4:"Тот, из записок. Он был тут раньше. Я его почти помню.",strange_5:"Если я однажды исчезну — не ищи меня. Просто продолжай тапать.",strange_6:"Кажется, эта кнопка никогда не заканчивается. Никогда. Понимаешь?",strange_7:"Не заходи в комнату 9. Ой. Забудь, что я сказал.",back_1:"Ты вернулся! А я уже думал, что меня одного здесь оставили.",back_2:"Ой! Привет. Я тут сидел, смотрел на кнопку. Она красивая.",back_3:"Ты долго не заходил. Я скучал. И монеты скучали."};
+var khrPetState={visible:false,mood:"normal",lastTap:Date.now(),lastMoodChange:0,idleTimer:null};
+function khrPetInit(){var el=document.getElementById("krohlupic-pet");if(!el)return;if(!settings.krohlupic){el.classList.add("hidden");document.body.classList.add("no-krohlupic");return;}el.classList.remove("hidden");document.body.classList.remove("no-krohlupic");khrPetState.visible=true;el.onclick=khrPetOnClick;setInterval(khrPetUpdateMood,5000);khrPetUpdateMood();}
+function khrPetOnClick(){var el=document.getElementById("krohlupic-pet-img");if(!el)return;el.classList.remove("happy");void el.offsetWidth;el.classList.add("happy");setTimeout(function(){el.classList.remove("happy");},400);try{playSound("ui");vibrate(10);}catch(e){}if(typeof khrShow==="function"&&typeof KHR_QUOTES!=="undefined"){var pool=["cute_1","cute_2","cute_3","cute_4","cute_5"];var c=pool[Math.floor(Math.random()*pool.length)];khrShow(c,KHR_QUOTES[c]);}}
+function khrPetUpdateMood(){if(!khrPetState.visible)return;var el=document.getElementById("krohlupic-pet"),img=document.getElementById("krohlupic-pet-img"),hint=document.getElementById("krohlupic-pet-hint");if(!el||!img)return;var now=Date.now();var idle=(now-khrPetState.lastTap)/60000;var nm="normal";if(coins<100)nm="sad";else if(idle>10)nm="sleep";else if(idle>3)nm="normal";if(idle>2&&idle<10){el.classList.add("miss-you");}else{el.classList.remove("miss-you");}if(nm!==khrPetState.mood){img.classList.remove("happy","sad","sleep");if(nm!=="normal")img.classList.add(nm);khrPetState.mood=nm;}if(hint){if(idle>5&&Math.random()<0.3){hint.style.display="block";}else if(Math.random()<0.1){hint.style.display="none";}}}
+function khrPetHookTap(){khrPetState.lastTap=Date.now();var img=document.getElementById("krohlupic-pet-img");if(img){img.classList.remove("happy");void img.offsetWidth;img.classList.add("happy");setTimeout(function(){img.classList.remove("happy");},400);}}
+
+var KHR_QUOTES={coins_100:"Смотри, у нас уже 100! Это начало чего-то большого.",coins_1k:"1 000 монет! Я так горд.",coins_100k:"100K? Эй, а ты быстро растёшь!",coins_1m:"Миллион! Похоже, ты и вправду справишься.",coins_1b:"Миллиард. У нас даже стулья в офисе появились!",coins_1t:"Триллион… Неловко спрашивать, но это ведь много?",coins_1qa:"Квадриллион! Ты когда-нибудь спишь?",coins_1qi:"Квинтиллион. Я даже произносить это боюсь.",coins_1sp:"Я думал, мы никогда не дойдём. А ты взял — и дошёл.",coins_1no:"Но... Как... Это же цифра, которой не должно быть.",taps_10:"Раз, два, три... Ой, я не успеваю!",taps_100:"Ты так стараешься. Я это ценю.",taps_1k:"У тебя палец не болит? Мой бы болел.",taps_10k:"10 000! Ты машина, что ли?",taps_100k:"У меня лапки устали смотреть.",taps_1m:"Миллион тапов. Я даже не знаю, что сказать.",up_farm:"Ферма! Теперь монеты идут сами!",up_factory:"Фабрика работает. Мы расширяемся!",up_bank:"Банк! Скоро будем брать кредиты.",up_space:"Космос! Я слышал, там есть другие кликеры.",up_galaxy:"Ого. Ты строишь не бизнес, а вселенную.",up_genesis:"Генезис… Это начало. Или конец? Я не уверен.",ach_first:"Достижение! Ты молодец. Серьёзно.",ach_50:"Половина достижений! Ты упорный.",ach_all:"Ты... собрал всё. Я горд. И немного напуган.",ev_theft_start:"Кража! Прячь монеты! Скорее!",ev_theft_end:"Фух. Обошлось. Кажется.",ev_bloodmoon:"Смотри, луна красная! Доход ×2, но будь осторожен.",note_found:"Ещё одна записка? Кто их пишет?..",cute_1:"Я тут подумал... ты хороший.",cute_2:"Иногда мне нравится просто смотреть, как ты тапаешь.",cute_3:"У тебя отличный вкус на апгрейды, знаешь?",cute_4:"Мне нравится быть с тобой в одной команде.",cute_5:"Заяц-программист из меня так себе, но я стараюсь.",strange_1:"Слушай... а ты помнишь, откуда я появился? Я — нет.",strange_2:"Иногда мне кажется, что за тобой наблюдают.",strange_3:"Я вчера слышал звук. Будто кто-то тапает не здесь.",strange_4:"Тот, из записок. Он был тут раньше. Я его почти помню.",strange_5:"Если я однажды исчезну — не ищи меня. Просто продолжай тапать.",strange_6:"Кажется, эта кнопка никогда не заканчивается.",strange_7:"Не заходи в комнату 9. Ой. Забудь, что я сказал.",back_1:"Ты вернулся! А я уже думал, что меня одного здесь оставили.",back_2:"Ой! Привет. Я тут сидел, смотрел на кнопку.",back_3:"Ты долго не заходил. Я скучал. И монеты скучали."};
 var khrState={enabled:true,lastShown:0,timer:null,shownProgress:{},shownStrange:{},lastStrange:0,snapshotTheftActive:false,snapshotBloodMoon:false};
-function khrShow(key,text){
-if(!khrState.enabled)return;
-var now=Date.now();if(now-khrState.lastShown<5000)return;khrState.lastShown=now;
-var old=document.querySelector(".krohlupic-bubble");if(old)old.remove();
-var bubble=document.createElement("div");bubble.className="krohlupic-bubble";
-bubble.innerHTML='<div class="krohlupic-avatar"><img src="krohlupic.png" alt="🐰" onerror="this.style.display=\'none\';this.parentNode.textContent=\'🐰\';"></div>'+'<div class="krohlupic-text">'+text+'</div>';
-var tapRow=document.getElementById("tap-row");
-if(tapRow&&tapRow.parentNode)tapRow.parentNode.insertBefore(bubble,tapRow);else document.body.appendChild(bubble);
-setTimeout(function(){bubble.classList.add("show");},30);
-setTimeout(function(){bubble.classList.remove("show");setTimeout(function(){if(bubble.parentNode)bubble.remove();},500);},9000);}
+function khrShow(key,text){if(!khrState.enabled)return;var now=Date.now();if(now-khrState.lastShown<5000)return;khrState.lastShown=now;var old=document.querySelector(".krohlupic-bubble");if(old)old.remove();var b=document.createElement("div");b.className="krohlupic-bubble";b.innerHTML='<div class="krohlupic-avatar"><img src="krohlupic.jpg" alt="🐰" onerror="this.style.display=\'none\';this.parentNode.textContent=\'🐰\';"></div>'+'<div class="krohlupic-text">'+text+'</div>';var tr=document.getElementById("tap-row");if(tr&&tr.parentNode)tr.parentNode.insertBefore(b,tr);else document.body.appendChild(b);setTimeout(function(){b.classList.add("show");},30);setTimeout(function(){b.classList.remove("show");setTimeout(function(){if(b.parentNode)b.remove();},500);},9000);}
 function khrEventCheck(){if(!khrState.enabled)return;if(!khrState.snapshotTheftActive&&theftActive){khrState.snapshotTheftActive=true;khrShow("ev_theft_start",KHR_QUOTES.ev_theft_start);return;}if(khrState.snapshotTheftActive&&!theftActive){khrState.snapshotTheftActive=false;khrShow("ev_theft_end",KHR_QUOTES.ev_theft_end);return;}if(!khrState.snapshotBloodMoon&&bloodMoonActive){khrState.snapshotBloodMoon=true;khrShow("ev_bloodmoon",KHR_QUOTES.ev_bloodmoon);return;}if(khrState.snapshotBloodMoon&&!bloodMoonActive){khrState.snapshotBloodMoon=false;}}
 function khrPickReply(){
 var pool=[];
-var coinPairs=[["coins_1k",1e3],["coins_100k",1e5],["coins_1m",1e6],["coins_1b",1e9],["coins_1t",1e12],["coins_1qa",1e15],["coins_1qi",1e18],["coins_1sp",1e24],["coins_1no",1e30]];
-for(var i=coinPairs.length-1;i>=0;i--){if(coins>=coinPairs[i][1]&&!khrState.shownProgress[coinPairs[i][0]]){pool.push({key:coinPairs[i][0],w:5});break;}}
+var cp=[["coins_1k",1e3],["coins_100k",1e5],["coins_1m",1e6],["coins_1b",1e9],["coins_1t",1e12],["coins_1qa",1e15],["coins_1qi",1e18],["coins_1sp",1e24],["coins_1no",1e30]];
+for(var i=cp.length-1;i>=0;i--){if(coins>=cp[i][1]&&!khrState.shownProgress[cp[i][0]]){pool.push({key:cp[i][0],w:5});break;}}
 if(coins>=100&&!khrState.shownProgress.coins_100)pool.push({key:"coins_100",w:2});
-var tapPairs=[["taps_100",100],["taps_1k",1000],["taps_10k",10000],["taps_100k",100000],["taps_1m",1e6]];
-for(var i=tapPairs.length-1;i>=0;i--){if(totalTaps>=tapPairs[i][1]&&!khrState.shownProgress[tapPairs[i][0]]){pool.push({key:tapPairs[i][0],w:4});break;}}
+var tp=[["taps_100",100],["taps_1k",1000],["taps_10k",10000],["taps_100k",100000],["taps_1m",1e6]];
+for(var i=tp.length-1;i>=0;i--){if(totalTaps>=tp[i][1]&&!khrState.shownProgress[tp[i][0]]){pool.push({key:tp[i][0],w:4});break;}}
 if(totalTaps>=10&&!khrState.shownProgress.taps_10)pool.push({key:"taps_10",w:2});
-var upPairs=[["up_farm","farm"],["up_factory","factory"],["up_bank","bank"],["up_space","space"],["up_galaxy","galaxy"],["up_genesis","genesis"]];
-for(var i=0;i<upPairs.length;i++){if(upgrades[upPairs[i][1]]&&upgrades[upPairs[i][1]].count>0&&!khrState.shownProgress[upPairs[i][0]])pool.push({key:upPairs[i][0],w:3});}
+var upP=[["up_farm","farm"],["up_factory","factory"],["up_bank","bank"],["up_space","space"],["up_galaxy","galaxy"],["up_genesis","genesis"]];
+for(var i=0;i<upP.length;i++){if(upgrades[upP[i][1]]&&upgrades[upP[i][1]].count>0&&!khrState.shownProgress[upP[i][0]])pool.push({key:upP[i][0],w:3});}
 var ac=0;for(var k in unlocked){if(!isAchievementKey(k))continue;if(unlocked[k])ac++;}
 if(ac>=1&&!khrState.shownProgress.ach_first)pool.push({key:"ach_first",w:3});
 if(ac>=50&&!khrState.shownProgress.ach_50)pool.push({key:"ach_50",w:4});
 if(ac>=achievements.length-2&&!khrState.shownProgress.ach_all)pool.push({key:"ach_all",w:5});
 var nc=0;for(var n in notesUnlocked)if(notesUnlocked[n])nc++;
 if(nc>=1&&!khrState.shownProgress.note_found)pool.push({key:"note_found",w:4});
-var cuteKeys=["cute_1","cute_2","cute_3","cute_4","cute_5"];
-for(var i=0;i<cuteKeys.length;i++){if(!khrState.shownProgress[cuteKeys[i]])pool.push({key:cuteKeys[i],w:3});}
-if(pool.length===0)pool.push({key:cuteKeys[Math.floor(Math.random()*cuteKeys.length)],w:1});
+var ck=["cute_1","cute_2","cute_3","cute_4","cute_5"];
+for(var i=0;i<ck.length;i++){if(!khrState.shownProgress[ck[i]])pool.push({key:ck[i],w:3});}
+if(pool.length===0)pool.push({key:ck[Math.floor(Math.random()*ck.length)],w:1});
 var now=Date.now();
-if(now-khrState.lastStrange>30*60*1000){var strangeKeys=["strange_1","strange_2","strange_3","strange_4","strange_5","strange_6","strange_7"];var avail=[];for(var i=0;i<strangeKeys.length;i++){if(!khrState.shownStrange[strangeKeys[i]])avail.push(strangeKeys[i]);}if(avail.length>0){var s=avail[Math.floor(Math.random()*avail.length)];pool.push({key:s,w:1,isStrange:true});}}
-if(pool.length===0)return;
-var total=0;for(var i=0;i<pool.length;i++)total+=pool[i].w;
-var r=Math.random()*total;var acc=0;var chosen=pool[0];
-for(var i=0;i<pool.length;i++){acc+=pool[i].w;if(r<=acc){chosen=pool[i];break;}}
-khrShow(chosen.key,KHR_QUOTES[chosen.key]);
-if(chosen.isStrange){khrState.shownStrange[chosen.key]=true;khrState.lastStrange=Date.now();}else{khrState.shownProgress[chosen.key]=true;}}
-function khrScheduleNext(){if(khrState.timer)clearTimeout(khrState.timer);var delay=45000+Math.random()*75000;khrState.timer=setTimeout(function(){khrPickReply();khrScheduleNext();},delay);}
-setTimeout(function(){
-khrState.enabled=settings.krohlupic!==false;
-khrState.snapshotTheftActive=theftActive;
-khrState.snapshotBloodMoon=bloodMoonActive;
-if(totalPlayTime>60){setTimeout(function(){if(!khrState.enabled)return;var bk=["back_1","back_2","back_3"];var b=bk[Math.floor(Math.random()*bk.length)];khrShow("back_"+Date.now(),KHR_QUOTES[b]);khrScheduleNext();},2000);}
-else{khrScheduleNext();}
-setInterval(khrEventCheck,2000);
-},5000);
+if(now-khrState.lastStrange>30*60*1000){var sk=["strange_1","strange_2","strange_3","strange_4","strange_5","strange_6","strange_7"];var av=[];for(var i=0;i<sk.length;i++){if(!khrState.shownStrange[sk[i]])av.push(sk[i]);}if(av.length>0){var s=av[Math.floor(Math.random()*av.length)];pool.push({key:s,w:1,isStrange:true});}}
+var tot=0;for(var i=0;i<pool.length;i++)tot+=pool[i].w;
+var r=Math.random()*tot;var acc=0;var ch=pool[0];
+for(var i=0;i<pool.length;i++){acc+=pool[i].w;if(r<=acc){ch=pool[i];break;}}
+khrShow(ch.key,KHR_QUOTES[ch.key]);
+if(ch.isStrange){khrState.shownStrange[ch.key]=true;khrState.lastStrange=Date.now();}else{khrState.shownProgress[ch.key]=true;}}
+function khrScheduleNext(){if(khrState.timer)clearTimeout(khrState.timer);var d=45000+Math.random()*75000;khrState.timer=setTimeout(function(){khrPickReply();khrScheduleNext();},d);}
+setTimeout(function(){khrState.enabled=settings.krohlupic!==false;khrState.snapshotTheftActive=theftActive;khrState.snapshotBloodMoon=bloodMoonActive;if(totalPlayTime>60){setTimeout(function(){if(!khrState.enabled)return;var bk=["back_1","back_2","back_3"];var b=bk[Math.floor(Math.random()*bk.length)];khrShow("back_"+Date.now(),KHR_QUOTES[b]);khrScheduleNext();},2000);}else{khrScheduleNext();}setInterval(khrEventCheck,2000);},5000);
 
 // === СУПЕР-ИВЕНТ ===
 var SUPER_EVENT_PHASES=[{start:0,end:180,name:"🌋 Вспышка",coinMult:3,tapMult:1,shardBonus:0},{start:180,end:420,name:"👆 Шторм тапов",coinMult:1,tapMult:5,shardBonus:0},{start:420,end:600,name:"💰 Золотой час",coinMult:7,tapMult:1,shardBonus:0},{start:600,end:1200,name:"🩸 Кровавая ярость",coinMult:1,tapMult:5,shardBonus:0.25},{start:1200,end:1800,name:"🌑 Финал",coinMult:8,tapMult:1,shardBonus:0}];
-var SUPER_EVENT_DURATION=1800;
-var superEventActive=false;
-var superEventPhaseIdx=-1;
-var superEventSecondsLeft=0;
-var superEventKey="";
-var superEventCoinMult=1;
-var superEventTapMult=1;
-var superEventShardBonus=0;
-function getSuperEventWindow(){var d=new Date();if(d.getDay()!==1)return null;if(d.getHours()!==9)return null;var minutes=d.getMinutes();if(minutes>=30)return null;var key=d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();var elapsed=minutes*60+d.getSeconds();return {key:key,elapsed:elapsed};}
-function getSuperEventPhase(elapsed){for(var i=0;i<SUPER_EVENT_PHASES.length;i++){var p=SUPER_EVENT_PHASES[i];if(elapsed>=p.start&&elapsed<p.end)return {idx:i,name:p.name,coinMult:p.coinMult,tapMult:p.tapMult,shardBonus:p.shardBonus};}return null;}
-function startSuperEvent(key){superEventActive=true;superEventKey=key;document.body.classList.add("super-storm");playSound("alarm");vibrate(80);var popup=document.createElement("div");popup.className="super-event-popup";popup.innerHTML='<div class="super-event-title">🌪️ КРОВАВЫЙ ШТОРМ</div><div class="super-event-sub">Начался супер-ивент!<br>30 минут усиления!</div>';document.body.appendChild(popup);setTimeout(function(){popup.classList.add("show");},30);setTimeout(function(){popup.classList.remove("show");setTimeout(function(){popup.remove();},500);},5000);}
-function endSuperEvent(){superEventActive=false;superEventPhaseIdx=-1;superEventCoinMult=1;superEventTapMult=1;superEventShardBonus=0;superEventSecondsLeft=0;document.body.classList.remove("super-storm");var banner=document.getElementById("super-event-banner");if(banner)banner.classList.remove("show");}
-function showSuperEventPhasePopup(phase){var popup=document.createElement("div");popup.className="achievement-popup";popup.style.background="linear-gradient(135deg,#8b0000,#ff1744)";popup.style.color="#fff";var text=phase.name;if(phase.coinMult>1)text+=" — ×"+phase.coinMult+" монет";if(phase.tapMult>1)text+=" — ×"+phase.tapMult+" тапов";if(phase.shardBonus>0)text+=" — +"+Math.round(phase.shardBonus*100)+"% осколок";popup.textContent="🌪️ Фаза "+(phase.idx+1)+"/5: "+text;document.body.appendChild(popup);setTimeout(function(){popup.remove();},5000);}
-function updateSuperEventBanner(){var banner=document.getElementById("super-event-banner");if(!banner){banner=document.createElement("div");banner.id="super-event-banner";document.body.appendChild(banner);}if(!superEventActive||superEventPhaseIdx<0){banner.classList.remove("show");return;}banner.classList.add("show");var phase=SUPER_EVENT_PHASES[superEventPhaseIdx];var m=Math.floor(superEventSecondsLeft/60);var s=superEventSecondsLeft%60;var parts=phase.name;if(phase.coinMult>1)parts+=" ×"+phase.coinMult+"💰";if(phase.tapMult>1)parts+=" ×"+phase.tapMult+"👆";if(phase.shardBonus>0)parts+=" +"+Math.round(phase.shardBonus*100)+"%🌑";banner.innerHTML='<span class="super-event-label">🌪️ ШТОРМ</span> '+parts+' <span class="super-event-time">'+m+':'+(s<10?"0":"")+s+'</span>';}
-function updateSuperEvent(){var info=getSuperEventWindow();if(!info){if(superEventActive)endSuperEvent();return;}var phase=getSuperEventPhase(info.elapsed);if(!phase){if(superEventActive)endSuperEvent();return;}if(!superEventActive||superEventKey!==info.key){startSuperEvent(info.key);}if(superEventPhaseIdx!==phase.idx){superEventPhaseIdx=phase.idx;superEventCoinMult=phase.coinMult;superEventTapMult=phase.tapMult;superEventShardBonus=phase.shardBonus;showSuperEventPhasePopup(phase);}superEventSecondsLeft=SUPER_EVENT_DURATION-info.elapsed;updateSuperEventBanner();}
+var SUPER_EVENT_DURATION=1800;var superEventActive=false;var superEventPhaseIdx=-1;var superEventSecondsLeft=0;var superEventKey="";var superEventCoinMult=1;var superEventTapMult=1;var superEventShardBonus=0;
+function getSuperEventWindow(){var d=new Date();if(d.getDay()!==1)return null;if(d.getHours()!==9)return null;var m=d.getMinutes();if(m>=30)return null;return {key:d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(),elapsed:m*60+d.getSeconds()};}
+function getSuperEventPhase(el){for(var i=0;i<SUPER_EVENT_PHASES.length;i++){var p=SUPER_EVENT_PHASES[i];if(el>=p.start&&el<p.end)return {idx:i,name:p.name,coinMult:p.coinMult,tapMult:p.tapMult,shardBonus:p.shardBonus};}return null;}
+function startSuperEvent(k){superEventActive=true;superEventKey=k;document.body.classList.add("super-storm");playSound("alarm");vibrate(80);var p=document.createElement("div");p.className="super-event-popup";p.innerHTML='<div class="super-event-title">🌪️</div><div class="super-event-sub">'+t("event.super_storm")+'</div>';document.body.appendChild(p);setTimeout(function(){p.classList.add("show");},30);setTimeout(function(){p.classList.remove("show");setTimeout(function(){p.remove();},500);},5000);}
+function endSuperEvent(){superEventActive=false;superEventPhaseIdx=-1;superEventCoinMult=1;superEventTapMult=1;superEventShardBonus=0;superEventSecondsLeft=0;document.body.classList.remove("super-storm");var b=document.getElementById("super-event-banner");if(b)b.classList.remove("show");}
+function updateSuperEventBanner(){var b=document.getElementById("super-event-banner");if(!b){b=document.createElement("div");b.id="super-event-banner";b.className="hidden";document.body.appendChild(b);}if(!superEventActive||superEventPhaseIdx<0){b.classList.remove("show");return;}b.classList.add("show");var ph=SUPER_EVENT_PHASES[superEventPhaseIdx];var m=Math.floor(superEventSecondsLeft/60);var s=superEventSecondsLeft%60;b.innerHTML='<span class="super-event-label">🌪️</span> '+ph.name+' <span class="super-event-time">'+m+':'+(s<10?"0":"")+s+'</span>';}
+function updateSuperEvent(){var i=getSuperEventWindow();if(!i){if(superEventActive)endSuperEvent();return;}var ph=getSuperEventPhase(i.elapsed);if(!ph){if(superEventActive)endSuperEvent();return;}if(!superEventActive||superEventKey!==i.key){startSuperEvent(i.key);}if(superEventPhaseIdx!==ph.idx){superEventPhaseIdx=ph.idx;superEventCoinMult=ph.coinMult;superEventTapMult=ph.tapMult;superEventShardBonus=ph.shardBonus;}superEventSecondsLeft=SUPER_EVENT_DURATION-i.elapsed;updateSuperEventBanner();}
 
 // === ПИТОМЦЫ ===
-var PET_TYPES={
-hamster:{id:"hamster",emoji:"🐹",name:"Хомяк",rarity:"common",rarityLabel:"🟢 Обычный",chance:0.40,sellPrice:25,bonus:{income:0.15},deathMsg:"Твой Хомяк погиб от голода... Он был верным другом."},
-kitten:{id:"kitten",emoji:"🐱",name:"Котёнок",rarity:"common",rarityLabel:"🟢 Обычный",chance:0.25,sellPrice:25,bonus:{gemTap:0.0002},deathMsg:"Твой Котёнок погиб от голода... Он мурлыкал до последнего."},
-fox:{id:"fox",emoji:"🦊",name:"Лисёнок",rarity:"rare",rarityLabel:"🔵 Редкий",chance:0.20,sellPrice:100,bonus:{income:0.35,gemTap:0.0005},deathMsg:"Твой Лисёнок погиб от голода... Хитрый, но голодный."},
-penguin:{id:"penguin",emoji:"🐧",name:"Пингвин",rarity:"rare",rarityLabel:"🔵 Редкий",chance:0.10,sellPrice:100,bonus:{shardTap:0.003},deathMsg:"Твой Пингвин погиб от голода... Ему не хватило рыбы."},
-dragon:{id:"dragon",emoji:"🐉",name:"Дракончик",rarity:"epic",rarityLabel:"🟣 Эпический",chance:0.05,sellPrice:300,bonus:{income:0.45,gemTap:0.0015,shardTap:0.005},deathMsg:"Твой Дракончик погиб от голода... Даже драконы нуждаются в заботе."}};
-var PET_EGG_PRICE=65;
-var PET_EGG_INCUBATE=30*60*1000;
-var PET_EGG_GROW=15*60*1000;
-var PET_EGG_HATCH_TAPS=3;
-var PET_STORAGE_MAX=5;
-var PET_HUNGER_MAX=100;
-var PET_HUNGER_DROP_ONLINE=60*1000;
-var PET_XP_INTERVAL=12000;
-var FOOD_TYPES={strawberry:{emoji:"🍓",name:"Клубничка",hunger:5,price:5},banana:{emoji:"🍌",name:"Банан",hunger:10,price:10},orange:{emoji:"🍊",name:"Апельсин",hunger:20,price:20}};
-var FOOD_CASHBACK=3;
 var petsState={xp:0,food:{strawberry:0,banana:0,orange:0},storage:[],active:null,nest:null,hunger:100,hungerLastTick:Date.now(),xpLastTick:Date.now(),nextId:1};
 function petGetActive(){return petsState.active;}
-function petGenerateId(){var id=petsState.nextId++;return id;}
+function petGenerateId(){return petsState.nextId++;}
 function petTotalCount(){return petsState.storage.length+(petsState.active?1:0);}
-function petRollType(){var r=Math.random();var acc=0;var ids=["hamster","kitten","fox","penguin","dragon"];for(var i=0;i<ids.length;i++){acc+=PET_TYPES[ids[i]].chance;if(r<=acc)return ids[i];}return "hamster";}
-function petBuyEgg(){
-if(crystals<PET_EGG_PRICE){alert("Недостаточно кристаллов!\nНужно: "+PET_EGG_PRICE+" 💎\nУ вас: "+crystals+" 💎");return;}
-if(petsState.nest){alert("Гнездо занято! Дождись завершения.");return;}
-if(petTotalCount()>=PET_STORAGE_MAX){alert("Всего питомцев уже "+PET_STORAGE_MAX+"/"+PET_STORAGE_MAX+".\nПродай кого-то, чтобы освободить место.");return;}
-crystals-=PET_EGG_PRICE;
-petsState.nest={stage:"incubating",startedAt:Date.now(),taps:0,type:null};
-playSound("ui");vibrate(10);petRenderAll();updateUI();saveGame();}
-function petProcessNest(){
-if(!petsState.nest)return;
-var now=Date.now();var elapsed=now-petsState.nest.startedAt;
-if(petsState.nest.stage==="incubating"){if(elapsed>=PET_EGG_INCUBATE){petsState.nest.stage="ready_hatch";petsState.nest.taps=0;petsState.nest.type=petRollType();playSound("ui");petRenderAll();saveGame();}}
-else if(petsState.nest.stage==="growing"){if(elapsed>=PET_EGG_GROW){petsState.nest.stage="ready_collect";playSound("ui");petRenderAll();saveGame();}}}
-function petHatchTap(){
-if(!petsState.nest)return;
-if(petsState.nest.stage!=="ready_hatch")return;
-petsState.nest.taps++;
-var tgt=$("nest-egg-tap-target");if(tgt){tgt.classList.remove("tapped");void tgt.offsetWidth;tgt.classList.add("tapped");}
-playSound("click");
-var dots=document.querySelectorAll(".tap-dot");dots.forEach(function(d,i){if(i<petsState.nest.taps)d.classList.add("filled");});
-if(petsState.nest.taps>=PET_EGG_HATCH_TAPS){setTimeout(function(){if(!petsState.nest)return;petsState.nest.stage="growing";petsState.nest.startedAt=Date.now();playSound("achievement");vibrate(30);petRenderAll();saveGame();},350);}
-else{petRenderAll();saveGame();}}
-function petCollectTap(){
-if(!petsState.nest)return;
-if(petsState.nest.stage!=="ready_collect")return;
-var t=petsState.nest.type;
-if(petsState.storage.length>=PET_STORAGE_MAX){alert("Хранилище заполнено! Продай кого-то.");return;}
-petsState.storage.push({id:petGenerateId(),type:t});
-petsState.nest=null;
-if(t==="dragon")unlocked._petHasDragon=true;
-var pet=PET_TYPES[t];
-playSound("achievement");vibrate(40);
-var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent=pet.emoji+" "+pet.name+" в хранилище!";
-document.body.appendChild(popup);setTimeout(function(){popup.remove();},4000);
-petRenderAll();updateUI();saveGame();}
-function petActivate(id){
-var idx=-1;for(var i=0;i<petsState.storage.length;i++){if(petsState.storage[i].id===id){idx=i;break;}}
-if(idx<0)return;
-var pet=petsState.storage[idx];petsState.storage.splice(idx,1);
-if(petsState.active){petsState.storage.push(petsState.active);}
-petsState.active=pet;petsState.hunger=PET_HUNGER_MAX;petsState.hungerLastTick=Date.now();petsState.xpLastTick=Date.now();
-playSound("ui");vibrate(10);petRenderAll();updateUI();saveGame();}
-function petDeactivate(){
-if(!petsState.active)return;
-if(petsState.storage.length>=PET_STORAGE_MAX){alert("Хранилище заполнено.");return;}
-petsState.storage.push(petsState.active);petsState.active=null;petsState.hunger=PET_HUNGER_MAX;
-playSound("ui");petRenderAll();updateUI();saveGame();}
-function petSell(id){for(var i=0;i<petsState.storage.length;i++){if(petsState.storage[i].id===id){var pet=petsState.storage[i];var type=PET_TYPES[pet.type];if(!confirm("Продать "+type.emoji+" "+type.name+" за "+type.sellPrice+" 🌑?"))return;shards+=type.sellPrice;petsState.storage.splice(i,1);playSound("ui");vibrate(10);petRenderAll();updateUI();saveGame();return;}}}
-function petFeed(foodId){
-var pet=petGetActive();if(!pet){alert("Нет активного питомца!");return;}
-var food=FOOD_TYPES[foodId];if(!food)return;
-if(petsState.food[foodId]<=0){alert("Нет "+food.emoji+" в инвентаре!\nКупи в магазине еды.");return;}
-petsState.food[foodId]--;petsState.hunger=Math.min(PET_HUNGER_MAX,petsState.hunger+food.hunger);petsState.xp+=FOOD_CASHBACK;
-if(!unlocked._petFeedCount)unlocked._petFeedCount=0;unlocked._petFeedCount++;
-playSound("eat");vibrate(10);petRenderAll();updateUI();saveGame();checkAchievements();}
-function petBuyFood(foodId){
-var food=FOOD_TYPES[foodId];if(!food)return;
-if(petsState.xp<food.price){alert("Недостаточно опыта!\nНужно: "+food.price+" ⭐\nУ вас: "+petsState.xp+" ⭐");return;}
-petsState.xp-=food.price;petsState.food[foodId]++;petsState.xp+=FOOD_CASHBACK;
-playSound("ui");petRenderAll();updateUI();saveGame();}
-function petKillFromHunger(){
-var pet=petGetActive();if(!pet)return;
-var type=PET_TYPES[pet.type];
-petsState.active=null;petsState.hunger=PET_HUNGER_MAX;
-playSound("alarm");vibrate(100);
-var popup=document.createElement("div");popup.className="achievement-popup";popup.style.background="linear-gradient(135deg,#4a0000,#b71c1c)";popup.style.color="#fff";popup.textContent="💀 "+type.deathMsg;
-document.body.appendChild(popup);setTimeout(function(){popup.remove();},7000);
-petRenderAll();updateUI();saveGame();}
-function petTickHunger(){
-var pet=petGetActive();if(!pet)return;
-var now=Date.now();var elapsed=now-petsState.hungerLastTick;
-if(elapsed<PET_HUNGER_DROP_ONLINE)return;
-var drops=Math.floor(elapsed/PET_HUNGER_DROP_ONLINE);
-petsState.hungerLastTick+=drops*PET_HUNGER_DROP_ONLINE;
-petsState.hunger=Math.max(0,petsState.hunger-drops);
-if(petsState.hunger<=0)petKillFromHunger();}
-function petTickXP(){
-var pet=petGetActive();if(!pet)return;
-if(petsState.hunger<=0)return;
-var now=Date.now();var elapsed=now-petsState.xpLastTick;
-if(elapsed<PET_XP_INTERVAL)return;
-var ticks=Math.floor(elapsed/PET_XP_INTERVAL);
-petsState.xpLastTick+=ticks*PET_XP_INTERVAL;
-petsState.xp+=ticks;
-petRenderTopBar();}
+function petRollType(){var r=Math.random();var acc=0;var ids=["hamster","kitten","fox","penguin","wolf","dragon","phoenix"];for(var i=0;i<ids.length;i++){acc+=PET_TYPES[ids[i]].chance;if(r<=acc)return ids[i];}return "hamster";}
+function petBuyEgg(){if(crystals<PET_EGG_PRICE){alert(t("alert.not_enough_crystals",PET_EGG_PRICE,crystals));return;}if(petsState.nest){alert("Nest busy!");return;}if(petTotalCount()>=PET_STORAGE_MAX){alert(t("alert.pet_storage_full"));return;}crystals-=PET_EGG_PRICE;petsState.nest={stage:"incubating",startedAt:Date.now(),taps:0,type:null};playSound("ui");vibrate(10);petRenderAll();updateUI();saveGame();}
+function petProcessNest(){if(!petsState.nest)return;var now=Date.now();var el=now-petsState.nest.startedAt;if(petsState.nest.stage==="incubating"){if(el>=PET_EGG_INCUBATE){petsState.nest.stage="ready_hatch";petsState.nest.taps=0;petsState.nest.type=petRollType();playSound("ui");petRenderAll();saveGame();}}else if(petsState.nest.stage==="growing"){if(el>=PET_EGG_GROW){petsState.nest.stage="ready_collect";playSound("ui");petRenderAll();saveGame();}}}
+function petHatchTap(){if(!petsState.nest)return;if(petsState.nest.stage!=="ready_hatch")return;petsState.nest.taps++;var t2=$("nest-egg-tap-target");if(t2){t2.classList.remove("tapped");void t2.offsetWidth;t2.classList.add("tapped");}playSound("click");var d=document.querySelectorAll(".tap-dot");d.forEach(function(x,i){if(i<petsState.nest.taps)x.classList.add("filled");});if(petsState.nest.taps>=PET_EGG_HATCH_TAPS){setTimeout(function(){if(!petsState.nest)return;petsState.nest.stage="growing";petsState.nest.startedAt=Date.now();playSound("achievement");vibrate(30);petRenderAll();saveGame();},350);}else{petRenderAll();saveGame();}}
+function petCollectTap(){if(!petsState.nest)return;if(petsState.nest.stage!=="ready_collect")return;var t2=petsState.nest.type;if(petsState.storage.length>=PET_STORAGE_MAX){alert(t("alert.pet_storage_full"));return;}petsState.storage.push({id:petGenerateId(),type:t2});petsState.nest=null;if(t2==="dragon")unlocked._petHasDragon=true;if(t2==="phoenix")unlocked._petHasPhoenix=true;var pet=PET_TYPES[t2];playSound("achievement");vibrate(40);var p=document.createElement("div");p.className="achievement-popup";p.textContent=pet.emoji+" "+pet.name;document.body.appendChild(p);setTimeout(function(){p.remove();},4000);petRenderAll();updateUI();saveGame();}
+function petActivate(id){var idx=-1;for(var i=0;i<petsState.storage.length;i++){if(petsState.storage[i].id===id){idx=i;break;}}if(idx<0)return;var pet=petsState.storage[idx];petsState.storage.splice(idx,1);if(petsState.active){petsState.storage.push(petsState.active);}petsState.active=pet;if(typeof pet.hunger!=="number")pet.hunger=PET_HUNGER_MAX;petsState.hunger=pet.hunger;petsState.hungerLastTick=Date.now();petsState.xpLastTick=Date.now();playSound("ui");vibrate(10);petRenderAll();updateUI();saveGame();}
+function petDeactivate(){if(!petsState.active)return;if(petsState.storage.length>=PET_STORAGE_MAX){alert(t("alert.pet_storage_full"));return;}petsState.active.hunger=petsState.hunger;petsState.storage.push(petsState.active);petsState.active=null;petsState.hunger=PET_HUNGER_MAX;playSound("ui");petRenderAll();updateUI();saveGame();}
+function petSell(id){for(var i=0;i<petsState.storage.length;i++){if(petsState.storage[i].id===id){var pet=petsState.storage[i];var ty=PET_TYPES[pet.type];if(!confirm(ty.emoji+" "+ty.name+" → "+ty.sellPrice+" 🌑?"))return;shards+=ty.sellPrice;petsState.storage.splice(i,1);playSound("ui");vibrate(10);petRenderAll();updateUI();saveGame();return;}}}
+function petFeed(fid){var pet=petGetActive();if(!pet){alert("No pet");return;}var f=FOOD_TYPES[fid];if(!f)return;if(petsState.food[fid]<=0){alert("No food");return;}petsState.food[fid]--;petsState.hunger=Math.min(PET_HUNGER_MAX,petsState.hunger+f.hunger);petsState.xp+=FOOD_CASHBACK;if(!unlocked._petFeedCount)unlocked._petFeedCount=0;unlocked._petFeedCount++;playSound("eat");vibrate(10);petRenderAll();updateUI();saveGame();checkAchievements();}
+function petBuyFood(fid){var f=FOOD_TYPES[fid];if(!f)return;if(petsState.xp<f.price){alert("No XP");return;}petsState.xp-=f.price;petsState.food[fid]++;petsState.xp+=FOOD_CASHBACK;playSound("ui");petRenderAll();updateUI();saveGame();}
+function petKillFromHunger(){var pet=petGetActive();if(!pet)return;var ty=PET_TYPES[pet.type];petsState.active=null;petsState.hunger=PET_HUNGER_MAX;playSound("alarm");vibrate(100);var p=document.createElement("div");p.className="achievement-popup";p.style.background="linear-gradient(135deg,#4a0000,#b71c1c)";p.style.color="#fff";p.textContent="💀 "+ty.deathMsg;document.body.appendChild(p);setTimeout(function(){p.remove();},7000);petRenderAll();updateUI();saveGame();}
+function petTickHunger(){var pet=petGetActive();if(!pet)return;var n=Date.now();var el=n-petsState.hungerLastTick;if(el<PET_HUNGER_DROP_ONLINE)return;var d=Math.floor(el/PET_HUNGER_DROP_ONLINE);petsState.hungerLastTick+=d*PET_HUNGER_DROP_ONLINE;petsState.hunger=Math.max(0,petsState.hunger-d);pet.hunger=petsState.hunger;if(petsState.hunger<=0)petKillFromHunger();}
+function petTickXP(){var pet=petGetActive();if(!pet)return;if(petsState.hunger<=0)return;var n=Date.now();var el=n-petsState.xpLastTick;if(el<PET_XP_INTERVAL)return;var t2=Math.floor(el/PET_XP_INTERVAL);petsState.xpLastTick+=t2*PET_XP_INTERVAL;petsState.xp+=t2;petRenderTopBar();}
 function petGetIncomeBonus(){var pet=petGetActive();if(!pet||petsState.hunger<=0)return 0;return PET_TYPES[pet.type].bonus.income||0;}
 function petGetGemTapChance(){var pet=petGetActive();if(!pet||petsState.hunger<=0)return 0;return PET_TYPES[pet.type].bonus.gemTap||0;}
 function petGetShardTapBonus(){var pet=petGetActive();if(!pet||petsState.hunger<=0)return 0;return PET_TYPES[pet.type].bonus.shardTap||0;}
-function petRenderTopBar(){var xpEl=$("pets-xp");if(xpEl)xpEl.textContent=petsState.xp;["strawberry","banana","orange"].forEach(function(f){var el=$("food-"+f+"-count");if(el)el.textContent=petsState.food[f];var fe=$("feed-"+f+"-count");if(fe)fe.textContent=petsState.food[f];});}
-function petRenderNest(){
-var emptyEl=$("nest-empty"),incEl=$("nest-incubating"),growEl=$("nest-growing"),hatchEl=$("nest-ready-hatch"),collectEl=$("nest-ready-collect");
-if(!emptyEl)return;
-[emptyEl,incEl,growEl,hatchEl,collectEl].forEach(function(e){if(e)e.classList.add("hidden");});
-if(!petsState.nest){emptyEl.classList.remove("hidden");return;}
-var now=Date.now();var elapsed=now-petsState.nest.startedAt;var stage=petsState.nest.stage;
-if(stage==="incubating"){incEl.classList.remove("hidden");var left=Math.max(0,PET_EGG_INCUBATE-elapsed);var totalSec=Math.floor(left/1000);var mm=Math.floor(totalSec/60);var ss=totalSec%60;var tEl=$("nest-incubate-timer");if(tEl)tEl.textContent=mm+":"+(ss<10?"0":"")+ss;var bEl=$("nest-incubate-bar");if(bEl)bEl.style.width=Math.min(100,(elapsed/PET_EGG_INCUBATE)*100)+"%";var egg=$("nest-egg-visual");if(egg){var progress=Math.min(1,elapsed/PET_EGG_INCUBATE);var size=40+progress*55;egg.style.fontSize=size+"px";}}
-else if(stage==="ready_hatch"){hatchEl.classList.remove("hidden");var dots=document.querySelectorAll(".tap-dot");dots.forEach(function(d,i){if(i<petsState.nest.taps)d.classList.add("filled");else d.classList.remove("filled");});}
-else if(stage==="growing"){growEl.classList.remove("hidden");var left2=Math.max(0,PET_EGG_GROW-elapsed);var totalSec2=Math.floor(left2/1000);var mm2=Math.floor(totalSec2/60);var ss2=totalSec2%60;var tEl2=$("nest-grow-timer");if(tEl2)tEl2.textContent=mm2+":"+(ss2<10?"0":"")+ss2;var bEl2=$("nest-grow-bar");if(bEl2)bEl2.style.width=Math.min(100,(elapsed/PET_EGG_GROW)*100)+"%";var baby=$("nest-baby-visual");if(baby){var progress2=Math.min(1,elapsed/PET_EGG_GROW);var size2=55+progress2*30;baby.style.fontSize=size2+"px";}}
-else if(stage==="ready_collect"){collectEl.classList.remove("hidden");}
-var buyBtn=$("buy-egg-btn");if(buyBtn)buyBtn.disabled=petTotalCount()>=PET_STORAGE_MAX;}
-function petRenderActive(){
-var emptyEl=$("active-pet-empty"),cardEl=$("active-pet-card");
-if(!emptyEl||!cardEl)return;
-var pet=petGetActive();
-if(!pet){emptyEl.textContent="Нет активного питомца";emptyEl.classList.remove("hidden");cardEl.classList.add("hidden");return;}
-emptyEl.classList.add("hidden");cardEl.classList.remove("hidden");
-var type=PET_TYPES[pet.type];
-var nameEl=$("active-pet-name-big");if(nameEl)nameEl.textContent=type.name;
-var emojiEl=$("active-pet-emoji-big");if(emojiEl)emojiEl.textContent=type.emoji;
-var rarEl=$("active-pet-rarity-big");if(rarEl)rarEl.textContent=type.rarityLabel;
-var bonusText=[];
-if(type.bonus.income)bonusText.push("+"+Math.round(type.bonus.income*100)+"% доход");
-if(type.bonus.gemTap)bonusText.push("+"+(type.bonus.gemTap*100).toFixed(2)+"% гем");
-if(type.bonus.shardTap)bonusText.push("+"+(type.bonus.shardTap*100).toFixed(1)+"% осколок");
-var bonusEl=$("active-pet-bonus-big");if(bonusEl)bonusEl.textContent=bonusText.join(" · ");
-var hungerVal=$("active-pet-hunger-value");if(hungerVal)hungerVal.textContent=Math.floor(petsState.hunger)+" / "+PET_HUNGER_MAX;
-var hungerFill=$("active-pet-hunger-fill-big");
-if(hungerFill){hungerFill.style.width=Math.max(0,(petsState.hunger/PET_HUNGER_MAX)*100)+"%";hungerFill.classList.remove("warn","danger");if(petsState.hunger<=20)hungerFill.classList.add("danger");else if(petsState.hunger<=50)hungerFill.classList.add("warn");}
-document.querySelectorAll(".feed-btn").forEach(function(btn){var fid=btn.dataset.food;btn.disabled=petsState.food[fid]<=0;});
-var deactBtn=$("pet-deactivate-btn");if(deactBtn)deactBtn.onclick=petDeactivate;}
-function petRenderStorage(){
-var list=$("pets-storage-list"),empty=$("pets-storage-empty"),countEl=$("storage-count");
-if(!list||!empty)return;
-if(countEl)countEl.textContent=petTotalCount();
-if(petsState.storage.length===0){empty.textContent="Пусто";empty.classList.remove("hidden");list.innerHTML="";return;}
-empty.classList.add("hidden");list.innerHTML="";
-petsState.storage.forEach(function(pet){
-var type=PET_TYPES[pet.type];
-var div=document.createElement("div");div.className="pet-card "+type.rarity;
-var bonusText=[];
-if(type.bonus.income)bonusText.push("+"+Math.round(type.bonus.income*100)+"% доход");
-if(type.bonus.gemTap)bonusText.push("+"+(type.bonus.gemTap*100).toFixed(2)+"% гем");
-if(type.bonus.shardTap)bonusText.push("+"+(type.bonus.shardTap*100).toFixed(1)+"% осколок");
-var actions='<button class="pet-card-btn pet-activate-btn" data-activate="'+pet.id+'">⭐ Активировать</button>';
-actions+='<button class="pet-card-btn pet-sell-btn" data-sell="'+pet.id+'">💰 Продать ('+type.sellPrice+'🌑)</button>';
-div.innerHTML='<div class="pet-card-emoji">'+type.emoji+'</div>'+'<div class="pet-card-info">'+'<div class="pet-card-name">'+type.name+'</div>'+'<div class="pet-card-rarity '+type.rarity+'">'+type.rarityLabel+'</div>'+'<div class="pet-card-bonus">'+bonusText.join(" · ")+'</div>'+'</div>'+'<div class="pet-card-actions">'+actions+'</div>';
-list.appendChild(div);});
-list.querySelectorAll("[data-activate]").forEach(function(btn){btn.onclick=function(){petActivate(parseInt(btn.dataset.activate));};});
-list.querySelectorAll("[data-sell]").forEach(function(btn){btn.onclick=function(){petSell(parseInt(btn.dataset.sell));};});}
-function petRenderInfo(){
-var list=$("pet-info-list");if(!list)return;list.innerHTML="";
-for(var id in PET_TYPES){var type=PET_TYPES[id];
-var bonusText=[];
-if(type.bonus.income)bonusText.push("+"+Math.round(type.bonus.income*100)+"% доход");
-if(type.bonus.gemTap)bonusText.push("+"+(type.bonus.gemTap*100).toFixed(2)+"% шанс гема");
-if(type.bonus.shardTap)bonusText.push("+"+(type.bonus.shardTap*100).toFixed(1)+"% шанс осколка");
-var div=document.createElement("div");div.className="pet-info-item";
-div.innerHTML='<div class="pet-info-emoji">'+type.emoji+'</div>'+'<div class="pet-info-text">'+'<b>'+type.name+'</b> · '+type.rarityLabel+'<br>'+bonusText.join(" · ")+'<br>Цена продажи: '+type.sellPrice+' 🌑'+'<div class="pet-info-chance">Шанс из яйца: '+Math.round(type.chance*100)+'%</div>'+'</div>';
-list.appendChild(div);}}
-function petRenderIndicator(){var ind=$("active-pet-indicator");if(!ind)return;var pet=petGetActive();if(!pet){ind.classList.add("hidden");return;}ind.classList.remove("hidden");var type=PET_TYPES[pet.type];var em=$("active-pet-emoji-small");if(em)em.textContent=type.emoji;var fill=$("active-pet-hunger-fill-small");if(fill){fill.style.width=Math.max(0,(petsState.hunger/PET_HUNGER_MAX)*100)+"%";fill.classList.remove("warn","danger");if(petsState.hunger<=20)fill.classList.add("danger");else if(petsState.hunger<=50)fill.classList.add("warn");}}
+function petRenderTopBar(){var x=$("pets-xp");if(x)x.textContent=petsState.xp;["strawberry","banana","orange"].forEach(function(f){var el=$("food-"+f+"-count");if(el)el.textContent=petsState.food[f];var fe=$("feed-"+f+"-count");if(fe)fe.textContent=petsState.food[f];});}
+function petRenderNest(){var e1=$("nest-empty"),e2=$("nest-incubating"),e3=$("nest-growing"),e4=$("nest-ready-hatch"),e5=$("nest-ready-collect");if(!e1)return;[e1,e2,e3,e4,e5].forEach(function(x){if(x)x.classList.add("hidden");});if(!petsState.nest){e1.classList.remove("hidden");return;}var n=Date.now();var el=n-petsState.nest.startedAt;var st=petsState.nest.stage;if(st==="incubating"){e2.classList.remove("hidden");var l=Math.max(0,PET_EGG_INCUBATE-el);var ts=Math.floor(l/1000);var m=Math.floor(ts/60);var s=ts%60;var t3=$("nest-incubate-timer");if(t3)t3.textContent=m+":"+(s<10?"0":"")+s;var b=$("nest-incubate-bar");if(b)b.style.width=Math.min(100,(el/PET_EGG_INCUBATE)*100)+"%";var eg=$("nest-egg-visual");if(eg){var p=Math.min(1,el/PET_EGG_INCUBATE);eg.style.fontSize=(40+p*55)+"px";}}
+else if(st==="ready_hatch"){e4.classList.remove("hidden");var d=document.querySelectorAll(".tap-dot");d.forEach(function(x,i){if(i<petsState.nest.taps)x.classList.add("filled");else x.classList.remove("filled");});}
+else if(st==="growing"){e3.classList.remove("hidden");var l2=Math.max(0,PET_EGG_GROW-el);var ts2=Math.floor(l2/1000);var m2=Math.floor(ts2/60);var s2=ts2%60;var t4=$("nest-grow-timer");if(t4)t4.textContent=m2+":"+(s2<10?"0":"")+s2;var b2=$("nest-grow-bar");if(b2)b2.style.width=Math.min(100,(el/PET_EGG_GROW)*100)+"%";var bb=$("nest-baby-visual");if(bb){var p2=Math.min(1,el/PET_EGG_GROW);bb.style.fontSize=(55+p2*30)+"px";}}
+else if(st==="ready_collect"){e5.classList.remove("hidden");}
+var buy=$("buy-egg-btn");if(buy)buy.disabled=petTotalCount()>=PET_STORAGE_MAX;}
+function petRenderActive(){var e=$("active-pet-empty"),c=$("active-pet-card");if(!e||!c)return;var pet=petGetActive();if(!pet){e.textContent=t("pets.no_active");e.classList.remove("hidden");c.classList.add("hidden");return;}e.classList.add("hidden");c.classList.remove("hidden");var ty=PET_TYPES[pet.type];var n=$("active-pet-name-big");if(n)n.textContent=ty.name;var em=$("active-pet-emoji-big");if(em)em.textContent=ty.emoji;var r=$("active-pet-rarity-big");if(r)r.textContent=ty.rarityLabel;var bt=[];if(ty.bonus.income)bt.push("+"+Math.round(ty.bonus.income*100)+t("pet.bonus_income"));if(ty.bonus.gemTap)bt.push("+"+(ty.bonus.gemTap*100).toFixed(2)+t("pet.bonus_gem"));if(ty.bonus.shardTap)bt.push("+"+(ty.bonus.shardTap*100).toFixed(1)+t("pet.bonus_shard"));var bo=$("active-pet-bonus-big");if(bo)bo.textContent=bt.join(" · ");var hv=$("active-pet-hunger-value");if(hv)hv.textContent=Math.floor(petsState.hunger)+" / "+PET_HUNGER_MAX;var hf=$("active-pet-hunger-fill-big");if(hf){hf.style.width=Math.max(0,(petsState.hunger/PET_HUNGER_MAX)*100)+"%";hf.classList.remove("warn","danger");if(petsState.hunger<=20)hf.classList.add("danger");else if(petsState.hunger<=50)hf.classList.add("warn");}document.querySelectorAll(".feed-btn").forEach(function(b){var f=b.dataset.food;b.disabled=petsState.food[f]<=0;});var d=$("pet-deactivate-btn");if(d)d.onclick=petDeactivate;}
+function petRenderStorage(){var l=$("pets-storage-list"),e=$("pets-storage-empty"),c=$("storage-count");if(!l||!e)return;if(c)c.textContent=petTotalCount();if(petsState.storage.length===0){e.textContent=t("pets.empty");e.classList.remove("hidden");l.innerHTML="";return;}e.classList.add("hidden");l.innerHTML="";petsState.storage.forEach(function(pet){var ty=PET_TYPES[pet.type];var div=document.createElement("div");div.className="pet-card "+ty.rarity;var bt=[];if(ty.bonus.income)bt.push("+"+Math.round(ty.bonus.income*100)+t("pet.bonus_income"));if(ty.bonus.gemTap)bt.push("+"+(ty.bonus.gemTap*100).toFixed(2)+t("pet.bonus_gem"));if(ty.bonus.shardTap)bt.push("+"+(ty.bonus.shardTap*100).toFixed(1)+t("pet.bonus_shard"));var a='<button class="pet-card-btn pet-activate-btn" data-activate="'+pet.id+'">⭐ '+t("pets.activate")+'</button>';a+='<button class="pet-card-btn pet-sell-btn" data-sell="'+pet.id+'">💰 '+t("pets.sell")+' ('+ty.sellPrice+'🌑)</button>';div.innerHTML='<div class="pet-card-emoji">'+ty.emoji+'</div>'+'<div class="pet-card-info">'+'<div class="pet-card-name">'+ty.name+'</div>'+'<div class="pet-card-rarity '+ty.rarity+'">'+ty.rarityLabel+'</div>'+'<div class="pet-card-bonus">'+bt.join(" · ")+'</div>'+'</div>'+'<div class="pet-card-actions">'+a+'</div>';if(pet.tempExpiresAt){var r=Math.max(0,Math.floor((pet.tempExpiresAt-Date.now())/1000));var m=Math.floor(r/60);var s=r%60;var tt2=document.createElement("div");tt2.style.cssText="font-size:11px;color:#ff5252;font-weight:bold;margin-top:2px;text-align:center;background:rgba(255,82,82,.15);border-radius:4px;padding:2px 6px;display:inline-block";tt2.textContent="⏰ "+m+":"+(s<10?"0":"")+s;var info=div.querySelector(".pet-card-info");if(info)info.appendChild(tt2);}l.appendChild(div);});l.querySelectorAll("[data-activate]").forEach(function(b){b.onclick=function(){petActivate(parseInt(b.dataset.activate));};});l.querySelectorAll("[data-sell]").forEach(function(b){b.onclick=function(){petSell(parseInt(b.dataset.sell));};});}
+function petRenderInfo(){var l=$("pet-info-list");if(!l)return;l.innerHTML="";for(var id in PET_TYPES){var ty=PET_TYPES[id];var bt=[];if(ty.bonus.income)bt.push("+"+Math.round(ty.bonus.income*100)+t("pet.bonus_income"));if(ty.bonus.gemTap)bt.push("+"+(ty.bonus.gemTap*100).toFixed(2)+t("pet.bonus_gem"));if(ty.bonus.shardTap)bt.push("+"+(ty.bonus.shardTap*100).toFixed(1)+t("pet.bonus_shard"));var div=document.createElement("div");div.className="pet-info-item";div.innerHTML='<div class="pet-info-emoji">'+ty.emoji+'</div>'+'<div class="pet-info-text">'+'<b>'+ty.name+'</b> · '+ty.rarityLabel+'<br>'+bt.join(" · ")+'<br>'+t("pet.sell_price")+': '+ty.sellPrice+' 🌑'+'<div class="pet-info-chance">'+t("pet.egg_chance")+': '+Math.round(ty.chance*100)+'%</div>'+'</div>';l.appendChild(div);}}
+function petRenderIndicator(){var i=$("active-pet-indicator");if(!i)return;var pet=petGetActive();if(!pet){i.classList.add("hidden");return;}i.classList.remove("hidden");var ty=PET_TYPES[pet.type];var em=$("active-pet-emoji-small");if(em)em.textContent=ty.emoji;var f=$("active-pet-hunger-fill-small");if(f){f.style.width=Math.max(0,(petsState.hunger/PET_HUNGER_MAX)*100)+"%";f.classList.remove("warn","danger");if(petsState.hunger<=20)f.classList.add("danger");else if(petsState.hunger<=50)f.classList.add("warn");}}
 function petRenderAll(){petRenderTopBar();petRenderNest();petRenderActive();petRenderStorage();petRenderIndicator();}
-function petInitUI(){
-var buyBtn=$("buy-egg-btn");if(buyBtn)buyBtn.onclick=petBuyEgg;
-var eggTap=$("nest-egg-tap-target");if(eggTap)eggTap.onclick=petHatchTap;
-var collectTap=$("nest-collect-tap-target");if(collectTap)collectTap.onclick=petCollectTap;
-document.querySelectorAll(".feed-btn").forEach(function(btn){btn.onclick=function(){petFeed(btn.dataset.food);};});
-document.querySelectorAll(".food-buy-btn").forEach(function(btn){btn.onclick=function(){petBuyFood(btn.dataset.food);};});
-var ind=$("active-pet-indicator");if(ind){ind.onclick=function(){if(currentPage!==2)showPage(2);};}
-var almBtn=$("almanac-btn");if(almBtn)almBtn.onclick=function(){playSound("ui");var m=$("modal-almanac");if(m){m.classList.remove("hidden");syncScrollLock();}};
-var almClose=document.querySelector('[data-close="modal-almanac"]');if(almClose)almClose.onclick=function(){var m=$("modal-almanac");if(m){m.classList.add("hidden");syncScrollLock();}};
-petRenderInfo();petRenderAll();}
-function petLoadFromSave(data){
-if(!data)return;
-try{
-if(typeof data._petsXp==="number")petsState.xp=data._petsXp;
-if(data._petsFood){petsState.food.strawberry=data._petsFood.strawberry||0;petsState.food.banana=data._petsFood.banana||0;petsState.food.orange=data._petsFood.orange||0;}
-if(data._petsStorage)petsState.storage=data._petsStorage;
-if(data._petsActive)petsState.active=data._petsActive;
-if(typeof data._petsNextId==="number")petsState.nextId=data._petsNextId;
-if(data._petsNest)petsState.nest=data._petsNest;
-if(typeof data._petsHunger==="number")petsState.hunger=data._petsHunger;
-if(typeof data._petsHungerLastTick==="number")petsState.hungerLastTick=data._petsHungerLastTick;
-if(typeof data._petsXpLastTick==="number")petsState.xpLastTick=data._petsXpLastTick;
-if(petsState.active&&data.lastTime){var secondsAway=Math.floor((Date.now()-data.lastTime)/1000);if(secondsAway>0){var drops=Math.floor(secondsAway/(5*60));petsState.hunger=Math.max(5,petsState.hunger-drops);}}
-petsState.hungerLastTick=Date.now();
-petsState.xpLastTick=Date.now();
-}catch(e){console.warn("Ошибка загрузки питомцев:",e);}}
-function petSaveToSave(data){
-data._petsXp=petsState.xp;
-data._petsFood={strawberry:petsState.food.strawberry,banana:petsState.food.banana,orange:petsState.food.orange};
-data._petsStorage=petsState.storage;
-data._petsActive=petsState.active;
-data._petsNextId=petsState.nextId;
-data._petsNest=petsState.nest;
-data._petsHunger=petsState.hunger;
-data._petsHungerLastTick=petsState.hungerLastTick;
-data._petsXpLastTick=petsState.xpLastTick;}
-setInterval(function(){
-petProcessNest();petTickHunger();petTickXP();
-if(currentPage===2){petRenderNest();petRenderActive();}
-petRenderIndicator();
-},1000);
+function petInitUI(){var b=$("buy-egg-btn");if(b)b.onclick=petBuyEgg;var e=$("nest-egg-tap-target");if(e)e.onclick=petHatchTap;var c=$("nest-collect-tap-target");if(c)c.onclick=petCollectTap;document.querySelectorAll(".feed-btn").forEach(function(b){b.onclick=function(){petFeed(b.dataset.food);};});document.querySelectorAll(".food-buy-btn").forEach(function(b){b.onclick=function(){petBuyFood(b.dataset.food);};});var i=$("active-pet-indicator");if(i)i.onclick=function(){if(currentPage!==2)showPage(2);};var a=$("almanac-btn");if(a)a.onclick=function(){playSound("ui");var m=$("modal-almanac");if(m){m.classList.remove("hidden");syncScrollLock();}};var ac=document.querySelector('[data-close="modal-almanac"]');if(ac)ac.onclick=function(){var m=$("modal-almanac");if(m){m.classList.add("hidden");syncScrollLock();}};petRenderInfo();petRenderAll();}
+function petLoadFromSave(data){if(!data)return;try{if(typeof data._petsXp==="number")petsState.xp=data._petsXp;if(data._petsFood){petsState.food.strawberry=data._petsFood.strawberry||0;petsState.food.banana=data._petsFood.banana||0;petsState.food.orange=data._petsFood.orange||0;}if(data._petsStorage)petsState.storage=data._petsStorage;if(data._petsActive)petsState.active=data._petsActive;if(typeof data._petsNextId==="number")petsState.nextId=data._petsNextId;if(data._petsNest)petsState.nest=data._petsNest;if(typeof data._petsHunger==="number")petsState.hunger=data._petsHunger;if(typeof data._petsHungerLastTick==="number")petsState.hungerLastTick=data._petsHungerLastTick;if(typeof data._petsXpLastTick==="number")petsState.xpLastTick=data._petsXpLastTick;if(petsState.active&&data.lastTime){var sa=Math.floor((Date.now()-data.lastTime)/1000);if(sa>0){var d=Math.floor(sa/(5*60));petsState.hunger=Math.max(5,petsState.hunger-d);if(typeof petsState.active.hunger==="number")petsState.active.hunger=petsState.hunger;}}petsState.hungerLastTick=Date.now();petsState.xpLastTick=Date.now();}catch(e){console.warn("pet load err:",e);}}
+function petSaveToSave(data){data._petsXp=petsState.xp;data._petsFood={strawberry:petsState.food.strawberry,banana:petsState.food.banana,orange:petsState.food.orange};data._petsStorage=petsState.storage;data._petsActive=petsState.active;data._petsNextId=petsState.nextId;data._petsNest=petsState.nest;data._petsHunger=petsState.hunger;data._petsHungerLastTick=petsState.hungerLastTick;data._petsXpLastTick=petsState.xpLastTick;}
+setInterval(function(){petProcessNest();petTickHunger();petTickXP();if(currentPage===2){petRenderNest();petRenderActive();}petRenderIndicator();},1000);
 setTimeout(function(){petInitUI();},3000);
 
+// === БАННЕР ПОДПИСКИ ===
+var SESSION_COUNT_KEY="clicker-session-count";
+function subscribeBannerIncrementSession(){var c=0;try{c=parseInt(localStorage.getItem(SESSION_COUNT_KEY)||"0");if(!isFinite(c)||c<0)c=0;c++;localStorage.setItem(SESSION_COUNT_KEY,c.toString());}catch(e){c=1;}return c;}
+function subscribeBannerShouldShow(c){return c>0&&c%10===0;}
+function subscribeBannerShow(){var el=document.getElementById("subscribe-banner");if(!el)return;el.classList.remove("hidden");try{lockScroll();}catch(e){}try{playSound("ui");}catch(e){}try{vibrate(15);}catch(e){}}
+function subscribeBannerHide(){var el=document.getElementById("subscribe-banner");if(el)el.classList.add("hidden");try{unlockScroll();}catch(e){}}
+function subscribeBannerSetup(){var b=document.getElementById("subscribe-banner-close");if(b)b.onclick=subscribeBannerHide;document.addEventListener("keydown",function(e){if(e.key==="Escape"){var el=document.getElementById("subscribe-banner");if(el&&!el.classList.contains("hidden"))subscribeBannerHide();}});}
+function subscribeBannerInit(){try{subscribeBannerSetup();var c=subscribeBannerIncrementSession();if(subscribeBannerShouldShow(c)){setTimeout(function(){subscribeBannerShow();},2500);}}catch(e){}}
+
+function installV89CpsClanBonus(){if(window.__v89CpsPatched)return;window.__v89CpsPatched=true;var o=window.getCPS;window.getCPS=function(){var b=o();var cb=(typeof clanGetBonus==="function")?clanGetBonus():0;return b*(1+cb);};}
+function hookSeasonAccumulators(){setInterval(updateSeasonTick,1000);setInterval(pushSeasonToFirebase,60000);window.addEventListener("beforeunload",pushSeasonToFirebase);}
+
+// ===== ПЕРЕХВАТ ALERT/CONFIRM/PROMPT =====
+(function(){
+var _oa=window.alert,_oc=window.confirm,_op=window.prompt;
+function tr(msg){
+if(typeof msg!=="string")return msg;
+if(currentLang!=="en")return msg;
+var map=[
+["Недостаточно монет!","Not enough coins!"],["Недостаточно кристаллов!","Not enough crystals!"],
+["Недостаточно осколков!","Not enough shards!"],["Недостаточно опыта!","Not enough XP!"],
+["Нужно:","Need:"],["У вас:","You have:"],["монет!","coins!"],["монет","coins"],
+["кристаллов!","crystals!"],["кристаллов","crystals"],["осколков!","shards!"],["осколков","shards"],
+["Этот скин можно получить только через промокод!","This skin can only be unlocked via promo code!"],
+["Хранилище заполнено (5/5)!","Storage is full (5/5)!"],["Хранилище заполнено","Storage is full"],
+["Firebase не подключён","Firebase not connected"],["Сначала задай ник в профиле","Set a nickname first"],
+["❌ Лидерборд не подключён.","❌ Leaderboard not connected."],
+["❌ Сначала задай ник в профиле!","❌ Set a nickname first!"],
+["✅ Рекорд отправлен!","✅ Score submitted!"],["Ник:","Name:"],["Очки:","Score:"],
+["⛔ Обнаружен автокликер! −50% монет","⛔ Auto-clicker detected! −50% coins"],
+["💎 Лимит 1000! Излишек","💎 Limit 1000! Overflow"],["💎 Лимит 1000!","💎 Limit 1000!"],
+["😭 Смайлик упал:","😭 Smiley dropped:"],["💰 Получено","💰 Got"],["💰 Вложено","💰 Invested"],
+["Бустер ×","Booster ×"],["добавлен в хранилище","added to storage"],
+["Нет бустеров в наличии!","No boosters in storage!"],
+["Активен другой бустер — дождись окончания!","Another booster is active — wait for it to end!"],
+["Сначала купите вклад в модалке смайлика!","Buy the deposit first!"],
+["Вклад уже на максимуме (25 ур.)!","Deposit already at max (lvl 25)!"],
+["Буст уже активен, дождись окончания!","Booster already active, wait for it to end!"],
+["Гнездо занято! Дождись завершения.","Nest is busy! Wait for it to finish."],
+["Хранилище заполнено! Продай кого-то.","Storage is full! Sell one."],
+["Нет активного питомца!","No active pet!"],["Нет такой еды в запасе!","No such food in storage!"],
+["Это твой лот","This is your lot"],["Это не твой лот","This is not your lot"],
+["Лот не найден","Lot not found"],["Лот уже продан","Lot already sold"],["Лот истёк","Lot expired"],
+["Комната не найдена","Room not found"],["Комната не существует","Room does not exist"],
+["Комната уже не доступна","Room no longer available"],["Комната уже занята","Room already taken"],
+["Это твоя комната","This is your room"],["Код должен быть 4 символа","Code must be 4 characters"],
+["Рано! Следующая игра через","Too early! Next game in"],
+["Рано! Следующая битва через","Too early! Next battle in"],
+["Битва уже идёт!","Battle already in progress!"],
+["Сегодня уже крутил! Завтра снова.","Already spun today! Come back tomorrow."],
+["Сначала используй бесплатный спин!","Use the free spin first!"],
+["Платный спин уже использован!","Paid spin already used!"],
+["Бесплатный спин уже использован!","Free spin already used!"],
+["🎁 Ты уже дарил сегодня этому другу!","🎁 You already gave a gift today!"],
+["Возвращайся завтра.","Come back tomorrow."],
+["Нужно минимум 100 монет для подарка!","Need at least 100 coins to gift!"],
+["Удалить из друзей?","Remove from friends?"],
+["Слишком часто! Подожди","Too often! Wait"],["сек.","sec."],
+["У тебя уже максимум друзей","You already have max friends"],
+["Заявка не найдена","Request not found"],["Это не твой друг","This is not your friend"],
+["Это ты 🙂","That's you 🙂"],["Игрок не найден","Player not found"],
+["Неверный формат ID","Invalid ID format"],["Кикнуть игрока из клана?","Kick player from clan?"],
+["Выйти из клана?","Leave the clan?"],
+["Распустить клан? Это действие необратимо!","Disband the clan? This cannot be undone!"],
+["Ты владелец, в клане есть другие. Распустить клан?","You're the owner, there are others in the clan. Disband?"],
+["Только владелец или офицер может редактировать","Only owner or officer can edit"],
+["Нет доступа","Access denied"],
+["Название от 3 до 20 символов","Name must be 3 to 20 characters"],
+["Название содержит недопустимые слова","Name contains forbidden words"],
+["Описание содержит недопустимые слова","Description contains forbidden words"],
+["Только владелец может менять тип","Only owner can change type"],
+["✅ Клан обновлён","✅ Clan updated"],
+["Сообщение содержит запрещённые слова","Message contains forbidden words"],
+["Слишком быстро","Too fast"],["Слишком часто","Too often"],
+["Очистить историю? У всех участников.","Clear history? For all participants."],
+["⚠️ Уверены?","⚠️ Are you sure?"],["⚠️⚠️ Точно?","⚠️⚠️ Really sure?"],
+["Нет сохранения для экспорта.","No save to export."],["Ошибка экспорта:","Export error:"],
+["✅ Скопировано!","✅ Copied!"],
+["Не удалось скопировать. Выделите текст и скопируйте вручную.","Failed to copy. Select text and copy manually."],
+["Вставьте код сохранения.","Paste save code."],["Неверный формат","Invalid format"],
+["⚠️ Текущий прогресс будет заменён.","⚠️ Current progress will be replaced."],
+["Продолжить?","Continue?"],
+["✅ Прогресс загружен! Перезагрузка...","✅ Progress loaded! Reloading..."],
+["❌ Ошибка:","❌ Error:"],["Ошибка:","Error:"],
+["❌ Неверный пароль","❌ Wrong password"],
+["✅ Готово","✅ Done"],["✅ История очищена","✅ History cleared"],
+["Отправить подарок всем игрокам?","Send gift to all players?"],
+["Включить глобальный буст для всех?","Enable global boost for everyone?"],
+["Запустить глобальный ивент для всех?","Start global event for everyone?"],
+["Нет игроков","No players"],["Синтаксис:","Syntax:"],
+["Укажи число > 0","Enter a number > 0"],
+["Неизвестный тип:","Unknown type:"],
+["❌ Неизвестная команда. Напиши help","❌ Unknown command. Type help"],
+["❌ Нет доступа","❌ Access denied"],
+["🎁 Подарки: +","🎁 Gifts: +"],["монет от","coins from"],
+["🎁 Подарок от админа:","🎁 Gift from admin:"],
+["Питомец не найден","Pet not found"],["Ты владелец","You are the owner"],
+["Введите код.","Enter code."],["Этот код уже использован.","This code has already been used."],
+["Неверный код.","Invalid code."],
+["❌ Сначала задай ник в профиле!","❌ Set a nickname first!"],
+["❌ Хранилище заполнено (5/5)! Освободи место.","❌ Storage is full (5/5)! Free up space."],
+["❌ Неверный код","❌ Invalid code"],
+["🐉 Дракончик добавлен в хранилище на 15 минут!","🐉 Dragon added to storage for 15 minutes!"],
+["🦅 Феникс добавлен в хранилище!","🦅 Phoenix added to storage!"],
+["⏰ Временный Дракончик исчез!","⏰ Temporary Dragon disappeared!"],
+["⏸️ Pahan остановлен.","⏸️ Pahan stopped."],
+["🔥 Автокликер от Pahi запущен на 10 секунд!","🔥 Auto-clicker by Pahi started for 10 seconds!"],
+["🔓 Админ-функция разблокирована. Зайди в Настройки → Дополнительные.","🔓 Admin feature unlocked. Go to Settings → Advanced."],
+["❌ Ещё рано!","❌ Too early!"],["Нужно","Need"],["тапов.","taps."],["Осталось:","Left:"],
+["🔥 Кликер 67 разблокирован!","🔥 Clicker 67 unlocked!"],
+["❌ Нужно 67 Qa!","❌ Need 67 Qa!"],
+["Nest busy!","Nest is busy!"],["No pet","No active pet!"],["No food","No food!"],["No XP","Not enough XP!"]
+];
+for(var i=0;i<map.length;i++){if(msg.indexOf(map[i][0])!==-1){msg=msg.split(map[i][0]).join(map[i][1]);}}
+return msg;
+}
+window.alert=function(m){return _oa.call(window,tr(m));};
+window.confirm=function(m){return _oc.call(window,tr(m));};
+window.prompt=function(m,d){return _op.call(window,tr(m),d);};
+})();
+
+// ===== АВТО-ЛОКАЛИЗАЦИЯ ДАННЫХ =====
+var _originalData=null;
+function _snapshotOriginalData(){
+if(_originalData)return;
+_originalData={ach:{},up:{},items:{},pets:{},notes:{},quests:{},boosters:{},crystalItems:{},backgrounds:{},skins:{},emojiSkins:{},events:{},banners:{},globalUp:{}};
+achievements.forEach(function(a){_originalData.ach[a.id]={title:a.title,desc:a.desc};});
+for(var uid in upgrades){_originalData.up[uid]={name:upgrades[uid].name,desc:upgrades[uid].desc};}
+for(var iid in ITEMS){_originalData.items[iid]={name:ITEMS[iid].name,desc:ITEMS[iid].desc};}
+for(var pid in PET_TYPES){_originalData.pets[pid]={name:PET_TYPES[pid].name};}
+for(var nid in NOTES_DATA){_originalData.notes[nid]={title:NOTES_DATA[nid].title,text:NOTES_DATA[nid].text};}
+for(var qid in QUEST_TYPES){_originalData.quests[qid]={name:QUEST_TYPES[qid].name};}
+for(var bid in BOOSTERS){_originalData.boosters[bid]={name:BOOSTERS[bid].name,desc:BOOSTERS[bid].desc};}
+for(var cid in CRYSTAL_ITEMS){_originalData.crystalItems[cid]={name:CRYSTAL_ITEMS[cid].name,desc:CRYSTAL_ITEMS[cid].desc};}
+for(var bgid in BACKGROUNDS){_originalData.backgrounds[bgid]={name:BACKGROUNDS[bgid].name};}
+for(var sid in skins){_originalData.skins[sid]={name:skins[sid].name};}
+for(var esid in EMOJI_SKINS){_originalData.emojiSkins[esid]={name:EMOJI_SKINS[esid].name};}
+for(var evid in EVENTS){_originalData.events[evid]={name:EVENTS[evid].name};}
+for(var bnid in BANNERS){_originalData.banners[bnid]={name:BANNERS[bnid].name,desc:BANNERS[bnid].desc};}
+for(var guid in globalUpgrades){_originalData.globalUp[guid]={name:globalUpgrades[guid].name,desc:globalUpgrades[guid].desc};}
+}
+function applyLocalizationToData(){
+if(typeof t!=="function")return;
+_snapshotOriginalData();
+achievements.forEach(function(a){var tk="ach."+a.id+".title",dk="ach."+a.id+".desc";var tv=t(tk),dv=t(dk);a.title=(tv!==tk)?tv:_originalData.ach[a.id].title;a.desc=(dv!==dk)?dv:_originalData.ach[a.id].desc;});
+for(var uid in upgrades){var nk="up."+uid,dk="up."+uid+".desc";var nv=t(nk),dv=t(dk);upgrades[uid].name=(nv!==nk)?nv:_originalData.up[uid].name;upgrades[uid].desc=(dv!==dk)?dv:_originalData.up[uid].desc;}
+for(var iid in ITEMS){var nk2="item."+iid,dk2="item."+iid+".desc";var nv2=t(nk2),dv2=t(dk2);ITEMS[iid].name=(nv2!==nk2)?nv2:_originalData.items[iid].name;ITEMS[iid].desc=(dv2!==dk2)?dv2:_originalData.items[iid].desc;}
+for(var pid in PET_TYPES){var nk3="pets.name_"+pid,nv3=t(nk3);PET_TYPES[pid].name=(nv3!==nk3)?nv3:_originalData.pets[pid].name;var rk="pets.rarity_"+PET_TYPES[pid].rarity;var rv=t(rk);if(rv!==rk)PET_TYPES[pid].rarityLabel=rv;var dmk="petdeath."+pid,dmv=t(dmk);if(dmv!==dmk)PET_TYPES[pid].deathMsg=dmv;}
+for(var nid in NOTES_DATA){var tk2="note."+nid+".title",pk2="note."+nid+".text";var tv2=t(tk2),pv2=t(pk2);NOTES_DATA[nid].title=(tv2!==tk2)?tv2:_originalData.notes[nid].title;NOTES_DATA[nid].text=(pv2!==pk2)?pv2:_originalData.notes[nid].text;}
+for(var qid in QUEST_TYPES){var nk4="quest."+qid+".name",nv4=t(nk4);QUEST_TYPES[qid].name=(nv4!==nk4)?nv4:_originalData.quests[qid].name;}
+for(var bid in BOOSTERS){var bnk="booster."+bid,bdk="booster."+bid+".desc";var bnv=t(bnk),bdv=t(bdk);BOOSTERS[bid].name=(bnv!==bnk)?bnv:_originalData.boosters[bid].name;BOOSTERS[bid].desc=(bdv!==bdk)?bdv:_originalData.boosters[bid].desc;}
+for(var cid in CRYSTAL_ITEMS){var cnk="crystal."+cid,cdk="crystal."+cid+".desc";var cnv=t(cnk),cdv=t(cdk);CRYSTAL_ITEMS[cid].name=(cnv!==cnk)?cnv:_originalData.crystalItems[cid].name;CRYSTAL_ITEMS[cid].desc=(cdv!==cdk)?cdv:_originalData.crystalItems[cid].desc;}
+for(var bgid in BACKGROUNDS){var bgnk="bg."+bgid,bgnv=t(bgnk);BACKGROUNDS[bgid].name=(bgnv!==bgnk)?bgnv:_originalData.backgrounds[bgid].name;}
+for(var sid in skins){var snk="skins.name_"+sid,snv=t(snk);skins[sid].name=(snv!==snk)?snv:_originalData.skins[sid].name;}
+for(var esid in EMOJI_SKINS){var esnk="skins.name_"+esid,esnv=t(esnk);EMOJI_SKINS[esid].name=(esnv!==esnk)?esnv:_originalData.emojiSkins[esid].name;}
+for(var evid in EVENTS){var evnk="event."+evid,evnv=t(evnk);EVENTS[evid].name=(evnv!==evnk)?evnv:_originalData.events[evid].name;}
+for(var bnid in BANNERS){var bnnk="banner."+bnid+".name",bndk="banner."+bnid+".desc";var bnnv=t(bnnk),bndv=t(bndk);BANNERS[bnid].name=(bnnv!==bnnk)?bnnv:_originalData.banners[bnid].name;BANNERS[bnid].desc=(bndv!==bndk)?bndv:_originalData.banners[bnid].desc;}
+for(var guid in globalUpgrades){var gnk="globalup."+guid,gdk="globalup."+guid+".desc";var gnv=t(gnk),gdv=t(gdk);if(_originalData.globalUp[guid]){globalUpgrades[guid].name=(gnv!==gnk)?gnv:_originalData.globalUp[guid].name;globalUpgrades[guid].desc=(gdv!==gdk)?gdv:_originalData.globalUp[guid].desc;}}
+if(typeof FORTUNES!=="undefined"&&FORTUNES.length){if(!window._originalFortunes)window._originalFortunes=FORTUNES.slice();for(var fi=0;fi<FORTUNES.length;fi++){var fk="fortune."+(fi+1);var fv=t(fk);FORTUNES[fi]=(fv!==fk)?fv:window._originalFortunes[fi];}}
+if(typeof KHR_QUOTES!=="undefined"){if(!window._originalKhr){window._originalKhr={};for(var _kk in KHR_QUOTES)window._originalKhr[_kk]=KHR_QUOTES[_kk];}for(var _qk in KHR_QUOTES){var _key="khrquote."+_qk;var _val=t(_key);if(_val!==_key)KHR_QUOTES[_qk]=_val;else KHR_QUOTES[_qk]=window._originalKhr[_qk];}}
+console.log("[i18n] Data localized → "+currentLang);
+}
+function _rerenderAll(){try{
+if(typeof renderShop==="function")renderShop();
+if(typeof renderGlobalShop==="function")renderGlobalShop();
+if(typeof renderAchievements==="function")renderAchievements();
+if(typeof renderItems==="function")renderItems();
+if(typeof renderCrystalShop==="function")renderCrystalShop();
+if(typeof petRenderAll==="function")petRenderAll();
+if(typeof renderNoteList==="function")renderNoteList();
+if(typeof renderQuests==="function")renderQuests();
+if(typeof renderBackgrounds==="function")renderBackgrounds();
+if(typeof renderSkins==="function")renderSkins();
+if(typeof renderEmojiSkins==="function")renderEmojiSkins();
+if(typeof renderBoosters==="function")renderBoosters();
+if(typeof updateGeneratorButton==="function")updateGeneratorButton();
+if(typeof renderDeposit==="function")renderDeposit();
+if(typeof renderSmileSkins==="function")renderSmileSkins();
+if(typeof renderProfileBanner==="function")renderProfileBanner();
+if(typeof renderBannerList==="function")renderBannerList();
+}catch(e){}}
+window.addEventListener("langchange",function(){setTimeout(function(){applyLocalizationToData();_rerenderAll();},80);});
+
 // === ИНТЕРВАЛЫ ===
-setInterval(function(){var income=getCPS();coins+=income;totalEarned+=income;if(income>0)addQuestProgress("earn",income);updateUI();checkAchievements();checkRewardTab();checkNoteTab();checkPersonalRecord();},1000);
+setInterval(function(){var i=getCPS();coins+=i;totalEarned+=i;if(i>0)addQuestProgress("earn",i);updateUI();checkRewardTab();checkNoteTab();checkPersonalRecord();},1000);
 setInterval(function(){totalPlayTime++;checkQuestsUpdate();},1000);
 setInterval(updateEvent,1000);
 setInterval(updateSuperEvent,1000);
@@ -2442,33 +2532,34 @@ setInterval(updateCrystalBoostTimer,1000);
 setInterval(updateGeneratorTimer,1000);
 setInterval(checkDepositTimeTick,5000);
 setInterval(function(){if(gulauActive){gulauTimer--;if(gulauTimer<=0)endGulau();else updateGulauTimer();}},1000);
-setInterval(function(){if(secretAutoClicker&&secretAutoClickerTimer>0){secretAutoClickerTimer--;if(secretAutoClickerTimer<=0){secretAutoClickerTimer=0;stopSecretAutoClicker();var popup=document.createElement("div");popup.className="achievement-popup";popup.textContent="⏸️ Кликер 67 остановлен.";document.body.appendChild(popup);setTimeout(function(){popup.remove();},4000);updateSecretUI();saveGame();}else{var modal=$("modal-secret");if(modal&&!modal.classList.contains("hidden"))updateSecretUI();}}},1000);
+setInterval(function(){if(secretAutoClicker&&secretAutoClickerTimer>0){secretAutoClickerTimer--;if(secretAutoClickerTimer<=0){secretAutoClickerTimer=0;stopSecretAutoClicker();updateSecretUI();saveGame();}else{var m=$("modal-secret");if(m&&!m.classList.contains("hidden"))updateSecretUI();}}},1000);
 setInterval(saveGame,5000);
-window.addEventListener("beforeunload",saveGame);
+window.addEventListener("beforeunload",function(){saveGame();if(typeof saveBanners==="function")saveBanners();if(typeof saveSeasonLocal==="function")saveSeasonLocal();});
+var _lastAchCheck=0;
+setInterval(function(){if(Date.now()-_lastAchCheck>5000){_lastAchCheck=Date.now();checkAchievements();}},1000);
 var _lastGoldenMinute=-1;
 setInterval(function(){var d=new Date();var m=d.getMinutes();if(m%2===0&&m!==_lastGoldenMinute){_lastGoldenMinute=m;spawnGoldenCoin();}},5000);
 setInterval(function(){if(goldenTimer>0){goldenTimer--;if(goldenTimer===0){goldenMultiplier=1;var b=$("golden-bonus");if(b)b.remove();}}},1000);
 setInterval(function(){if(shards>lastShardsForTracking)totalShardsEarned+=(shards-lastShardsForTracking);lastShardsForTracking=shards;},500);
 var _saveIndicatorTimer=null;
-setInterval(function(){
-var _si=document.getElementById("save-indicator");
-if(!_si)return;
-_si.classList.add("show");
-if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);
-_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);
-},5*60*1000);
+setInterval(function(){var _si=document.getElementById("save-indicator");if(!_si)return;_si.classList.add("show");if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);},5*60*1000);
 
 // === СТАРТ ===
 initFirebase();
 initSounds();
 loadSettings();
+loadAdminState();
+if(!hasLangPref()){currentLang=detectBrowserLang();}else{loadLangPref();}
+applyLang();
+applyLocalizationToData();
+setupLangSwitch();
+setupLangChoice();
 loadSkins();
 loadProfile();
 ensureProfileId();
 loadGame();
 restoreTheftIfNeeded();
-if(!quests||quests.length===0)generateQuests();
-else checkQuestsUpdate();
+if(!quests||quests.length===0)generateQuests();else checkQuestsUpdate();
 renderShop();
 renderGlobalShop();
 var _gsl=$("global-shop-list");if(_gsl)_gsl.style.display="none";
@@ -2499,22 +2590,30 @@ renderBackgrounds();
 renderNoteList();
 startCooldownUI();
 startGoldenSecretSchedule();
-
-(function(){
-var almBtn=$("almanac-btn");
-if(almBtn)almBtn.classList.add("hidden");
-})();
-
-// === ПРОФИЛЬ И ОБУЧЕНИЕ ===
-if(!hasProfile()){
-setTimeout(function(){showProfileModal();},800);
-}else{
-updateLeaderboardName();
-try{
-var tutorialDone=localStorage.getItem(TUTORIAL_DONE_KEY);
-if(!tutorialDone){setTimeout(function(){startTutorial();},1200);}
-}catch(e){setTimeout(function(){startTutorial();},1200);}
-}
-
-// === SERVICE WORKER ===
-if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){console.warn("Service Worker не зарегистрирован:",e);});});}
+setupFriendsUI();
+clanSetupUI();
+clanSetupEditorUI();
+fnfSetup();
+adminSetup();
+auctionSetupTabs();
+installAuctionHooks();
+compSetupUI();
+dmSetupUI();
+installV89CpsClanBonus();
+hookSeasonAccumulators();
+loadBanners();
+loadSeasonLocal();
+if(!seasonState.tapsAccum&&totalTaps>0)seasonState.tapsAccum=totalTaps;
+seasonState.lastEarnSnapshot=totalEarned;
+renderProfileBanner();
+renderBannerList();
+document.addEventListener("visibilitychange",function(){if(document.hidden)saveGame();});
+(function(){var a=$("almanac-btn");if(a)a.classList.add("hidden");})();
+if(!hasProfile()){if(!hasLangPref()){setTimeout(function(){showLangChoiceModal();},600);}else{setTimeout(function(){showProfileModal();},800);}}
+else{updateLeaderboardName();try{var td=localStorage.getItem(TUTORIAL_DONE_KEY);if(!td){setTimeout(function(){startTutorial();},1200);}}catch(e){setTimeout(function(){startTutorial();},1200);}}
+setTimeout(function(){if(typeof socialInit==="function")socialInit();},200);
+setTimeout(function(){subscribeBannerInit();},3000);
+setTimeout(function(){khrPetInit();},5500);
+setTimeout(function(){if(typeof processIncomingGifts==="function")processIncomingGifts();},2500);
+(function(){var fr=document.getElementById("activity-row-3");if(fr)fr.style.display="none";var nc=0,nt=null;function h(){nc++;if(nt)clearTimeout(nt);nt=setTimeout(function(){nc=0;},2000);if(nc>=5){nc=0;if(nt)clearTimeout(nt);setTimeout(function(){try{playSound("achievement");vibrate(40);}catch(e){}if(typeof fnfOpen==="function")fnfOpen();},200);}}var p=document.getElementById("page-prev"),n=document.getElementById("page-next");if(p)p.addEventListener("click",h);if(n)n.addEventListener("click",h);})();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){});});}
