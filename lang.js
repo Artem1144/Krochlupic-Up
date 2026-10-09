@@ -1,21 +1,16 @@
-// ===== ЛОКАЛИЗАЦИЯ v110 =====
+// ===== ЛОКАЛИЗАЦИЯ v200 =====
 var LANG_KEY="clicker-lang";
 var LANG={
 ru:{
-// ===== ОБЩЕЕ =====
 "common.close":"✕ Закрыть","common.close_x":"✖ Закрыть","common.cancel":"✖ Отмена",
 "common.ok":"✅ ОК","common.yes":"Да","common.no":"Нет","common.error":"Ошибка",
 "common.loading":"Загрузка...",
 "common.seconds_short":" с","common.minutes_short":" мин","common.hours_short":" ч ",
 "common.coins_word":"монет",
-
-// ===== ТАБЫ =====
 "tab.items":"🛒 Магазин","tab.boosters":"📦 Бустеры","tab.achievements":"🏆 Достижения",
 "tab.quests":"📜 Задания","tab.leaders":"🥇 Лидеры","tab.friends":"👥 Друзья",
 "tab.skins":"🎨 Скины","tab.stats":"📊 Статистика","tab.settings":"⚙️ Настройки",
 "tab.help":"❓ Помощь","tab.reward":"🏅 Награда","tab.note":"📜 Записка",
-
-// ===== ГЛАВНАЯ =====
 "main.coins":"монет","main.per_second":"В секунду",
 "main.hungry":"😭 Голодный смайлик: −5M монет/сек",
 "main.gulau_mult":"×5 тапов, осталось","main.crystals":"💎 Кристаллов",
@@ -28,8 +23,6 @@ ru:{
 "main.shop_title":"Магазин улучшений","main.shop_upgrades":"Улучшения",
 "main.shop_global":"Гл. улучшения",
 "season.rating":"Сезонный рейтинг","season.left":"До конца",
-
-// ===== ПИТОМЦЫ =====
 "pets.title":"🐾 ПИТОМЦЫ","pets.buy_egg":"🥚 Купить яйцо — 65 💎",
 "pets.tap_3":"👆 Тапни 3 раза!","pets.tap_collect":"👆 Тапни — забери питомца!",
 "pets.storage":"📦 ХРАНИЛИЩЕ","pets.empty":"Пусто",
@@ -51,8 +44,6 @@ ru:{
 "pets.name_phoenix":"Феникс",
 "pet.bonus_income":"% доход","pet.bonus_gem":"% гем","pet.bonus_shard":"% осколок",
 "pet.sell_price":"Цена продажи","pet.egg_chance":"Шанс из яйца",
-
-// ===== СМЕРТИ ПИТОМЦЕВ =====
 "petdeath.hamster":"Твой Хомяк погиб от голода... Он был верным другом.",
 "petdeath.kitten":"Твой Котёнок погиб от голода... Он мурлыкал до последнего.",
 "petdeath.fox":"Твой Лисёнок погиб от голода... Хитрый, но голодный.",
@@ -60,14 +51,10 @@ ru:{
 "petdeath.wolf":"Твой Волчонок погиб от голода... Он выл на луну до последнего.",
 "petdeath.dragon":"Твой Дракончик погиб от голода... Даже драконы нуждаются в заботе.",
 "petdeath.phoenix":"Твой Феникс погиб от голода... Он не возродился. В этот раз — нет.",
-
-// ===== АЧИВКИ =====
 "ach.title":"🏆 Достижения","ach.filter_all":"Все","ach.filter_bronze":"🥉 Бронза",
 "ach.filter_silver":"🥈 Серебро","ach.filter_gold":"🥇 Золото",
 "ach.unlocked":"Разблокировано","ach.reward":"Награда",
 "ach.new_ach":"🏆 Новое достижение","ach.plus_gems":"+{n} 💎",
-
-// ===== ЗАДАНИЯ =====
 "quests.title":"📜 Задания дня","quests.reset":"⏰ Сброс через",
 "quests.claim":"🎁 Забрать награду","quests.not_done":"Ещё не выполнено",
 "quests.claimed":"✅ Получено",
@@ -83,14 +70,10 @@ ru:{
 "quest.buy_skin.name":"Купи скин",
 "quest.deposit_up.name":"Улучши вклад",
 "quest.prestige_item.name":"Купи предмет за осколки",
-
-// ===== ЛИДЕРЫ =====
 "leaders.title":"🥇 Лидеры","leaders.submit_hint":"Твой ник закреплён за профилем. Отправить рекорд?",
 "leaders.submit":"📤 Отправить рекорд","leaders.loading":"Загрузка...",
 "leaders.empty":"Пока нет рекордов. Будь первым! 🏆",
 "leaders.not_connected":"Лидерборд не подключён","leaders.sent":"✅ Рекорд отправлен!",
-
-// ===== СКИНЫ =====
 "skins.title":"🎨 Скины","skins.btn_title":"🖲️ Кнопка ТАП",
 "skins.btn_hint":"Каждый скин — 5 💎","skins.emoji_title":"❤️ Эмодзи-скины",
 "skins.emoji_hint":"По 10 💎. Кнопка превращается в эмодзи",
@@ -103,13 +86,9 @@ ru:{
 "skins.name_heart":"Сердечко","skins.name_fire_heart":"Огненное сердце",
 "skins.name_shield":"Щит","skins.name_candy":"Конфета",
 "skins.name_blood":"Кровавая мутация",
-
-// ===== ФОНЫ =====
 "bg.base":"Базовый","bg.space":"🌌 Космос","bg.flame":"🔥 Пламя","bg.ocean":"🌊 Океан",
 "bg.sakura":"🌸 Сакура","bg.ice":"❄️ Лёд","bg.bloodmoon":"🌑 Кровавая луна",
 "bg.volcano":"🌋 Вулкан","bg.nebula":"🌌 Туманность",
-
-// ===== СТАТИСТИКА =====
 "stats.title":"📊 Статистика","stats.coins_now":"Монет сейчас",
 "stats.earned":"Всего заработано","stats.taps":"Тапов сделано",
 "stats.cps":"Монет в секунду","stats.per_click":"За тап",
@@ -117,8 +96,6 @@ ru:{
 "stats.shards_total":"Всего добыто 🌑","stats.time":"Время в игре",
 "stats.ach":"Достижений","stats.record":"🏆 Личный рекорд",
 "stats.minigame":"⏱️ Рекорд мини-игры","stats.taps_lower":"тапов",
-
-// ===== НАСТРОЙКИ =====
 "settings.title":"⚙️ Настройки","settings.language":"🌐 Язык",
 "settings.float":"Показывать +N при тапе","settings.golden":"Показывать золотую монетку",
 "settings.daily":"Ежедневный бонус","settings.sound":"Звуки","settings.music":"Музыка",
@@ -133,17 +110,11 @@ ru:{
 "settings.advanced":"🔧 Дополнительные настройки",
 "settings.reset":"Сбросить весь прогресс",
 "settings.reset_confirm":"⚠️ Весь прогресс будет удалён!\nПродолжить?",
-
-// ===== КОНТАКТЫ =====
 "contacts.title":"📞 Связь с разработчиком","contacts.tg":"Телеграм-канал",
 "contacts.vk":"Канал ВКонтакте","contacts.support":"Связь с разработчиком",
-
-// ===== АЛЬМАНАХ =====
 "almanac.title":"📖 Альманах питомцев",
 "almanac.subtitle":"Существа, которые могут присоединиться к Krochlupic-Up",
 "almanac.chance":"Шанс выпадения",
-
-// ===== ДРУЗЬЯ =====
 "friends.title":"👥 Друзья","friends.my_id":"Твой ID для шаринга",
 "friends.tab_list":"👥 Друзья","friends.tab_requests":"✉️ Заявки",
 "friends.tab_search":"🔍 Найти","friends.no_friends":"Пока нет друзей. Найди по ID →",
@@ -159,8 +130,6 @@ ru:{
 "friends.gift_already":"🎁 Ты уже дарил сегодня этому другу!",
 "friends.gift_received":"🎁 Подарки: +{amount} монет от {senders}",
 "friends.gift_no_coins":"Нужно минимум 100 монет для подарка!",
-
-// ===== ЛС =====
 "dm.title":"Сообщение","dm.placeholder":"Написать сообщение...",
 "dm.hint":"Сообщения хранятся последние 100 штук","dm.loading":"Загрузка...",
 "dm.empty":"Пока пусто. Напиши первым!","dm.loading_msgs":"Загрузка сообщений...",
@@ -168,8 +137,6 @@ ru:{
 "dm.too_fast":"Слишком часто! Подожди {t} сек.",
 "dm.not_friend":"Этот игрок не у тебя в друзьях","dm.chat":"💬 Чат",
 "dm.clear":"🗑 Очистить историю","dm.clear_confirm":"Очистить историю? У всех участников.",
-
-// ===== СОРЕВНОВАНИЯ =====
 "comp.tab":"🏁 Соревнования","comp.title":"Тапай-баттл",
 "comp.subtitle":"Победитель получает +1% своего баланса.<br>Проигравший теряет −1% своего баланса.",
 "comp.quick":"⚡ Быстрая игра","comp.quick_hint":"Случайный соперник · 10 сек",
@@ -184,8 +151,6 @@ ru:{
 "comp.reward_win":"💰 +{n} монет (1% баланса)","comp.reward_lose":"💸 −{n} монет (1% баланса)",
 "comp.reward_tie":"Никто ничего не получает","comp.exit":"✖ Выйти","comp.close":"Закрыть",
 "comp.you":"Я","comp.opponent":"???",
-
-// ===== АУКЦИОН =====
 "auction.tab":"🏪 Аукцион","auction.my_lots":"📦 Мои лоты","auction.market":"🏪 Рынок",
 "auction.create":"➕ Выставить питомца","auction.create_title":"🏪 Выставить на аукцион",
 "auction.hint":"Выбери питомца из хранилища и назначь цену в монетах",
@@ -196,8 +161,6 @@ ru:{
 "auction.err_no_coins":"Недостаточно монет",
 "auction.confirm_buy":"Купить {pet} за {price} 💰?",
 "auction.cancel_confirm":"Отменить лот и вернуть питомца?",
-
-// ===== КЛАНЫ =====
 "clan.tab_my":"🏰 Мой клан","clan.tab_search":"🔍 Поиск","clan.tab_create":"➕ Создать",
 "clan.no_clan_text":"У тебя пока нет клана",
 "clan.no_clan_hint":"Создай свой за 500 💎 или найди существующий",
@@ -239,8 +202,6 @@ ru:{
 "clan.invest_confirm":"Вложить {amount} монет в клан?",
 "clan.invest_done":"🏰 Вложено {amount} в клан!",
 "clan.invest_no_coins":"Недостаточно монет!\nНужно: {need}\nУ вас: {have}",
-
-// ===== ПРОФИЛЬ =====
 "profile.title":"🏅 Профиль","profile.hint":"Твой ник. Его нельзя будет изменить.",
 "profile.nick_ph":"Твой ник","profile.save":"✅ Сохранить ник",
 "profile.err_short":"Ник должен быть хотя бы 2 символа",
@@ -257,8 +218,6 @@ ru:{
 "banner.absolute.name":"🔱 Абсолют","banner.absolute.desc":"Абсолют 699 ур.",
 "banner.genesis.name":"💠 Генезис","banner.genesis.desc":"7 питомцев",
 "banner.bloodlord.name":"🩸 Кровавый Лорд","banner.bloodlord.desc":"10 побед в сорев.",
-
-// ===== ОБУЧЕНИЕ =====
 "tutorial.next":"Далее ▶","tutorial.skip":"Пропустить ✕","tutorial.finish":"Завершить ✓",
 "tutorial.1":"👆 Нажми на большую кнопку — получишь монеты",
 "tutorial.2":"🛒 Покупай улучшения в Магазине — доход идёт сам",
@@ -268,8 +227,6 @@ ru:{
 "tutorial.6":"🎨 Покупай Скины и заглядывай в Магазин за 💎",
 "tutorial.7":"🐾 На второй странице — Питомцы. Собирай и корми!",
 "tutorial.8":"🕵️ В игре есть немало секретных действий — попробуй их найти!",
-
-// ===== ЗАПИСКИ =====
 "note.title":"📜 Записки","note.found":"Найденные записки","note.back":"← Назад к списку",
 "note.empty":"Пока нет записок. Их можно найти в игре…","note.new":"📜 Записка появилась...",
 "note.note1.title":"Записка №1",
@@ -287,8 +244,6 @@ ru:{
 "note.note7.title":"Записка №7",
 "note.note7.text":"«Я слышал крик, у выхода из здания, вчера.. а сегодня.. он пропал.. его похитили! Это точно!»",
 "note.sign.contract":"— Контракт","note.sign.unknown":"— ???",
-
-// ===== АДМИНКА =====
 "admin.title":"👑 Админ-консоль",
 "admin.hint":"Команды применяются ко <b>всем игрокам</b> сервера",
 "admin.status_boost":"🟢 Онлайн-буст:","admin.status_event":"🎉 Активный ивент:",
@@ -304,8 +259,6 @@ ru:{
 "admin.promo_unlocked":"🔓 Админ-функция разблокирована. Зайди в Настройки → Дополнительные.",
 "admin.pass_prompt":"🔑 Введите пароль:","admin.pass_wrong":"❌ Неверный пароль",
 "admin.hidden_btn":"🔐 Скрытые настройки",
-
-// ===== FNF =====
 "fnf.title":"🥊 БИТВА С КРОХЛЮПИКОМ","fnf.hp":"❤️ Жизни","fnf.seconds_left":"сек",
 "fnf.start":"▶️ Начать битву",
 "fnf.start_hint":"Стрелки летят вниз — тапай их в такт!",
@@ -317,8 +270,6 @@ ru:{
 "fnf.reward_gems":"💎 +{n} кристаллов","fnf.reward_shards":"🌑 +{n} осколков",
 "fnf.reward_coins":"🪙 +{n} монет","fnf.err_already":"Битва уже идёт!",
 "fnf.err_cooldown":"Рано! Следующая битва через {t}",
-
-// ===== СУНДУК / КОЛЕСО / ЕЖЕДНЕВКА / МИНИ-ИГРА =====
 "chest.collect":"✅ Забрать",
 "wheel.title":"🎡 Колесо фортуны","wheel.spin_free":"🎁 Крутить бесплатно",
 "wheel.spin_paid":"💰 Крутить","wheel.free_used":"🎁 Завтра",
@@ -351,8 +302,6 @@ ru:{
 "minigame.result_new":"🎉 НОВЫЙ РЕКОРД! {taps} тапов! +{reward} 💎",
 "minigame.result":"Тапов: {taps}. {reward}","minigame.result_reward":"Награда: +{n} 💎",
 "minigame.result_try":"Попробуй ещё!",
-
-// ===== ГЕНЕРАТОР =====
 "generator.title":"⚡ Генератор кнопки","generator.level":"Уровень {n} / {max}",
 "generator.level_word":"Уровень","generator.level_short":"Ур",
 "generator.speed":"Скорость:","generator.speed_label":"Скорость:",
@@ -366,8 +315,6 @@ ru:{
 "generator.no_coins":"Недостаточно монет!\nНужно: {need}\nУ вас: {have}",
 "generator.tap_per_sec":" тап/сек","generator.tap_per_sec_plural":" тапов/сек",
 "generator.tap_in_sec":"1 тап за ",
-
-// ===== ВКЛАД =====
 "deposit.title":"🏦 Вклад",
 "deposit.buy_hint":"Купите вклад за <b>1 Qa</b> монет, чтобы открыть смайлика.",
 "deposit.buy_hint2":"Смайлик будет расти с каждым вложением.",
@@ -383,22 +330,16 @@ ru:{
 "deposit.next":"Следующий уровень:","deposit.next_line":"Следующий уровень:",
 "deposit.invest_btn":"💰 Вложить","deposit.max_reached":"Достигнут максимум!",
 "deposit.drop":"😭 Смайлик упал: {from} → {to}",
-
-// ===== БОСС =====
 "boss.title":"💀 БОСС-СМАЙЛИК","boss.hint":"Тапай по боссу! Успей за 45 секунд.",
 "boss.start":"🔥 Начать бой","boss.again":"🔁 Ещё раз","boss.retry":"🔁 Попробовать снова",
 "boss.win":"🏆 Победа! +25 🌑 кровавых осколков!",
 "boss.win_again":"🏆 Победа! (награда уже получена ранее)",
 "boss.lose":"💀 Провал! −{lost} монет.",
-
-// ===== НАГРАДА / ТРЕВОГА =====
 "reward.title":"🏅 Награда","reward.desc":"Вы прокачали Кликер до 228 уровня!",
 "reward.sub":"За это полагается особая награда.","reward.claim":"🎁 Забрать награду",
 "reward.claimed":"🎉 Ты получил +25 🌑 кровавых осколков!",
 "reward.tab_msg":"🏅 Ты прокачал Кликер до 228! Открой вкладку «Награда»!",
 "alarm.text":"Ты давно не тапал!<br>Нажми на знак 5 раз",
-
-// ===== ПОМОЩЬ =====
 "help.title":"❓ Как играть",
 "help.1":"<b>1.</b> Тапайте по большой кнопке — получаете монеты.",
 "help.2":"<b>2.</b> Покупайте улучшения в магазине.",
@@ -418,16 +359,12 @@ ru:{
 "help.16":"<b>16.</b> 👥 Друзья — шарь свой ID, добавляй в друзья, следи за онлайном!",
 "help.17":"<b>17.</b> 🏰 Кланы — создай свой за 500 💎 или вступи в существующий!",
 "help.18":"<b>18.</b> 🥊 FNF-битва — тапай стрелки в такт музыке!",
-
-// ===== ИВЕНТЫ =====
 "event.rain":"💰 Монетный дождь","event.storm":"⚡ Молниеносный потенциал",
 "event.fast":"🏃 Быстрый способ","event.income":"💵 Заработок",
 "event.super_storm":"🌪️ КРОВАВЫЙ ШТОРМ!",
 "event.blood_moon":"🌕 КРОВАВАЯ ЛУНА 🌕\nДоход x2!",
 "event.theft_start":"🚨 Ивент «КРАЖА» начался! Потеряно будет ~22% монет.",
 "event.theft_end":"🚨 Кража закончилась. Всего украдено: {n} монет",
-
-// ===== СЕКРЕТ =====
 "secret.title":"⚡ Кликер 67","secret.subtitle":"Секретный автокликер",
 "secret.desc":"Делает 67 кликов в секунду автоматически.",
 "secret.unlock_hint_1":"Для разблокировки нужно сделать",
@@ -441,12 +378,8 @@ ru:{
 "secret.too_early":"❌ Ещё рано!\nНужно {need} тапов.\nОсталось: {left}",
 "secret.no_coins":"❌ Нужно 67 Qa!","secret.unlocked":"🔥 Кликер 67 разблокирован!",
 "secret.stopped":"⏸️ Кликер 67 остановлен.",
-
-// ===== ПРОМО =====
 "promo.enter_code":"Введите код.","promo.used":"Этот код уже использован.",
 "promo.invalid":"Неверный код.",
-
-// ===== БУСТЕРЫ =====
 "booster.boost2":"Буст ×2","booster.boost2.desc":"Множитель ×2 на 15 минут",
 "booster.boost3":"Буст ×3","booster.boost3.desc":"Множитель ×3 на 10 минут",
 "booster.boost5":"Буст ×5","booster.boost5.desc":"Множитель ×5 на 5 минут",
@@ -454,8 +387,6 @@ ru:{
 "booster.other_active":"Активен другой","booster.already":"Уже активен",
 "booster.in_stock":"В наличии","booster.active_label":"Активен",
 "booster.left_label":"осталось",
-
-// ===== КРИСТАЛЛ-МАГАЗИН =====
 "crystal.coinsBag":"Мешок монет","crystal.coinsBag.desc":"1 час дохода монетами",
 "crystal.boost2":"Буст ×2","crystal.boost2.desc":"Множитель ×2 на 15 минут → в хранилище",
 "crystal.boost3":"Буст ×3","crystal.boost3.desc":"Множитель ×3 на 10 минут → в хранилище",
@@ -466,8 +397,6 @@ ru:{
 "crystal.cps_zero":"CPS пока 0","crystal.buy_deposit_first":"Сначала купите вклад",
 "crystal.deposit_max":"Вклад на максимуме","crystal.level_short":"Ур.",
 "crystal.will_open":"Сразу откроется",
-
-// ===== ПРЕДМЕТЫ / УЛУЧШЕНИЯ =====
 "item.not_bought":"Не куплено · Ур. 0/3","item.max":"Максимум · Ур. 3/3",
 "item.level_short":"Ур.","item.upgrade_short":"Улучшить",
 "up.max":"✓ Максимум","up.max_short":"Максимум","up.buy_short":"Купить",
@@ -475,8 +404,6 @@ ru:{
 "up.unlock10":"🔒 {price}💎","up.unlock25":"🔒 {price}💎",
 "up.unlock10_confirm":"Разблокировать ×10 за {price} 💎?",
 "up.unlock25_confirm":"Разблокировать ×25 за {price} 💎?",
-
-// ===== ГЛОБАЛЬНЫЕ УЛУЧШЕНИЯ =====
 "globalup.superClicker":"🌟 Супер кликер",
 "globalup.superClicker.desc":"+1 к базовому клику за уровень",
 "globalup.bloodLuck":"🩸 Кровавая удача",
@@ -488,8 +415,6 @@ ru:{
 "globalup.inactive":"Сейчас: не активно",
 "globalup.now_click":"Сейчас: +","globalup.now_chance":"Сейчас: +",
 "globalup.now_income":"Сейчас: +",
-
-// ===== УЛУЧШЕНИЯ =====
 "up.clicker":"👆 Кликер","up.clicker.desc":"+1 монета за тап",
 "up.farm":"🌾 Ферма","up.farm.desc":"+1 монета в секунду",
 "up.factory":"🏭 Фабрика","up.factory.desc":"+10 монет в секунду",
@@ -513,8 +438,6 @@ ru:{
 "up.absolute":"🔱 Абсолют","up.absolute.desc":"+20Qi монет в секунду",
 "up.transcend":"🕉️ Трансцендентность","up.transcend.desc":"+60Qi монет в секунду",
 "up.genesis":"💠 Генезис","up.genesis.desc":"+500Qi монет в секунду",
-
-// ===== ПРЕДМЕТЫ =====
 "item.blade":"Кровавый клинок","item.blade.desc":"Оружие первых охотников",
 "item.amulet":"Амулет луны","item.amulet.desc":"Оберег из чёрного камня",
 "item.elixir":"Кровавый эликсир","item.elixir.desc":"Зелье из лунной росы",
@@ -526,8 +449,6 @@ ru:{
 "item.wings":"Крылья вампира","item.wings.desc":"Дар ночной охоты",
 "item.crown":"Венец луны","item.crown.desc":"Власть над Кровавой луной",
 "item.throne":"Трон Кровавого Лорда","item.throne.desc":"Легендарный трон алой эпохи",
-
-// ===== ПРЕДСКАЗАНИЯ =====
 "fortune.label":"Печенька говорит:","fortune.close":"Спасибо, печенька!",
 "fortune.1":"Сегодня удача на твоей стороне. Тапай смелее!",
 "fortune.2":"Один тап — и мир изменится. Может, именно этот?",
@@ -566,19 +487,13 @@ ru:{
 "fortune.36":"Кто-то наблюдает за твоими успехами. Продолжай.",
 "fortune.37":"Хорошее предсказание всегда сбывается. Это — хорошее.",
 "fortune.38":"Не всё золото, что блестит. Но монетка точно твоя.",
-
-// ===== СОЦИАЛЬНОЕ =====
 "social.online":"🟢 <b>{online}</b> из <b>{total}</b> онлайн",
 "social.was_online":"был {time} назад","social.copy_success":"📋 Скопировано: {text}",
 "social.gift_sent":"🎁 +100 монет подарено другу!",
 "social.gift_received":"🎁 Подарки: +{amount} монет от {senders}",
-
-// ===== ПОДПИСКА =====
 "subscribe.title":"Подпишись на наши каналы!",
 "subscribe.sub":"Там много полезного: новости, обновления, ивенты",
 "subscribe.ok":"✅ Понятно",
-
-// ===== РЕПЛИКИ КРОХЛЮПИКА =====
 "khrquote.coins_100":"Смотри, у нас уже 100! Это начало чего-то большого.",
 "khrquote.coins_1k":"1 000 монет! Я так горд. Правда. Я серьёзно.",
 "khrquote.coins_100k":"100K? Эй, а ты быстро растёшь!",
@@ -623,8 +538,6 @@ ru:{
 "khrquote.back_1":"Ты вернулся! А я уже думал, что меня одного здесь оставили.",
 "khrquote.back_2":"Ой! Привет. Я тут сидел, смотрел на кнопку. Она красивая.",
 "khrquote.back_3":"Ты долго не заходил. Я скучал. И монеты скучали.",
-
-// ===== ALERT-СООБЩЕНИЯ =====
 "alert.not_enough_coins":"❌ Недостаточно монет!\nНужно: {0}\nУ вас: {1}",
 "alert.not_enough_crystals":"❌ Недостаточно кристаллов!\nНужно: {0}\nУ вас: {1}",
 "alert.not_enough_shards":"❌ Недостаточно осколков!\nНужно: {0}\nУ вас: {1}",
@@ -658,20 +571,15 @@ ru:{
 "alert.fnf_cooldown":"⏳ Рано! Следующая битва через {0}"
 },
  en:{
-// ===== COMMON =====
 "common.close":"✕ Close","common.close_x":"✖ Close","common.cancel":"✖ Cancel",
 "common.ok":"✅ OK","common.yes":"Yes","common.no":"No","common.error":"Error",
 "common.loading":"Loading...",
 "common.seconds_short":" s","common.minutes_short":" min","common.hours_short":" h ",
 "common.coins_word":"coins",
-
-// ===== TABS =====
 "tab.items":"🛒 Shop","tab.boosters":"📦 Boosters","tab.achievements":"🏆 Achievements",
 "tab.quests":"📜 Quests","tab.leaders":"🥇 Leaders","tab.friends":"👥 Friends",
 "tab.skins":"🎨 Skins","tab.stats":"📊 Stats","tab.settings":"⚙️ Settings",
 "tab.help":"❓ Help","tab.reward":"🏅 Reward","tab.note":"📜 Note",
-
-// ===== MAIN =====
 "main.coins":"coins","main.per_second":"Per second",
 "main.hungry":"😭 Hungry smiley: −5M coins/sec",
 "main.gulau_mult":"×5 taps, left","main.crystals":"💎 Crystals",
@@ -684,8 +592,6 @@ ru:{
 "main.shop_title":"Upgrades Shop","main.shop_upgrades":"Upgrades",
 "main.shop_global":"Global upgrades",
 "season.rating":"Season rating","season.left":"Days left",
-
-// ===== PETS =====
 "pets.title":"🐾 PETS","pets.buy_egg":"🥚 Buy egg — 65 💎",
 "pets.tap_3":"👆 Tap 3 times!","pets.tap_collect":"👆 Tap to collect!",
 "pets.storage":"📦 STORAGE","pets.empty":"Empty",
@@ -707,8 +613,6 @@ ru:{
 "pets.name_phoenix":"Phoenix",
 "pet.bonus_income":"% income","pet.bonus_gem":"% gem","pet.bonus_shard":"% shard",
 "pet.sell_price":"Sell price","pet.egg_chance":"Egg chance",
-
-// ===== PET DEATHS =====
 "petdeath.hamster":"Your Hamster starved to death... He was a faithful friend.",
 "petdeath.kitten":"Your Kitten starved to death... He purred to the very end.",
 "petdeath.fox":"Your Fox cub starved to death... Cunning, but hungry.",
@@ -716,14 +620,10 @@ ru:{
 "petdeath.wolf":"Your Wolf cub starved to death... He howled at the moon to the end.",
 "petdeath.dragon":"Your Dragon starved to death... Even dragons need care.",
 "petdeath.phoenix":"Your Phoenix starved to death... He didn't rise again. Not this time.",
-
-// ===== ACHIEVEMENTS =====
 "ach.title":"🏆 Achievements","ach.filter_all":"All","ach.filter_bronze":"🥉 Bronze",
 "ach.filter_silver":"🥈 Silver","ach.filter_gold":"🥇 Gold",
 "ach.unlocked":"Unlocked","ach.reward":"Reward",
 "ach.new_ach":"🏆 New achievement","ach.plus_gems":"+{n} 💎",
-
-// ===== QUESTS =====
 "quests.title":"📜 Daily Quests","quests.reset":"⏰ Reset in",
 "quests.claim":"🎁 Claim reward","quests.not_done":"Not completed yet",
 "quests.claimed":"✅ Claimed",
@@ -739,14 +639,10 @@ ru:{
 "quest.buy_skin.name":"Buy a skin",
 "quest.deposit_up.name":"Upgrade deposit",
 "quest.prestige_item.name":"Buy an item for shards",
-
-// ===== LEADERS =====
 "leaders.title":"🥇 Leaders","leaders.submit_hint":"Your nickname is locked to your profile. Submit your score?",
 "leaders.submit":"📤 Submit score","leaders.loading":"Loading...",
 "leaders.empty":"No records yet. Be the first! 🏆",
 "leaders.not_connected":"Leaderboard not connected","leaders.sent":"✅ Score submitted!",
-
-// ===== SKINS =====
 "skins.title":"🎨 Skins","skins.btn_title":"🖲️ TAP button",
 "skins.btn_hint":"Each skin — 5 💎","skins.emoji_title":"❤️ Emoji skins",
 "skins.emoji_hint":"10 💎 each. Button turns into emoji",
@@ -759,13 +655,9 @@ ru:{
 "skins.name_heart":"Heart","skins.name_fire_heart":"Fire heart",
 "skins.name_shield":"Shield","skins.name_candy":"Candy",
 "skins.name_blood":"Blood mutation",
-
-// ===== BACKGROUNDS =====
 "bg.base":"Base","bg.space":"🌌 Space","bg.flame":"🔥 Flame","bg.ocean":"🌊 Ocean",
 "bg.sakura":"🌸 Sakura","bg.ice":"❄️ Ice","bg.bloodmoon":"🌑 Blood Moon",
 "bg.volcano":"🌋 Volcano","bg.nebula":"🌌 Nebula",
-
-// ===== STATS =====
 "stats.title":"📊 Statistics","stats.coins_now":"Current coins",
 "stats.earned":"Total earned","stats.taps":"Taps made",
 "stats.cps":"Coins per second","stats.per_click":"Per tap",
@@ -773,8 +665,6 @@ ru:{
 "stats.shards_total":"Total shards earned 🌑","stats.time":"Play time",
 "stats.ach":"Achievements","stats.record":"🏆 Personal best",
 "stats.minigame":"⏱️ Mini-game record","stats.taps_lower":"taps",
-
-// ===== SETTINGS =====
 "settings.title":"⚙️ Settings","settings.language":"🌐 Language",
 "settings.float":"Show +N on tap","settings.golden":"Show golden coin",
 "settings.daily":"Daily bonus","settings.sound":"Sound","settings.music":"Music",
@@ -788,16 +678,10 @@ ru:{
 "settings.import_ph":"Paste code here...","settings.import_load":"📥 Load",
 "settings.advanced":"🔧 Advanced settings","settings.reset":"Reset all progress",
 "settings.reset_confirm":"⚠️ All progress will be deleted!\nContinue?",
-
-// ===== CONTACTS =====
 "contacts.title":"📞 Contact the developer","contacts.tg":"Telegram channel",
 "contacts.vk":"VK channel","contacts.support":"Contact developer",
-
-// ===== ALMANAC =====
 "almanac.title":"📖 Pets Almanac",
 "almanac.subtitle":"Creatures that may join Krochlupic-Up","almanac.chance":"Drop chance",
-
-// ===== FRIENDS =====
 "friends.title":"👥 Friends","friends.my_id":"Your ID to share",
 "friends.tab_list":"👥 Friends","friends.tab_requests":"✉️ Requests",
 "friends.tab_search":"🔍 Find","friends.no_friends":"No friends yet. Find by ID →",
@@ -813,8 +697,6 @@ ru:{
 "friends.gift_already":"🎁 You already gave a gift today!",
 "friends.gift_received":"🎁 Gifts: +{amount} coins from {senders}",
 "friends.gift_no_coins":"Need at least 100 coins to gift!",
-
-// ===== DM =====
 "dm.title":"Message","dm.placeholder":"Write a message...",
 "dm.hint":"Last 100 messages are kept","dm.loading":"Loading...",
 "dm.empty":"Empty for now. Write first!","dm.loading_msgs":"Loading messages...",
@@ -822,8 +704,6 @@ ru:{
 "dm.too_fast":"Too fast! Wait {t} sec.",
 "dm.not_friend":"This player is not in your friends","dm.chat":"💬 Chat",
 "dm.clear":"🗑 Clear history","dm.clear_confirm":"Clear history? For all participants.",
-
-// ===== COMPETITIONS =====
 "comp.tab":"🏁 Competitions","comp.title":"Tap Battle",
 "comp.subtitle":"Winner gets +1% of own balance.<br>Loser loses −1% of own balance.",
 "comp.quick":"⚡ Quick match","comp.quick_hint":"Random opponent · 10 sec",
@@ -838,8 +718,6 @@ ru:{
 "comp.reward_win":"💰 +{n} coins (1% balance)","comp.reward_lose":"💸 −{n} coins (1% balance)",
 "comp.reward_tie":"Nobody gets anything","comp.exit":"✖ Exit","comp.close":"Close",
 "comp.you":"Me","comp.opponent":"???",
-
-// ===== AUCTION =====
 "auction.tab":"🏪 Auction","auction.my_lots":"📦 My lots","auction.market":"🏪 Market",
 "auction.create":"➕ List a pet","auction.create_title":"🏪 List on auction",
 "auction.hint":"Pick a pet and set a price in coins",
@@ -850,8 +728,6 @@ ru:{
 "auction.err_no_coins":"Not enough coins",
 "auction.confirm_buy":"Buy {pet} for {price} 💰?",
 "auction.cancel_confirm":"Cancel lot and return pet?",
-
-// ===== CLANS =====
 "clan.tab_my":"🏰 My clan","clan.tab_search":"🔍 Search","clan.tab_create":"➕ Create",
 "clan.no_clan_text":"You don't have a clan yet",
 "clan.no_clan_hint":"Create your own for 500 💎 or find an existing one",
@@ -894,8 +770,6 @@ ru:{
 "clan.invest_confirm":"Invest {amount} coins in clan?",
 "clan.invest_done":"🏰 Invested {amount} in clan!",
 "clan.invest_no_coins":"Not enough coins!\nNeed: {need}\nYou have: {have}",
-
-// ===== PROFILE =====
 "profile.title":"🏅 Profile","profile.hint":"Your nickname. It can't be changed.",
 "profile.nick_ph":"Your nickname","profile.save":"✅ Save nickname",
 "profile.err_short":"Nickname must be at least 2 characters",
@@ -912,8 +786,6 @@ ru:{
 "banner.absolute.name":"🔱 Absolute","banner.absolute.desc":"Absolute lvl 699",
 "banner.genesis.name":"💠 Genesis","banner.genesis.desc":"7 pets",
 "banner.bloodlord.name":"🩸 Blood Lord","banner.bloodlord.desc":"10 comp. wins",
-
-// ===== TUTORIAL =====
 "tutorial.next":"Next ▶","tutorial.skip":"Skip ✕","tutorial.finish":"Finish ✓",
 "tutorial.1":"👆 Tap the big button — you get coins",
 "tutorial.2":"🛒 Buy upgrades in the Shop — income runs itself",
@@ -923,8 +795,6 @@ ru:{
 "tutorial.6":"🎨 Buy Skins and visit the Shop for 💎",
 "tutorial.7":"🐾 On page 2 — Pets. Collect and feed them!",
 "tutorial.8":"🕵️ There are many secret actions — try to find them!",
-
-// ===== NOTES =====
 "note.title":"📜 Notes","note.found":"Found notes","note.back":"← Back to list",
 "note.empty":"No notes yet. They can be found in the game…","note.new":"📜 A note appeared...",
 "note.note1.title":"Note #1",
@@ -942,8 +812,6 @@ ru:{
 "note.note7.title":"Note #7",
 "note.note7.text":"«I heard a scream, at the exit of the building, yesterday.. and today.. he's gone.. he was kidnapped! Definitely!»",
 "note.sign.contract":"— Contract","note.sign.unknown":"— ???",
-
-// ===== ADMIN =====
 "admin.title":"👑 Admin Console",
 "admin.hint":"Commands apply to <b>all players</b> on the server",
 "admin.status_boost":"🟢 Online boost:","admin.status_event":"🎉 Active event:",
@@ -959,8 +827,6 @@ ru:{
 "admin.promo_unlocked":"🔓 Admin feature unlocked. Go to Settings → Advanced.",
 "admin.pass_prompt":"🔑 Enter password:","admin.pass_wrong":"❌ Wrong password",
 "admin.hidden_btn":"🔐 Hidden settings",
-
-// ===== FNF =====
 "fnf.title":"🥊 BATTLE WITH KROHLUPIC","fnf.hp":"❤️ Lives","fnf.seconds_left":"sec",
 "fnf.start":"▶️ Start battle",
 "fnf.start_hint":"Arrows fall down — tap them on beat!",
@@ -972,8 +838,6 @@ ru:{
 "fnf.reward_gems":"💎 +{n} crystals","fnf.reward_shards":"🌑 +{n} shards",
 "fnf.reward_coins":"🪙 +{n} coins","fnf.err_already":"Battle already in progress!",
 "fnf.err_cooldown":"Too early! Next battle in {t}",
-
-// ===== CHEST / WHEEL / DAILY / MINIGAME =====
 "chest.collect":"✅ Collect",
 "wheel.title":"🎡 Wheel of Fortune","wheel.spin_free":"🎁 Spin for free",
 "wheel.spin_paid":"💰 Spin","wheel.free_used":"🎁 Tomorrow",
@@ -1006,8 +870,6 @@ ru:{
 "minigame.result_new":"🎉 NEW RECORD! {taps} taps! +{reward} 💎",
 "minigame.result":"Taps: {taps}. {reward}","minigame.result_reward":"Reward: +{n} 💎",
 "minigame.result_try":"Try again!",
-
-// ===== GENERATOR =====
 "generator.title":"⚡ Button Generator","generator.level":"Level {n} / {max}",
 "generator.level_word":"Level","generator.level_short":"Lvl",
 "generator.speed":"Speed:","generator.speed_label":"Speed:",
@@ -1021,8 +883,6 @@ ru:{
 "generator.no_coins":"Not enough coins!\nNeed: {need}\nYou have: {have}",
 "generator.tap_per_sec":" tap/sec","generator.tap_per_sec_plural":" taps/sec",
 "generator.tap_in_sec":"1 tap per ",
-
-// ===== DEPOSIT =====
 "deposit.title":"🏦 Deposit",
 "deposit.buy_hint":"Buy the deposit for <b>1 Qa</b> coins to unlock the smiley.",
 "deposit.buy_hint2":"The smiley will grow with each investment.",
@@ -1038,22 +898,16 @@ ru:{
 "deposit.next":"Next level:","deposit.next_line":"Next level:",
 "deposit.invest_btn":"💰 Invest","deposit.max_reached":"Maximum reached!",
 "deposit.drop":"😭 Smiley dropped: {from} → {to}",
-
-// ===== BOSS =====
 "boss.title":"💀 BOSS SMILEY","boss.hint":"Tap the boss! Do it in 45 seconds.",
 "boss.start":"🔥 Start fight","boss.again":"🔁 Again","boss.retry":"🔁 Try again",
 "boss.win":"🏆 Victory! +25 🌑 blood shards!",
 "boss.win_again":"🏆 Victory! (reward already claimed)",
 "boss.lose":"💀 Failed! −{lost} coins.",
-
-// ===== REWARD / ALARM =====
 "reward.title":"🏅 Reward","reward.desc":"You upgraded Clicker to level 228!",
 "reward.sub":"You deserve a special reward.","reward.claim":"🎁 Claim reward",
 "reward.claimed":"🎉 You received +25 🌑 blood shards!",
 "reward.tab_msg":"🏅 You upgraded Clicker to 228! Open the Reward tab!",
 "alarm.text":"You haven't tapped in a while!<br>Tap the sign 5 times",
-
-// ===== HELP =====
 "help.title":"❓ How to play",
 "help.1":"<b>1.</b> Tap the big button — you get coins.",
 "help.2":"<b>2.</b> Buy upgrades in the shop.",
@@ -1073,16 +927,12 @@ ru:{
 "help.16":"<b>16.</b> 👥 Friends — share your ID, add friends, watch online status!",
 "help.17":"<b>17.</b> 🏰 Clans — create your own for 500 💎 or join an existing one!",
 "help.18":"<b>18.</b> 🥊 FNF battle — tap arrows on the beat!",
-
-// ===== EVENTS =====
 "event.rain":"💰 Coin rain","event.storm":"⚡ Lightning potential",
 "event.fast":"🏃 Fast way","event.income":"💵 Income",
 "event.super_storm":"🌪️ BLOOD STORM!",
 "event.blood_moon":"🌕 BLOOD MOON 🌕\nIncome x2!",
 "event.theft_start":"🚨 «THEFT» event started! About 22% of coins will be lost.",
 "event.theft_end":"🚨 Theft ended. Total stolen: {n} coins",
-
-// ===== SECRET =====
 "secret.title":"⚡ Clicker 67","secret.subtitle":"Secret auto-clicker",
 "secret.desc":"Makes 67 clicks per second automatically.",
 "secret.unlock_hint_1":"You need to make","secret.taps_word":"taps",
@@ -1095,12 +945,8 @@ ru:{
 "secret.too_early":"❌ Too early!\nNeed {need} taps.\nLeft: {left}",
 "secret.no_coins":"❌ Need 67 Qa!","secret.unlocked":"🔥 Clicker 67 unlocked!",
 "secret.stopped":"⏸️ Clicker 67 stopped.",
-
-// ===== PROMO =====
 "promo.enter_code":"Enter code.","promo.used":"This code has already been used.",
 "promo.invalid":"Invalid code.",
-
-// ===== BOOSTERS =====
 "booster.boost2":"Boost ×2","booster.boost2.desc":"Multiplier ×2 for 15 minutes",
 "booster.boost3":"Boost ×3","booster.boost3.desc":"Multiplier ×3 for 10 minutes",
 "booster.boost5":"Boost ×5","booster.boost5.desc":"Multiplier ×5 for 5 minutes",
@@ -1108,8 +954,6 @@ ru:{
 "booster.other_active":"Another active","booster.already":"Already active",
 "booster.in_stock":"In stock","booster.active_label":"Active",
 "booster.left_label":"left",
-
-// ===== CRYSTAL SHOP =====
 "crystal.coinsBag":"Coin bag","crystal.coinsBag.desc":"1 hour of coin income",
 "crystal.boost2":"Boost ×2","crystal.boost2.desc":"Multiplier ×2 for 15 min → to storage",
 "crystal.boost3":"Boost ×3","crystal.boost3.desc":"Multiplier ×3 for 10 min → to storage",
@@ -1120,8 +964,6 @@ ru:{
 "crystal.cps_zero":"CPS is 0 so far","crystal.buy_deposit_first":"Buy deposit first",
 "crystal.deposit_max":"Deposit at maximum","crystal.level_short":"Lvl",
 "crystal.will_open":"Opens immediately",
-
-// ===== ITEMS / UPGRADES =====
 "item.not_bought":"Not bought · Lvl 0/3","item.max":"Maximum · Lvl 3/3",
 "item.level_short":"Lvl","item.upgrade_short":"Upgrade",
 "up.max":"✓ Maximum","up.max_short":"Maximum","up.buy_short":"Buy",
@@ -1129,8 +971,6 @@ ru:{
 "up.unlock10":"🔒 {price}💎","up.unlock25":"🔒 {price}💎",
 "up.unlock10_confirm":"Unlock ×10 for {price} 💎?",
 "up.unlock25_confirm":"Unlock ×25 for {price} 💎?",
-
-// ===== GLOBAL UPGRADES =====
 "globalup.superClicker":"🌟 Super Clicker",
 "globalup.superClicker.desc":"+1 to base tap per level",
 "globalup.bloodLuck":"🩸 Blood Luck",
@@ -1142,8 +982,6 @@ ru:{
 "globalup.inactive":"Currently: inactive",
 "globalup.now_click":"Currently: +","globalup.now_chance":"Currently: +",
 "globalup.now_income":"Currently: +",
-
-// ===== UPGRADES =====
 "up.clicker":"👆 Clicker","up.clicker.desc":"+1 coin per tap",
 "up.farm":"🌾 Farm","up.farm.desc":"+1 coin per second",
 "up.factory":"🏭 Factory","up.factory.desc":"+10 coins per second",
@@ -1167,8 +1005,6 @@ ru:{
 "up.absolute":"🔱 Absolute","up.absolute.desc":"+20Qi coins per second",
 "up.transcend":"🕉️ Transcendence","up.transcend.desc":"+60Qi coins per second",
 "up.genesis":"💠 Genesis","up.genesis.desc":"+500Qi coins per second",
-
-// ===== ITEMS =====
 "item.blade":"Blood blade","item.blade.desc":"Weapon of the first hunters",
 "item.amulet":"Moon amulet","item.amulet.desc":"Talisman of black stone",
 "item.elixir":"Blood elixir","item.elixir.desc":"Potion of moon dew",
@@ -1180,8 +1016,6 @@ ru:{
 "item.wings":"Vampire wings","item.wings.desc":"Gift of night hunting",
 "item.crown":"Moon crown","item.crown.desc":"Power over the Blood Moon",
 "item.throne":"Throne of the Blood Lord","item.throne.desc":"Legendary throne of the scarlet era",
-
-// ===== FORTUNES =====
 "fortune.label":"The cookie says:","fortune.close":"Thanks, cookie!",
 "fortune.1":"Luck is on your side today. Tap boldly!",
 "fortune.2":"One tap — and the world will change. Maybe this one?",
@@ -1221,19 +1055,13 @@ ru:{
 "fortune.36":"Someone is watching your success. Keep going.",
 "fortune.37":"A good prediction always comes true. This is one.",
 "fortune.38":"Not all that glitters is gold. But the coin is definitely yours.",
-
-// ===== SOCIAL =====
 "social.online":"🟢 <b>{online}</b> of <b>{total}</b> online",
 "social.was_online":"was online {time} ago","social.copy_success":"📋 Copied: {text}",
 "social.gift_sent":"🎁 +100 coins sent!",
 "social.gift_received":"🎁 Gifts: +{amount} coins from {senders}",
-
-// ===== SUBSCRIBE =====
 "subscribe.title":"Subscribe to our channels!",
 "subscribe.sub":"Lots of useful stuff: news, updates, events",
 "subscribe.ok":"✅ Got it",
-
-// ===== KROHLUPIC QUOTES =====
 "khrquote.coins_100":"Look, we have 100 already! The start of something big.",
 "khrquote.coins_1k":"1,000 coins! I'm so proud. Really. I mean it.",
 "khrquote.coins_100k":"100K? Hey, you grow fast!",
@@ -1278,8 +1106,6 @@ ru:{
 "khrquote.back_1":"You're back! I was starting to think I'd been left here alone.",
 "khrquote.back_2":"Oh! Hi. I was sitting here looking at the button. She's pretty.",
 "khrquote.back_3":"You were gone a while. I missed you. And the coins missed you.",
-
-// ===== ALERT MESSAGES =====
 "alert.not_enough_coins":"❌ Not enough coins!\nNeed: {0}\nYou have: {1}",
 "alert.not_enough_crystals":"❌ Not enough crystals!\nNeed: {0}\nYou have: {1}",
 "alert.not_enough_shards":"❌ Not enough shards!\nNeed: {0}\nYou have: {1}",
@@ -1323,7 +1149,6 @@ return false;
 }
 function saveLangPref(){try{localStorage.setItem(LANG_KEY,currentLang);}catch(e){}}
 
-// t() — с подстановкой {0}, {1}, ... и конвертацией \n
 function t(key){
 var v=LANG[currentLang]&&LANG[currentLang][key];
 if(v===undefined)v=LANG.ru&&LANG.ru[key];
@@ -1381,4 +1206,4 @@ if(nav.indexOf("en")===0)return "en";
 return "ru";
 }
 function hasLangPref(){try{return !!localStorage.getItem(LANG_KEY);}catch(e){return false;}}
-function getLang(){return currentLang;} 
+function getLang(){return currentLang;}
