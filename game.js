@@ -3762,6 +3762,31 @@ setTimeout(function(){
   console.log("[v204] Clan create ready");
 }, 1000);
 
+// ===== ФИКС v205 — диагностика клика =====
+setTimeout(function(){
+  var btn=document.getElementById("clan-create-submit");
+  if(!btn){alert("Кнопки create-submit нет в DOM");return;}
+  
+  // Принудительно поднимаем кнопку наверх
+  btn.style.position="relative";
+  btn.style.zIndex="99999";
+  btn.style.pointerEvents="auto";
+  btn.disabled=false;
+  
+  // Ловим клик по всей модалке клана — увидим, доходит ли клик
+  var modal=document.getElementById("modal-clans");
+  if(modal){
+    modal.addEventListener("click",function(e){
+      var t=e.target;
+      if(t.id==="clan-create-submit"){
+        // Сработает и без onclick
+        if(typeof _clanCreate==="function")_clanCreate();
+      }
+    },true);
+  }
+  console.log("[v205] Кнопка create активна");
+}, 1200);
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
