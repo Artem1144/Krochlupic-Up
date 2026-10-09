@@ -2720,6 +2720,54 @@ if(typeof installV89CpsClanBonus!=="function"){
   window.installV89CpsClanBonus=function(){};window.hookSeasonAccumulators=function(){};
 }
 
+// ===== WATCHDOG v110 — чистит зависшие попапы =====
+(function(){
+  // 1) Авто-удаление всех DOM-попапов через 8 сек
+  setInterval(function(){
+    var now=Date.now();
+    var sels=".achievement-popup,.float-plus,.tap-ring,.tap-wave,.tap-particle,.shard-drop,.item-upgrade-popup,.blood-banner,.super-event-popup,.fortune-popup,.golden-bonus,.crystal-convert-popup";
+    var els=document.querySelectorAll(sels);
+    for(var i=0;i<els.length;i++){
+      var el=els[i];
+      if(!el.__watchdogT)el.__watchdogT=now;
+      if(now-el.__watchdogT>8000){
+        try{el.remove();}catch(e){}
+      }
+    }
+    // отдельно — золотая монетка (если застряла >30 сек)
+    var gc=document.getElementById("golden-coin");
+    if(gc){
+      if(!gc.__watchdogT)gc.__watchdogT=now;
+      if(now-gc.__watchdogT>30000){try{gc.remove();}catch(e){}}
+    }
+    // krohlupic bubble — если застрял и не скрылся
+    var kb=document.querySelector(".krohlupic-bubble.show");
+    if(kb){
+      if(!kb.__watchdogT2)kb.__watchdogT2=now;
+      if(now-kb.__watchdogT2>12000){try{kb.remove();}catch(e){}}
+    }
+  },2000);
+
+  // 2) Если popup создан с пустым текстом — заполняем маркером
+  var _createElementOrig=document.createElement.bind(document);
+  document.createElement=function(tag){
+    var el=_createElementOrig(tag);
+    return el;
+  };
+
+  // 3) Патч alert/confirm/prompt — не даём пустому тексту пройти
+  var _oa=window.alert,_oc=window.confirm,_op=window.prompt;
+  function _safe(m){
+    if(m===undefined||m===null)return "(пустое уведомление)";
+    var s=String(m);
+    if(s.trim()==="")return "(пустое уведомление)";
+    return s;
+  }
+  window.alert=function(m){return _oa.call(window,_safe(m));};
+  window.confirm=function(m){return _oc.call(window,_safe(m));};
+  window.prompt=function(m,d){return _op.call(window,_safe(m),d);};
+})();
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
