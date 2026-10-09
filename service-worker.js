@@ -1,4 +1,4 @@
-// ===== SERVICE WORKER v112 =====
+// ===== SERVICE WORKER v113 =====
 var CACHE_NAME = "krohlupic-v113";
 var URLS = [
   "./",
