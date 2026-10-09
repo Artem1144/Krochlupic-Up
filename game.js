@@ -3560,6 +3560,86 @@ setTimeout(function(){
   
   console.log("[v202] Клан фиксы привязаны");
 }, 800);
+
+// ===== ФИКС КЛАН v203 — live-поиск =====
+setTimeout(function(){
+  var inp=document.getElementById("clan-search-input");
+  var btn=document.getElementById("clan-search-btn");
+  var res=document.getElementById("clan-search-results");
+  if(!inp||!btn||!res)return;
+  
+  var _lastQuery="";
+  var _searchTimer=null;
+  
+  function _doSearchNow(){
+    var q=(inp.value||"").trim();
+    if(!q){
+      res.innerHTML='<p class="clan-empty-msg">Введи название или тег</p>';
+      return;
+    }
+    if(q===_lastQuery&&res.dataset.done==="1")return;
+    _lastQuery=q;
+    res.dataset.done="0";
+    res.innerHTML='<p class="clan-empty-msg">⏳ Поиск...</p>';
+    if(typeof db==="undefined"||!db){
+      res.innerHTML='<p class="clan-empty-msg" style="color:#ff5252">Firebase недоступен</p>';
+      return;
+    }
+    db.ref("clans").once("value").then(function(snap){
+      var all=snap.val()||{};
+      var found=[];
+      var ql=q.toLowerCase();
+      Object.keys(all).forEach(function(cid){
+        var c=all[cid];if(!c)return;
+        var n=(c.name||"").toLowerCase();
+        var tg=(c.tag||"").toLowerCase();
+        if(n.indexOf(ql)!==-1||tg.indexOf(ql)!==-1)found.push({id:cid,data:c});
+      });
+      res.innerHTML="";
+      res.dataset.done="1";
+      if(found.length===0){res.innerHTML='<p class="clan-empty-msg">Не найдено: "'+q+'"</p>';return;}
+      found.slice(0,20).forEach(function(item){
+        var c=item.data;
+        var membersCount=Object.keys(c.members||{}).length;
+        var div=document.createElement("div");div.className="clan-card";
+        div.innerHTML='<div class="clan-card-row"><div class="clan-card-tag">'+escapeHtml(c.tag||"")+'</div>'+
+          '<div class="clan-card-info">'+
+          '<div class="clan-card-name">'+escapeHtml(c.name||"")+'</div>'+
+          '<div class="clan-card-meta">'+(c.type==="closed"?"🔒":"🔓")+' · '+membersCount+'/'+10+' · ⭐ '+(c.invested?1:1)+'</div>'+
+          '</div>'+
+          '<button class="clan-mini-btn success" data-join="'+item.id+'">Вступить</button>'+
+          '</div>';
+        if(c.description){
+          var desc=document.createElement("div");desc.className="clan-card-desc";desc.textContent=c.description;
+          div.appendChild(desc);
+        }
+        res.appendChild(div);
+      });
+      res.querySelectorAll("[data-join]").forEach(function(b){
+        b.onclick=function(){
+          if(typeof _clanJoin==="function")_clanJoin(b.dataset.join);
+        };
+      });
+    }).catch(function(e){
+      res.innerHTML='<p class="clan-empty-msg" style="color:#ff5252">Ошибка: '+e.message+'</p>';
+    });
+  }
+  
+  inp.addEventListener("input",function(){
+    if(_searchTimer)clearTimeout(_searchTimer);
+    _searchTimer=setTimeout(_doSearchNow,600);
+  });
+  inp.addEventListener("change",function(){
+    if(_searchTimer)clearTimeout(_searchTimer);
+    _searchTimer=setTimeout(_doSearchNow,200);
+  });
+  btn.onclick=function(e){e.preventDefault();_doSearchNow();};
+  inp.onkeydown=function(e){
+    if(e.key==="Enter"){e.preventDefault();_doSearchNow();}
+  };
+  console.log("[v203] Clan live-search ready");
+}, 900);
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
