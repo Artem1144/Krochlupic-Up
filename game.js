@@ -2,6 +2,36 @@
 var $el={};
 function $(id){if(!$el[id]||!$el[id].isConnected)$el[id]=document.getElementById(id);return $el[id];}
 
+// ===== ПАТЧ v108c — финальный =====
+(function(){
+// НЕ даём старым alert'ам всплывать
+window.openFriendsModal=function(){
+  var m=document.getElementById("modal-friends");
+  if(m){m.classList.remove("hidden");if(typeof syncScrollLock==="function")syncScrollLock();}
+};
+window.clanOpen=function(){
+  var m=document.getElementById("modal-clans");
+  if(m){m.classList.remove("hidden");if(typeof syncScrollLock==="function")syncScrollLock();}
+};
+window.fnfOpen=function(){
+  var m=document.getElementById("fnf-overlay");
+  if(m){m.classList.remove("hidden");if(typeof syncScrollLock==="function")syncScrollLock();}
+};
+// Привязка кнопки клана
+setTimeout(function(){
+  var cb=document.getElementById("clan-side-btn");
+  if(cb){
+    cb.onclick=function(){
+      try{playSound("ui");}catch(e){}
+      window.clanOpen();
+    };
+  }
+  var db=document.getElementById("dm-side-btn");
+  if(db){db.onclick=function(){try{playSound("ui");}catch(e){}};}
+},500);
+console.log("[patch v108c] Готово");
+})();
+
 // === СОСТОЯНИЕ ===
 var coins=0,coinsPerClick=1,totalEarned=0,totalTaps=0,totalPlayTime=0;
 var totalShardsEarned=0,lastShardsForTracking=0;
