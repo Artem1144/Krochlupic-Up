@@ -2592,6 +2592,273 @@ window.renderBannerList=function(){
 
 // ===== УСЛОВНЫЕ ЗАГЛУШКИ =====
 if(typeof auctionSetupTabs!=="function"){window.auctionState={myLots:{},marketLots:{}};window.auctionSetupTabs=function(){};window.installAuctionHooks=function(){};}
+// ===== МОДУЛЬ АДМИН-КОНСОЛЬ v215 =====
+window.adminState=window.adminState||{promoUnlocked:false,boost:{active:false,mult:1,endsAt:0,label:""},listeners:{boost:null,messages:null},lastCmdTime:0};
+
+function _adminIsMe(){
+  if(!profile.id)return false;
+  return ADMIN_IDS.indexOf(profile.id)!==-1;
+}
+function _adminLog(entry){
+  if(!db)return;
+  entry.ts=Date.now();
+  entry.authorId=profile.id;
+  entry.author=profile.nickname||"Anon";
+  db.ref("admin/history").push(entry).catch(function(){});
+}
+function _adminSetStatus(text,color){
+  var el=document.getElementById("admin-cmd-result");
+  if(!el)return;
+  el.textContent=text;
+  el.className="admin-result "+(color||"info");
+}
+function adminGetBoostMult(){
+  var b=adminState.boost||{};
+  if(!b.active)return 1;
+  if(b.endsAt&&Date.now()>b.endsAt){adminState.boost.active=false;return 1;}
+  return b.mult||1;
+}
+function adminRenderStatus(){
+  var b=adminState.boost||{};
+  var boostEl=document.getElementById("admin-status-boost");
+  if(boostEl){
+    if(b.active&&Date.now()<b.endsAt){
+      var left=Math.floor((b.endsAt-Date.now())/1000);
+      var m=Math.floor(left/60),s=left%60;
+      boostEl.textContent="×"+(b.mult||1)+" — "+m+":"+(s<10?"0":"")+s;
+    }else boostEl.textContent=t("admin.no");
+  }
+  var evEl=document.getElementById("admin-status-event");
+  if(evEl){
+    if(typeof superEventActive!=="undefined"&&superEventActive){
+      evEl.textContent="🌪️ "+t("event.super_storm");
+    }else if(typeof currentEventKey!=="undefined"&&currentEventKey){
+      evEl.textContent=t("event."+currentEventKey)||currentEventKey;
+    }else evEl.textContent=t("admin.no");
+  }
+}
+function adminRenderLog(){
+  var box=document.getElementById("admin-log");
+  if(!box||!db)return;
+  db.ref("admin/history").limitToLast(30).once("value").then(function(snap){
+    var val=snap.val()||{};
+    var ids=Object.keys(val).sort(function(a,b){return (val[a].ts||0)-(val[b].ts||0);});
+    box.innerHTML="";
+    if(ids.length===0){box.innerHTML='<div class="admin-log-empty">'+t("admin.no_history")+'</div>';return;}
+    ids.reverse().forEach(function(k){
+      var e=val[k];
+      var dt=new Date(e.ts||0);
+      var time=("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2);
+      var div=document.createElement("div");
+      div.className="admin-log-item";
+      div.innerHTML='<span class="time">'+time+'</span><span class="cmd">'+escapeHtml(e.cmd||"?")+'</span> <span class="author">— '+escapeHtml(e.author||"Anon")+'</span>';
+      box.appendChild(div);
+    });
+  }).catch(function(){});
+}
+function adminApplyBoost(mult,minutes,label){
+  var endsAt=Date.now()+minutes*60*1000;
+  var b={active:true,mult:mult,endsAt:endsAt,label:label||("×"+mult+" "+minutes+"м")};
+  if(db)db.ref("admin/globalBoost").set(b).catch(function(){});
+  adminState.boost=b;
+  adminRenderStatus();
+  updateUI();
+}
+function adminClearBoost(){
+  if(db)db.ref("admin/globalBoost").remove().catch(function(){});
+  adminState.boost={active:false,mult:1,endsAt:0,label:""};
+  adminRenderStatus();
+  updateUI();
+}
+function adminStartListener(){
+  if(!db)return;
+  if(adminState.listeners.boost){db.ref("admin/globalBoost").off("value",adminState.listeners.boost);}
+  if(adminState.listeners.messages){db.ref("admin/messages/latest").off("value",adminState.listeners.messages);}
+  adminState.listeners.boost=function(snap){
+    var v=snap.val();
+    if(v&&v.active&&Date.now()<v.endsAt){
+      adminState.boost=v;
+      if(!window.__lastBoostPopup||window.__lastBoostPopup!==v.endsAt){
+        window.__lastBoostPopup=v.endsAt;
+        var p=document.createElement("div");
+        p.className="achievement-popup";
+        p.style.background="linear-gradient(135deg,#7b1fa2,#c2185b)";
+        p.style.color="#fff";
+        p.textContent="⚡ "+t("admin.boost_started")+" ×"+(v.mult||1);
+        document.body.appendChild(p);
+        setTimeout(function(){p.remove();},5000);
+      }
+    }else{
+      adminState.boost={active:false,mult:1,endsAt:0,label:""};
+    }
+    updateUI();
+    adminRenderStatus();
+  };
+  adminState.listeners.messages=function(snap){
+    var v=snap.val();
+    if(!v||!v.text)return;
+    if(window.__lastAdminMsg===v.ts)return;
+    window.__lastAdminMsg=v.ts;
+    var p=document.createElement("div");
+    p.className="achievement-popup";
+    p.style.background="linear-gradient(135deg,#1976d2,#42a5f5)";
+    p.style.color="#fff";
+    p.style.maxWidth="340px";
+    p.textContent="📢 "+v.text;
+    document.body.appendChild(p);
+    setTimeout(function(){p.remove();},7000);
+    if(typeof playSound==="function")playSound("achievement");
+  };
+  db.ref("admin/globalBoost").on("value",adminState.listeners.boost);
+  db.ref("admin/messages/latest").on("value",adminState.listeners.messages);
+}
+function adminExec(raw){
+  if(!_adminIsMe()){_adminSetStatus(t("admin.err_no_access"),"error");return;}
+  var now=Date.now();
+  if(now-adminState.lastCmdTime<1000){_adminSetStatus("⏳ Слишком часто","error");return;}
+  adminState.lastCmdTime=now;
+  var parts=String(raw||"").trim().split(/\s+/);
+  var cmd=(parts[0]||"").toLowerCase();
+  var args=parts.slice(1);
+  var text="";
+  if(cmd==="help"){
+    text=t("admin.ok")+"\n"+
+      "status — статус\n"+
+      "boost <mult> <min> — глобальный буст\n"+
+      "boost off — выключить буст\n"+
+      "event <name> — ивент (rain/storm/fast/income/off)\n"+
+      "gift <amount> <text> — подарок всем\n"+
+      "message <text> — сообщение всем\n"+
+      "history — история";
+    _adminSetStatus(text,"info");
+    _adminLog({cmd:"help"});
+    return;
+  }
+  if(cmd==="status"){
+    adminRenderStatus();
+    _adminSetStatus(t("admin.ok"),"success");
+    _adminLog({cmd:"status"});
+    return;
+  }
+  if(cmd==="history"){
+    adminRenderLog();
+    _adminSetStatus(t("admin.ok"),"success");
+    return;
+  }
+  if(cmd==="boost"){
+    if(args[0]==="off"){
+      adminClearBoost();
+      _adminSetStatus(t("admin.boost_stopped"),"success");
+      _adminLog({cmd:"boost off"});
+      return;
+    }
+    var mult=parseFloat(args[0]),mins=parseFloat(args[1]);
+    if(!mult||mult<=0||!mins||mins<=0){_adminSetStatus("boost <mult> <min>","error");return;}
+    if(mult>100)mult=100;
+    if(mins>1440)mins=1440;
+    if(!confirm(t("admin.confirm_boost")))return;
+    adminApplyBoost(mult,mins,"×"+mult+" "+mins+"м");
+    _adminSetStatus(t("admin.boost_started")+" ×"+mult+" на "+mins+"м","success");
+    _adminLog({cmd:"boost "+mult+" "+mins});
+    return;
+  }
+  if(cmd==="event"){
+    var name=(args[0]||"").toLowerCase();
+    if(name==="off"||!name){
+      if(db)db.ref("admin/globalEvent").remove().catch(function(){});
+      _adminSetStatus(t("admin.event_stopped"),"success");
+      _adminLog({cmd:"event off"});
+      return;
+    }
+    if(!confirm(t("admin.confirm_event")))return;
+    if(db)db.ref("admin/globalEvent").set({name:name,startedAt:Date.now()}).catch(function(){});
+    if(name==="storm"&&typeof startSuperEvent==="function")startSuperEvent("admin_"+Date.now());
+    _adminSetStatus(t("admin.event_started")+" "+name,"success");
+    _adminLog({cmd:"event "+name});
+    return;
+  }
+  if(cmd==="gift"){
+    var amt=parseFloat(args[0]);
+    if(!amt||amt<=0){_adminSetStatus("gift <amount> <text>","error");return;}
+    var txt=args.slice(1).join(" ")||t("admin.gift_sent");
+    if(!confirm(t("admin.confirm_gift")))return;
+    // Подарок всем игрокам через /admin/gifts
+    if(db){
+      db.ref("admin/gifts").push({amount:amt,text:txt,from:profile.nickname,ts:Date.now()}).catch(function(){});
+    }
+    _adminSetStatus(t("admin.gift_sent"),"success");
+    _adminLog({cmd:"gift "+amt});
+    return;
+  }
+  if(cmd==="message"){
+    var mtext=args.join(" ");
+    if(!mtext){_adminSetStatus("message <text>","error");return;}
+    if(db)db.ref("admin/messages/latest").set({text:mtext,ts:Date.now(),author:profile.nickname}).catch(function(){});
+    _adminSetStatus(t("admin.message_sent"),"success");
+    _adminLog({cmd:"message"});
+    return;
+  }
+  _adminSetStatus(t("admin.err_unknown_cmd"),"error");
+}
+function adminSetup(){
+  adminStartListener();
+  var m=document.getElementById("modal-admin");
+  if(!m)return;
+  var closeBtn=m.querySelector('[data-close="modal-admin"]');
+  if(closeBtn&&!closeBtn.__b){closeBtn.__b=true;closeBtn.onclick=function(e){e.preventDefault();window.adminClose();};}
+  var exec=document.getElementById("admin-cmd-exec");
+  if(exec&&!exec.__b){exec.__b=true;exec.onclick=function(e){e.preventDefault();var i=document.getElementById("admin-cmd-input");if(i)adminExec(i.value);};}
+  var inp=document.getElementById("admin-cmd-input");
+  if(inp&&!inp.__b){inp.__b=true;inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();adminExec(inp.value);}});}
+  document.querySelectorAll(".admin-quick-btn").forEach(function(b){
+    if(b.__b)return;b.__b=true;
+    b.onclick=function(){var c=b.dataset.cmd||"";var i=document.getElementById("admin-cmd-input");if(i)i.value=c;adminExec(c);};
+  });
+  // Кнопка "Дополнительные настройки" в меню
+  var adv=document.getElementById("advanced-btn");
+  if(adv&&!adv.__b){
+    adv.__b=true;
+    adv.onclick=function(e){
+      e.preventDefault();
+      if(!adminState.promoUnlocked){
+        var pass=prompt(t("admin.pass_prompt"));
+        if(pass!==ADMIN_PASSWORD){alert(t("admin.pass_wrong"));return;}
+        if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
+        adminState.promoUnlocked=true;
+        try{localStorage.setItem("clicker-admin-unlocked","1");}catch(e2){}
+      }
+      if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
+      window.adminOpen();
+    };
+  }
+}
+window.adminSetup=adminSetup;
+window.adminOpen=function(){
+  if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
+  var m=document.getElementById("modal-admin");if(!m)return;
+  if(typeof playSound==="function")playSound("ui");
+  adminRenderStatus();
+  adminRenderLog();
+  m.classList.remove("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+};
+window.adminClose=function(){
+  var m=document.getElementById("modal-admin");if(m)m.classList.add("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+};
+window.adminRequestPassword=function(){
+  if(!adminState.promoUnlocked){alert(t("admin.pass_prompt"));return;}
+  if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
+  window.adminOpen();
+};
+
+// Автоактивация при старте
+setTimeout(function(){
+  if(adminState.promoUnlocked){adminStartListener();adminSetup();}
+  else if(db&&_adminIsMe()){
+    db.ref("admin/globalBoost").once("value").then(function(s){var v=s.val();if(v&&v.active)adminStartListener();}).catch(function(){});
+  }
+},3000);
 if(typeof adminSetup!=="function"){window.adminSetup=function(){};window.adminGetBoostMult=function(){return 1;};window.adminRequestPassword=function(){};window.adminOpen=function(){};window.adminClose=function(){};}
 if(typeof loadSeasonLocal!=="function"){window.seasonState={myScore:0};window.loadSeasonLocal=function(){};window.saveSeasonLocal=function(){};window.updateSeasonTick=function(){};window.pushSeasonToFirebase=function(){};}
 if(typeof installV89CpsClanBonus!=="function"){window.installV89CpsClanBonus=function(){};window.hookSeasonAccumulators=function(){};}
