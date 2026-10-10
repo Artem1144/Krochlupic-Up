@@ -3146,3 +3146,35 @@ setTimeout(function(){khrPetInit();},5500);
 setTimeout(function(){if(typeof processIncomingGifts==="function")processIncomingGifts();},2500);
 (function(){var fr=document.getElementById("activity-row-3");if(fr)fr.style.display="none";var nc=0,nt=null;function h(){nc++;if(nt)clearTimeout(nt);nt=setTimeout(function(){nc=0;},2000);if(nc>=5){nc=0;if(nt)clearTimeout(nt);setTimeout(function(){try{playSound("achievement");vibrate(40);}catch(e){}if(typeof fnfOpen==="function")fnfOpen();},200);}}var p=document.getElementById("page-prev"),n=document.getElementById("page-next");if(p)p.addEventListener("click",h);if(n)n.addEventListener("click",h);})();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){});});}
+// ===== ФИКС АДМИН-КНОПКИ v216 =====
+setTimeout(function(){
+  var btn=document.getElementById("advanced-btn");
+  if(!btn)return;
+  var isAdmin=(typeof _adminIsMe==="function")&&_adminIsMe();
+  var unlocked=(typeof adminState!=="undefined")&&adminState.promoUnlocked;
+  if(isAdmin&&unlocked){
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      // Пропускаем "Sure?" / "Really?" из старого обработчика
+      if(typeof window.adminOpen==="function")window.adminOpen();
+    };
+    btn.textContent="👑 Админ-консоль";
+  }
+},2500);
+
+// Перепривязка каждый раз при обновлении промокода
+var _adminBtnWatch=setInterval(function(){
+  var btn=document.getElementById("advanced-btn");
+  if(!btn)return;
+  var isAdmin=(typeof _adminIsMe==="function")&&_adminIsMe();
+  var unlocked=(typeof adminState!=="undefined")&&adminState.promoUnlocked;
+  if(isAdmin&&unlocked&&btn.textContent!=="👑 Админ-консоль"){
+    btn.textContent="👑 Админ-консоль";
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(typeof window.adminOpen==="function")window.adminOpen();
+    };
+  }
+},2000);
