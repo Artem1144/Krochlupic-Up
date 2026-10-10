@@ -2544,807 +2544,124 @@ setInterval(function(){if(shards>lastShardsForTracking)totalShardsEarned+=(shard
 var _saveIndicatorTimer=null;
 setInterval(function(){var _si=document.getElementById("save-indicator");if(!_si)return;_si.classList.add("show");if(_saveIndicatorTimer)clearTimeout(_saveIndicatorTimer);_saveIndicatorTimer=setTimeout(function(){_si.classList.remove("show");},900);},5*60*1000);
 
-// ===== БАННЕРЫ =====
+// ===== ПАТЧ-ЗАГЛУШКИ v108 =====
+// Защита от падения если оригинальные функции не загрузились
+
 if(typeof BANNERS==="undefined"){
-  window.BANNERS={
-    novice:{id:"novice",name:"🥉 Новичок",desc:"100 тапов",cls:"banner-novice",check:function(){return totalTaps>=100;}},
-    farmer:{id:"farmer",name:"🌾 Фермер",desc:"10 000 тапов",cls:"banner-farmer",check:function(){return totalTaps>=10000;}},
-    veteran:{id:"veteran",name:"🎖️ Ветеран",desc:"1 000 000 тапов",cls:"banner-veteran",check:function(){return totalTaps>=1000000;}},
-    master:{id:"master",name:"🏆 Мастер",desc:"100M монет/сек",cls:"banner-master",check:function(){return getCPS()>=100000000;}},
-    legend:{id:"legend",name:"👑 Легенда",desc:"Топ-1 лидерборд",cls:"banner-legend",check:function(){return unlocked.leader_top1===true;}},
-    absolute:{id:"absolute",name:"🔱 Абсолют",desc:"Абсолют куплен",cls:"banner-absolute",check:function(){return upgrades.absolute.count>=1;}},
-    genesis:{id:"genesis",name:"💠 Генезис",desc:"Генезис куплен",cls:"banner-genesis",check:function(){return upgrades.genesis.count>=1;}},
-    bloodlord:{id:"bloodlord",name:"🩸 Кровавый Лорд",desc:"10 000 осколков",cls:"banner-bloodlord",check:function(){return totalShardsEarned>=10000;}}
-  };
+  window.BANNERS={};
+  window.bannerState={active:null,unlocked:{},wins:0};
+  window.loadBanners=function(){};
+  window.saveBanners=function(){};
+  window.checkBannersUnlock=function(){};
+  window.showBannerUnlockPopup=function(){};
+  window.renderProfileBanner=function(){};
+  window.renderBannerList=function(){};
 }
-window.bannerState=window.bannerState||{active:null,unlocked:{}};
-window.loadBanners=function(){try{var r=localStorage.getItem("clicker-banners");if(r){var d=JSON.parse(r);bannerState.active=d.active||null;bannerState.unlocked=d.unlocked||{};}}catch(e){}};
-window.saveBanners=function(){try{localStorage.setItem("clicker-banners",JSON.stringify({active:bannerState.active,unlocked:bannerState.unlocked}));}catch(e){}};
-window.checkBannersUnlock=function(){
-  var ch=false;
-  for(var id in BANNERS){
-    if(bannerState.unlocked[id])continue;
-    try{if(BANNERS[id].check&&BANNERS[id].check()){
-      bannerState.unlocked[id]=true;ch=true;
-      (function(n){var p=document.createElement("div");p.className="achievement-popup";p.textContent="🎨 "+n;document.body.appendChild(p);setTimeout(function(){try{p.remove();}catch(e){}},3500);})(BANNERS[id].name);
-    }}catch(e){}
-  }
-  if(ch)saveBanners();
-};
-window.renderProfileBanner=function(){
-  var el=document.getElementById("profile-banner-display");if(!el)return;
-  var id=bannerState.active;el.className="profile-banner-display";
-  if(!id||!BANNERS[id]||!bannerState.unlocked[id]){el.classList.add("hidden");return;}
-  el.classList.remove("hidden");el.classList.add(BANNERS[id].cls);el.textContent=BANNERS[id].name;
-};
-window.renderBannerList=function(){
-  var list=document.getElementById("banner-list");if(!list)return;
-  list.innerHTML="";
-  for(var id in BANNERS){
-    var b=BANNERS[id];var unl=!!bannerState.unlocked[id];var act=bannerState.active===id;
-    var div=document.createElement("div");
-    div.className="banner-card"+(act?" active":"")+(unl?"":" locked");
-    div.innerHTML='<div class="banner-card-preview '+b.cls+'">'+b.name+'</div><div class="banner-card-status">'+(act?"✅ Выбран":unl?"Нажми":"🔒 "+b.desc)+'</div>';
-    if(unl){(function(bid){div.onclick=function(){bannerState.active=(bannerState.active===bid)?null:bid;saveBanners();renderBannerList();renderProfileBanner();};})(id);}
-    list.appendChild(div);
-  }
-};
 
-// ===== УСЛОВНЫЕ ЗАГЛУШКИ =====
-// ===== МОДУЛЬ АУКЦИОН v217 =====
-window.auctionState=window.auctionState||{myLots:{},marketLots:{},selectedPetId:null,filter:"all"};
-var AUCTION_COMMISSION=0.05;
-var _auctionRef=null,_auctionPendingRef=null;
+if(typeof setupFriendsUI!=="function"){
+  window.socialState={shortId:"",friendsList:{},incoming:{},outgoing:{}};
+  window.setupFriendsUI=function(){};
+  window.openFriendsModal=function(){console.log("v108 friends stub");};
+  window.closeFriendsModal=function(){};
+  window.socialInit=function(){};
+  window.processIncomingGifts=function(){};
+  window.renderFriendsRating=function(){};
+}
 
-function _auctionRarityOf(type){
-  var t=PET_TYPES[type];
-  return t?(t.rarity||"common"):"common";
+if(typeof dmSetupUI!=="function"){
+  window.dmState={friendId:null,unread:{}};
+  window.dmSetupUI=function(){};
+  window.dmUpdateSideBadge=function(){};
+  window.dmOpen=function(){};
+  window.dmClose=function(){};
+  window.dmSubscribeUnreadForAll=function(){};
+  window.dmUnsubAllUnread=function(){};
 }
-function _auctionRenderMyLots(){
-  var list=document.getElementById("auction-my-list");
-  if(!list)return;
-  list.innerHTML="";
-  var ids=Object.keys(auctionState.myLots||{});
-  if(ids.length===0){list.innerHTML='<p class="auction-empty">У тебя нет активных лотов</p>';return;}
-  ids.forEach(function(lid){
-    var lot=auctionState.myLots[lid];
-    var ty=PET_TYPES[lot.type]||{emoji:"❓",name:"Неизвестный",rarityLabel:"",rarity:"common"};
-    var card=document.createElement("div");
-    card.className="auction-card mine rarity-"+ty.rarity;
-    card.innerHTML='<div class="auction-card-emoji">'+ty.emoji+'</div>'+
-      '<div class="auction-card-info">'+
-      '<div class="auction-card-name">'+escapeHtml(ty.name)+'</div>'+
-      '<div class="auction-card-rarity '+ty.rarity+'">'+(ty.rarityLabel||"")+'</div>'+
-      '<div class="auction-card-time">⏳ Активен</div>'+
-      '</div>'+
-      '<div class="auction-card-price">'+formatNumber(lot.price||0)+'<small>монет</small></div>'+
-      '<button class="auction-card-cancel">✕</button>';
-    card.querySelector(".auction-card-cancel").onclick=function(e){
-      e.preventDefault();
-      _auctionCancel(lid,lot);
-    };
-    list.appendChild(card);
-  });
-}
-function _auctionCancel(lid,lot){
-  if(!confirm(t("auction.cancel_confirm")))return;
-  if(petTotalCount()>=PET_STORAGE_MAX){alert(t("auction.err_storage_full"));return;}
-  if(!db)return;
-  db.ref("auction/lots/"+lid).remove().then(function(){
-    petsState.storage.push({id:petGenerateId(),type:lot.type});
-    if(typeof petRenderAll==="function")petRenderAll();
-    if(typeof saveGame==="function")saveGame();
-    updateUI();
-  }).catch(function(e){alert("Ошибка: "+e.message);});
-}
-function _auctionRenderMarket(){
-  var list=document.getElementById("auction-market-list");
-  if(!list)return;
-  list.innerHTML="";
-  var all=Object.keys(auctionState.marketLots||{});
-  var filtered=all.filter(function(lid){
-    var l=auctionState.marketLots[lid];
-    if(l.sellerId===profile.id)return false;
-    if(auctionState.filter==="all")return true;
-    return _auctionRarityOf(l.type)===auctionState.filter;
-  });
-  if(filtered.length===0){list.innerHTML='<p class="auction-empty">Лотов нет. Загляни позже!</p>';return;}
-  filtered.sort(function(a,b){return (auctionState.marketLots[a].createdAt||0)-(auctionState.marketLots[b].createdAt||0);});
-  filtered.forEach(function(lid){
-    var lot=auctionState.marketLots[lid];
-    var ty=PET_TYPES[lot.type]||{emoji:"❓",name:"Неизвестный",rarityLabel:"",rarity:"common"};
-    var card=document.createElement("div");
-    card.className="auction-card rarity-"+ty.rarity;
-    card.innerHTML='<div class="auction-card-emoji">'+ty.emoji+'</div>'+
-      '<div class="auction-card-info">'+
-      '<div class="auction-card-name">'+escapeHtml(ty.name)+'</div>'+
-      '<div class="auction-card-rarity '+ty.rarity+'">'+(ty.rarityLabel||"")+'</div>'+
-      '<div class="auction-card-seller">Продавец: '+escapeHtml(lot.sellerName||"Anon")+'</div>'+
-      '</div>'+
-      '<div class="auction-card-price">'+formatNumber(lot.price||0)+'<small>монет</small></div>'+
-      '<button class="auction-card-buy">Купить</button>';
-    card.querySelector(".auction-card-buy").onclick=function(e){e.preventDefault();_auctionBuy(lid,lot);};
-    list.appendChild(card);
-  });
-}
-function _auctionBuy(lid,lot){
-  if(!db)return;
-  if(coins<lot.price){alert(t("auction.err_no_coins"));return;}
-  if(petTotalCount()>=PET_STORAGE_MAX){alert(t("auction.err_storage_full"));return;}
-  var petName=(PET_TYPES[lot.type]||{name:"?"}).name;
-  if(!confirm(t("auction.confirm_buy").replace("{pet}",petName).replace("{price}",formatNumber(lot.price))))return;
-  // Сначала атомарно удаляем лот — если он уже куплен, ошибка
-  db.ref("auction/lots/"+lid).transaction(function(cur){
-    if(!cur)return null; // кто-то уже купил
-    return undefined; // удаляем
-  },function(err,committed,snap){
-    if(err||!committed){alert("Этот лот уже куплен");return;}
-    coins-=lot.price;totalEarned-=lot.price;
-    var sellerProfit=Math.floor(lot.price*(1-AUCTION_COMMISSION));
-    db.ref("users/"+lot.sellerId+"/pendingCoins").transaction(function(cur){
-      return (cur||0)+sellerProfit;
-    });
-    petsState.storage.push({id:petGenerateId(),type:lot.type});
-    if(typeof petRenderAll==="function")petRenderAll();
-    if(typeof saveGame==="function")saveGame();
-    if(typeof playSound==="function")playSound("achievement");
-    if(typeof vibrate==="function")vibrate(40);
-    alert("✅ Куплено! "+petName+" в хранилище");
-    updateUI();
-  });
-}
-function _auctionRenderPetPicker(){
-  var picker=document.getElementById("auction-pet-picker");
-  if(!picker)return;
-  picker.innerHTML="";
-  auctionState.selectedPetId=null;
-  if(petsState.storage.length===0){
-    picker.innerHTML='<p class="auction-empty">Нет питомцев в хранилище</p>';
-    return;
-  }
-  petsState.storage.forEach(function(pet){
-    var ty=PET_TYPES[pet.type]||{emoji:"❓",name:"Неизвестный",rarityLabel:"",rarity:"common"};
-    var opt=document.createElement("div");
-    opt.className="auction-pet-option";
-    opt.dataset.pid=pet.id;
-    opt.innerHTML='<div class="auction-pet-option-emoji">'+ty.emoji+'</div>'+
-      '<div class="auction-pet-option-info">'+
-      '<div class="auction-pet-option-name">'+escapeHtml(ty.name)+'</div>'+
-      '<div class="auction-pet-option-rarity">'+(ty.rarityLabel||"")+'</div>'+
-      '</div>';
-    opt.onclick=function(){
-      document.querySelectorAll(".auction-pet-option").forEach(function(x){x.classList.remove("active");});
-      opt.classList.add("active");
-      auctionState.selectedPetId=pet.id;
-    };
-    picker.appendChild(opt);
-  });
-}
-function _auctionOpenCreate(){
-  if(!db){alert("Firebase недоступен");return;}
-  if(!hasProfile()){alert("Сначала задай ник");return;}
-  if(petsState.storage.length===0){alert("В хранилище нет питомцев");return;}
-  _auctionRenderPetPicker();
-  var $inp=document.getElementById("auction-price-input");
-  if($inp)$inp.value="";
-  var $err=document.getElementById("auction-create-error");
-  if($err)$err.textContent="";
-  var m=document.getElementById("modal-auction-create");
-  if(m){m.classList.remove("hidden");if(typeof syncScrollLock==="function")syncScrollLock();}
-}
-function _auctionSubmit(){
-  var $err=document.getElementById("auction-create-error");
-  if(!auctionState.selectedPetId){
-    if($err)$err.textContent=t("auction.err_price");
-    alert("Выбери питомца из списка");
-    return;
-  }
-  var $inp=document.getElementById("auction-price-input");
-  var $unit=document.getElementById("auction-price-unit");
-  var price=parseFloat($inp?$inp.value:"0");
-  var mult=parseFloat($unit?$unit.value:"1");
-  if(!price||price<=0||isNaN(price)){
-    if($err)$err.textContent=t("auction.err_price");
-    return;
-  }
-  var total=Math.floor(price*mult);
-  var idx=-1;
-  for(var i=0;i<petsState.storage.length;i++){
-    if(petsState.storage[i].id===auctionState.selectedPetId){idx=i;break;}
-  }
-  if(idx<0){alert("Питомец не найден");return;}
-  var pet=petsState.storage[idx];
-  var lid="lot_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
-  var lot={
-    sellerId:profile.id,
-    sellerName:profile.nickname||"Anon",
-    type:pet.type,
-    price:total,
-    createdAt:Date.now()
-  };
-  db.ref("auction/lots/"+lid).set(lot).then(function(){
-    petsState.storage.splice(idx,1);
-    if(typeof petRenderAll==="function")petRenderAll();
-    if(typeof saveGame==="function")saveGame();
-    var m=document.getElementById("modal-auction-create");
-    if(m)m.classList.add("hidden");
-    if(typeof syncScrollLock==="function")syncScrollLock();
-    alert("✅ Лот выставлен за "+formatNumber(total)+" монет");
-  }).catch(function(e){if($err)$err.textContent="Ошибка: "+e.message;});
-}
-function _auctionSubscribe(){
-  if(!db||!profile.id)return;
-  if(_auctionRef)_auctionRef.off();
-  _auctionRef=db.ref("auction/lots");
-  _auctionRef.on("value",function(snap){
-    var all=snap.val()||{};
-    auctionState.marketLots=all;
-    auctionState.myLots={};
-    Object.keys(all).forEach(function(lid){
-      if(all[lid].sellerId===profile.id)auctionState.myLots[lid]=all[lid];
-    });
-    _auctionRenderMyLots();
-    _auctionRenderMarket();
-  });
-  // Возврат денег за проданное
-  if(_auctionPendingRef)_auctionPendingRef.off();
-  _auctionPendingRef=db.ref("users/"+profile.id+"/pendingCoins");
-  _auctionPendingRef.on("value",function(snap){
-    var v=snap.val()||0;
-    if(v>0){
-      coins+=v;totalEarned+=v;
-      db.ref("users/"+profile.id+"/pendingCoins").remove();
-      setTimeout(function(){
-        var p=document.createElement("div");
-        p.className="achievement-popup";
-        p.textContent="💰 +"+formatNumber(v)+" монет с аукциона!";
-        document.body.appendChild(p);
-        setTimeout(function(){p.remove();},5000);
-      },500);
-      updateUI();saveGame();
-    }
-  });
-}
-window.auctionSetupTabs=function(){
-  var $my=document.getElementById("auction-my-btn");
-  var $mk=document.getElementById("auction-market-btn");
-  var $mp=document.getElementById("auction-my-pane");
-  var $kp=document.getElementById("auction-market-pane");
-  if($my&&!$my.__b){$my.__b=true;$my.onclick=function(e){
-    e.preventDefault();
-    $my.classList.add("active");if($mk)$mk.classList.remove("active");
-    if($mp)$mp.classList.remove("hidden");if($kp)$kp.classList.add("hidden");
-  };}
-  if($mk&&!$mk.__b){$mk.__b=true;$mk.onclick=function(e){
-    e.preventDefault();
-    $mk.classList.add("active");if($my)$my.classList.remove("active");
-    if($kp)$kp.classList.remove("hidden");if($mp)$mp.classList.add("hidden");
-    _auctionRenderMarket();
-  };}
-  document.querySelectorAll(".auction-filter").forEach(function(f){
-    if(f.__b)return;f.__b=true;
-    f.onclick=function(e){
-      e.preventDefault();
-      document.querySelectorAll(".auction-filter").forEach(function(x){x.classList.remove("active");});
-      f.classList.add("active");
-      auctionState.filter=f.dataset.af||"all";
-      _auctionRenderMarket();
-    };
-  });
-  var $cb=document.getElementById("auction-create-btn");
-  if($cb&&!$cb.__b){$cb.__b=true;$cb.onclick=function(e){e.preventDefault();_auctionOpenCreate();};}
-  var $sub=document.getElementById("auction-create-submit");
-  if($sub&&!$sub.__b){$sub.__b=true;$sub.onclick=function(e){e.preventDefault();_auctionSubmit();};}
-  var $cn=document.getElementById("auction-create-cancel");
-  if($cn&&!$cn.__b){$cn.__b=true;$cn.onclick=function(e){
-    e.preventDefault();
-    var m=document.getElementById("modal-auction-create");
-    if(m)m.classList.add("hidden");
-    if(typeof syncScrollLock==="function")syncScrollLock();
-  };}
-  var $cls=document.querySelector('[data-close="modal-auction-create"]');
-  if($cls&&!$cls.__b){$cls.__b=true;$cls.onclick=function(e){
-    e.preventDefault();
-    var m=document.getElementById("modal-auction-create");
-    if(m)m.classList.add("hidden");
-    if(typeof syncScrollLock==="function")syncScrollLock();
-  };}
-  // Принудительная привязка таба Аукцион в модалке Друзей
-  document.querySelectorAll('.friends-tab[data-ftab="auction"]').forEach(function(t){
-    t.onclick=function(){
-      document.querySelectorAll(".friends-tab").forEach(function(x){x.classList.remove("active");});
-      t.classList.add("active");
-      document.querySelectorAll(".friends-pane").forEach(function(p){p.classList.add("hidden");});
-      var pv=document.getElementById("friends-pane-auction");
-      if(pv)pv.classList.remove("hidden");
-      if(typeof auctionSetupTabs==="function")auctionSetupTabs();
-      _auctionSubscribe();
-    };
-  });
-};
-window.installAuctionHooks=function(){_auctionSubscribe();};
-setTimeout(function(){_auctionSubscribe();},3000);
-if(typeof auctionSetupTabs!=="function"){window.auctionState={myLots:{},marketLots:{}};window.auctionSetupTabs=function(){};window.installAuctionHooks=function(){};}
-// ===== МОДУЛЬ АДМИН-КОНСОЛЬ v215 =====
-window.adminState=window.adminState||{promoUnlocked:false,boost:{active:false,mult:1,endsAt:0,label:""},listeners:{boost:null,messages:null},lastCmdTime:0};
 
-function _adminIsMe(){
-  if(!profile.id)return false;
-  return ADMIN_IDS.indexOf(profile.id)!==-1;
+if(typeof clanSetupUI!=="function"){
+  window.clanState={myClanId:null,myRole:null,myClanData:null};
+  window.clanSetupUI=function(){};
+  window.clanSetupEditorUI=function(){};
+  window.clanOpen=function(){var m=document.getElementById("modal-clans");if(m){m.classList.remove("hidden");}};
+  window.clanClose=function(){var m=document.getElementById("modal-clans");if(m)m.classList.add("hidden");};
+  window.clanGetBonus=function(){return 0;};
+  window.clanGetLevel=function(){return {level:1,need:0,bonus:0};};
+  window.clanGetInvested=function(){return 0;};
+  window.clanRenderLevelBlock=function(){};
+  window.clanUpdateUI=function(){};
+  window.clanInvest=function(){return false;};
+  window.clanCanEdit=function(){return false;};
+  window.hasBadWords=function(t){return false;};
 }
-function _adminLog(entry){
-  if(!db)return;
-  entry.ts=Date.now();
-  entry.authorId=profile.id;
-  entry.author=profile.nickname||"Anon";
-  db.ref("admin/history").push(entry).catch(function(){});
-}
-function _adminSetStatus(text,color){
-  var el=document.getElementById("admin-cmd-result");
-  if(!el)return;
-  el.textContent=text;
-  el.className="admin-result "+(color||"info");
-}
-function adminGetBoostMult(){
-  var b=adminState.boost||{};
-  if(!b.active)return 1;
-  if(b.endsAt&&Date.now()>b.endsAt){adminState.boost.active=false;return 1;}
-  return b.mult||1;
-}
-function adminRenderStatus(){
-  var b=adminState.boost||{};
-  var boostEl=document.getElementById("admin-status-boost");
-  if(boostEl){
-    if(b.active&&Date.now()<b.endsAt){
-      var left=Math.floor((b.endsAt-Date.now())/1000);
-      var m=Math.floor(left/60),s=left%60;
-      boostEl.textContent="×"+(b.mult||1)+" — "+m+":"+(s<10?"0":"")+s;
-    }else boostEl.textContent=t("admin.no");
-  }
-  var evEl=document.getElementById("admin-status-event");
-  if(evEl){
-    if(typeof superEventActive!=="undefined"&&superEventActive){
-      evEl.textContent="🌪️ "+t("event.super_storm");
-    }else if(typeof currentEventKey!=="undefined"&&currentEventKey){
-      evEl.textContent=t("event."+currentEventKey)||currentEventKey;
-    }else evEl.textContent=t("admin.no");
-  }
-}
-function adminRenderLog(){
-  var box=document.getElementById("admin-log");
-  if(!box||!db)return;
-  db.ref("admin/history").limitToLast(30).once("value").then(function(snap){
-    var val=snap.val()||{};
-    var ids=Object.keys(val).sort(function(a,b){return (val[a].ts||0)-(val[b].ts||0);});
-    box.innerHTML="";
-    if(ids.length===0){box.innerHTML='<div class="admin-log-empty">'+t("admin.no_history")+'</div>';return;}
-    ids.reverse().forEach(function(k){
-      var e=val[k];
-      var dt=new Date(e.ts||0);
-      var time=("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2);
-      var div=document.createElement("div");
-      div.className="admin-log-item";
-      div.innerHTML='<span class="time">'+time+'</span><span class="cmd">'+escapeHtml(e.cmd||"?")+'</span> <span class="author">— '+escapeHtml(e.author||"Anon")+'</span>';
-      box.appendChild(div);
-    });
-  }).catch(function(){});
-}
-function adminApplyBoost(mult,minutes,label){
-  var endsAt=Date.now()+minutes*60*1000;
-  var b={active:true,mult:mult,endsAt:endsAt,label:label||("×"+mult+" "+minutes+"м")};
-  if(db)db.ref("admin/globalBoost").set(b).catch(function(){});
-  adminState.boost=b;
-  adminRenderStatus();
-  updateUI();
-}
-function adminClearBoost(){
-  if(db)db.ref("admin/globalBoost").remove().catch(function(){});
-  adminState.boost={active:false,mult:1,endsAt:0,label:""};
-  adminRenderStatus();
-  updateUI();
-}
-function adminStartListener(){
-  if(!db)return;
-  if(adminState.listeners.boost){db.ref("admin/globalBoost").off("value",adminState.listeners.boost);}
-  if(adminState.listeners.messages){db.ref("admin/messages/latest").off("value",adminState.listeners.messages);}
-  adminState.listeners.boost=function(snap){
-    var v=snap.val();
-    if(v&&v.active&&Date.now()<v.endsAt){
-      adminState.boost=v;
-      if(!window.__lastBoostPopup||window.__lastBoostPopup!==v.endsAt){
-        window.__lastBoostPopup=v.endsAt;
-        var p=document.createElement("div");
-        p.className="achievement-popup";
-        p.style.background="linear-gradient(135deg,#7b1fa2,#c2185b)";
-        p.style.color="#fff";
-        p.textContent="⚡ "+t("admin.boost_started")+" ×"+(v.mult||1);
-        document.body.appendChild(p);
-        setTimeout(function(){p.remove();},5000);
-      }
-    }else{
-      adminState.boost={active:false,mult:1,endsAt:0,label:""};
-    }
-    updateUI();
-    adminRenderStatus();
-  };
-  adminState.listeners.messages=function(snap){
-    var v=snap.val();
-    if(!v||!v.text)return;
-    if(window.__lastAdminMsg===v.ts)return;
-    window.__lastAdminMsg=v.ts;
-    var p=document.createElement("div");
-    p.className="achievement-popup";
-    p.style.background="linear-gradient(135deg,#1976d2,#42a5f5)";
-    p.style.color="#fff";
-    p.style.maxWidth="340px";
-    p.textContent="📢 "+v.text;
-    document.body.appendChild(p);
-    setTimeout(function(){p.remove();},7000);
-    if(typeof playSound==="function")playSound("achievement");
-  };
-  db.ref("admin/globalBoost").on("value",adminState.listeners.boost);
-  db.ref("admin/messages/latest").on("value",adminState.listeners.messages);
-}
-function adminExec(raw){
-  if(!_adminIsMe()){_adminSetStatus(t("admin.err_no_access"),"error");return;}
-  var now=Date.now();
-  if(now-adminState.lastCmdTime<1000){_adminSetStatus("⏳ Слишком часто","error");return;}
-  adminState.lastCmdTime=now;
-  var parts=String(raw||"").trim().split(/\s+/);
-  var cmd=(parts[0]||"").toLowerCase();
-  var args=parts.slice(1);
-  var text="";
-  if(cmd==="help"){
-    text=t("admin.ok")+"\n"+
-      "status — статус\n"+
-      "boost <mult> <min> — глобальный буст\n"+
-      "boost off — выключить буст\n"+
-      "event <name> — ивент (rain/storm/fast/income/off)\n"+
-      "gift <amount> <text> — подарок всем\n"+
-      "message <text> — сообщение всем\n"+
-      "history — история";
-    _adminSetStatus(text,"info");
-    _adminLog({cmd:"help"});
-    return;
-  }
-  if(cmd==="status"){
-    adminRenderStatus();
-    _adminSetStatus(t("admin.ok"),"success");
-    _adminLog({cmd:"status"});
-    return;
-  }
-  if(cmd==="history"){
-    adminRenderLog();
-    _adminSetStatus(t("admin.ok"),"success");
-    return;
-  }
-  if(cmd==="boost"){
-    if(args[0]==="off"){
-      adminClearBoost();
-      _adminSetStatus(t("admin.boost_stopped"),"success");
-      _adminLog({cmd:"boost off"});
-      return;
-    }
-    var mult=parseFloat(args[0]),mins=parseFloat(args[1]);
-    if(!mult||mult<=0||!mins||mins<=0){_adminSetStatus("boost <mult> <min>","error");return;}
-    if(mult>100)mult=100;
-    if(mins>1440)mins=1440;
-    if(!confirm(t("admin.confirm_boost")))return;
-    adminApplyBoost(mult,mins,"×"+mult+" "+mins+"м");
-    _adminSetStatus(t("admin.boost_started")+" ×"+mult+" на "+mins+"м","success");
-    _adminLog({cmd:"boost "+mult+" "+mins});
-    return;
-  }
-  if(cmd==="event"){
-    var name=(args[0]||"").toLowerCase();
-    if(name==="off"||!name){
-      if(db)db.ref("admin/globalEvent").remove().catch(function(){});
-      _adminSetStatus(t("admin.event_stopped"),"success");
-      _adminLog({cmd:"event off"});
-      return;
-    }
-    if(!confirm(t("admin.confirm_event")))return;
-    if(db)db.ref("admin/globalEvent").set({name:name,startedAt:Date.now()}).catch(function(){});
-    if(name==="storm"&&typeof startSuperEvent==="function")startSuperEvent("admin_"+Date.now());
-    _adminSetStatus(t("admin.event_started")+" "+name,"success");
-    _adminLog({cmd:"event "+name});
-    return;
-  }
-  if(cmd==="gift"){
-    var amt=parseFloat(args[0]);
-    if(!amt||amt<=0){_adminSetStatus("gift <amount> <text>","error");return;}
-    var txt=args.slice(1).join(" ")||t("admin.gift_sent");
-    if(!confirm(t("admin.confirm_gift")))return;
-    // Подарок всем игрокам через /admin/gifts
-    if(db){
-      db.ref("admin/gifts").push({amount:amt,text:txt,from:profile.nickname,ts:Date.now()}).catch(function(){});
-    }
-    _adminSetStatus(t("admin.gift_sent"),"success");
-    _adminLog({cmd:"gift "+amt});
-    return;
-  }
-  if(cmd==="message"){
-    var mtext=args.join(" ");
-    if(!mtext){_adminSetStatus("message <text>","error");return;}
-    if(db)db.ref("admin/messages/latest").set({text:mtext,ts:Date.now(),author:profile.nickname}).catch(function(){});
-    _adminSetStatus(t("admin.message_sent"),"success");
-    _adminLog({cmd:"message"});
-    return;
-  }
-  _adminSetStatus(t("admin.err_unknown_cmd"),"error");
-}
-function adminSetup(){
-  adminStartListener();
-  var m=document.getElementById("modal-admin");
-  if(!m)return;
-  var closeBtn=m.querySelector('[data-close="modal-admin"]');
-  if(closeBtn&&!closeBtn.__b){closeBtn.__b=true;closeBtn.onclick=function(e){e.preventDefault();window.adminClose();};}
-  var exec=document.getElementById("admin-cmd-exec");
-  if(exec&&!exec.__b){exec.__b=true;exec.onclick=function(e){e.preventDefault();var i=document.getElementById("admin-cmd-input");if(i)adminExec(i.value);};}
-  var inp=document.getElementById("admin-cmd-input");
-  if(inp&&!inp.__b){inp.__b=true;inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();adminExec(inp.value);}});}
-  document.querySelectorAll(".admin-quick-btn").forEach(function(b){
-    if(b.__b)return;b.__b=true;
-    b.onclick=function(){var c=b.dataset.cmd||"";var i=document.getElementById("admin-cmd-input");if(i)i.value=c;adminExec(c);};
-  });
-  // Кнопка "Дополнительные настройки" в меню
-  var adv=document.getElementById("advanced-btn");
-  if(adv&&!adv.__b){
-    adv.__b=true;
-    adv.onclick=function(e){
-      e.preventDefault();
-      if(!adminState.promoUnlocked){
-        var pass=prompt(t("admin.pass_prompt"));
-        if(pass!==ADMIN_PASSWORD){alert(t("admin.pass_wrong"));return;}
-        if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
-        adminState.promoUnlocked=true;
-        try{localStorage.setItem("clicker-admin-unlocked","1");}catch(e2){}
-      }
-      if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
-      window.adminOpen();
-    };
-  }
-}
-window.adminSetup=adminSetup;
-window.adminOpen=function(){
-  if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
-  var m=document.getElementById("modal-admin");if(!m)return;
-  if(typeof playSound==="function")playSound("ui");
-  adminRenderStatus();
-  adminRenderLog();
-  m.classList.remove("hidden");
-  if(typeof syncScrollLock==="function")syncScrollLock();
-};
-window.adminClose=function(){
-  var m=document.getElementById("modal-admin");if(m)m.classList.add("hidden");
-  if(typeof syncScrollLock==="function")syncScrollLock();
-};
-window.adminRequestPassword=function(){
-  if(!adminState.promoUnlocked){alert(t("admin.pass_prompt"));return;}
-  if(!_adminIsMe()){alert(t("admin.err_no_access"));return;}
-  window.adminOpen();
-};
 
-// Автоактивация при старте
-setTimeout(function(){
-  if(adminState.promoUnlocked){adminStartListener();adminSetup();}
-  else if(db&&_adminIsMe()){
-    db.ref("admin/globalBoost").once("value").then(function(s){var v=s.val();if(v&&v.active)adminStartListener();}).catch(function(){});
-  }
-},3000);
-if(typeof adminSetup!=="function"){window.adminSetup=function(){};window.adminGetBoostMult=function(){return 1;};window.adminRequestPassword=function(){};window.adminOpen=function(){};window.adminClose=function(){};}
-if(typeof loadSeasonLocal!=="function"){window.seasonState={myScore:0};window.loadSeasonLocal=function(){};window.saveSeasonLocal=function(){};window.updateSeasonTick=function(){};window.pushSeasonToFirebase=function(){};}
-if(typeof installV89CpsClanBonus!=="function"){window.installV89CpsClanBonus=function(){};window.hookSeasonAccumulators=function(){};}
+if(typeof auctionSetupTabs!=="function"){
+  window.auctionState={myLots:{},marketLots:{}};
+  window.auctionSetupTabs=function(){};
+  window.installAuctionHooks=function(){};
+}
 
-// ===== WATCHDOG =====
-setInterval(function(){
-  var now=Date.now();
-  var els=document.querySelectorAll(".achievement-popup,.float-plus,.tap-ring,.tap-wave,.tap-particle,.shard-drop,.blood-banner,.super-event-popup,.fortune-popup,.golden-bonus");
-  for(var i=0;i<els.length;i++){var el=els[i];if(!el.__wdT)el.__wdT=now;if(now-el.__wdT>8000){try{el.remove();}catch(e){}}}
-  var gc=document.getElementById("golden-coin");if(gc){if(!gc.__wdT)gc.__wdT=now;if(now-gc.__wdT>30000){try{gc.remove();}catch(e){}}}
-  var kb=document.querySelector(".krohlupic-bubble.show");if(kb){if(!kb.__wdT2)kb.__wdT2=now;if(now-kb.__wdT2>12000){try{kb.remove();}catch(e){}}}
-},2000);
+if(typeof compSetupUI!=="function"){
+  window.compState={roomId:null};
+  window.compSetupUI=function(){};
+  window.compOnFriendsCompOpen=function(){};
+}
 
-// ===== МОДУЛЬ FNF v214 =====
-window.fnfState=window.fnfState||{active:false,hp:50,maxHp:50,score:0,combo:0,maxCombo:0,miss:0,timeLeft:90,arrows:[],fallTime:2200,raf:null,lastSpawn:0,nextSpawnGap:800,lastFrame:0};
+if(typeof fnfSetup!=="function"){
+  window.fnfState={active:false};
+  window.fnfSetup=function(){};
+  window.fnfOpen=function(){console.log("v108 fnf stub");};
+  window.fnfClose=function(){};
+}
 
-var FNF_DIRS=["left","up","down","right"];
-var FNF_COOLDOWN_MS=30*60*1000;
+if(typeof adminSetup!=="function"){
+  window.adminState={promoUnlocked:false,boost:{active:false,mult:1}};
+  window.loadAdminState=function(){};
+  window.adminSetup=function(){};
+  window.adminGetBoostMult=function(){return 1;};
+  window.adminRequestPassword=function(){};
+  window.adminOpen=function(){};
+  window.adminClose=function(){};
+}
 
-function _fnfLastPlayed(){try{return parseInt(localStorage.getItem("fnfLastPlayed")||"0");}catch(e){return 0;}}
-function _fnfSaveLastPlayed(){try{localStorage.setItem("fnfLastPlayed",String(Date.now()));}catch(e){}}
-function _fnfCanPlay(){var left=FNF_COOLDOWN_MS-(Date.now()-_fnfLastPlayed());return {ok:left<=0,left:left};}
-function _fnfUpdateCooldownHint(){
-  var el=document.getElementById("fnf-cooldown");
-  if(!el)return;
-  var r=_fnfCanPlay();
-  if(r.ok){el.textContent="";el.style.color="#4caf50";}
-  else{var m=Math.floor(r.left/60000),s=Math.floor((r.left%60000)/1000);el.textContent="⏳ Следующая битва через "+m+":"+(s<10?"0":"")+s;el.style.color="#ffd54f";}
+if(typeof loadSeasonLocal!=="function"){
+  window.seasonState={myScore:0};
+  window.loadSeasonLocal=function(){};
+  window.saveSeasonLocal=function(){};
+  window.updateSeasonTick=function(){};
+  window.pushSeasonToFirebase=function(){};
 }
-function _fnfDrawArrow(ctx,x,y,size,dir,color){
-  ctx.save();ctx.translate(x,y);ctx.fillStyle=color||"#c9a0ff";ctx.beginPath();
-  if(dir==="up"){ctx.moveTo(0,-size);ctx.lineTo(size,size*0.6);ctx.lineTo(size*0.4,size*0.6);ctx.lineTo(size*0.4,size);ctx.lineTo(-size*0.4,size);ctx.lineTo(-size*0.4,size*0.6);ctx.lineTo(-size,size*0.6);ctx.closePath();}
-  else if(dir==="down"){ctx.moveTo(0,size);ctx.lineTo(size,-size*0.6);ctx.lineTo(size*0.4,-size*0.6);ctx.lineTo(size*0.4,-size);ctx.lineTo(-size*0.4,-size);ctx.lineTo(-size*0.4,-size*0.6);ctx.lineTo(-size,-size*0.6);ctx.closePath();}
-  else if(dir==="left"){ctx.moveTo(-size,0);ctx.lineTo(size*0.6,-size);ctx.lineTo(size*0.6,-size*0.4);ctx.lineTo(size,-size*0.4);ctx.lineTo(size,size*0.4);ctx.lineTo(size*0.6,size*0.4);ctx.lineTo(size*0.6,size);ctx.closePath();}
-  else if(dir==="right"){ctx.moveTo(size,0);ctx.lineTo(-size*0.6,-size);ctx.lineTo(-size*0.6,-size*0.4);ctx.lineTo(-size,-size*0.4);ctx.lineTo(-size,size*0.4);ctx.lineTo(-size*0.6,size*0.4);ctx.lineTo(-size*0.6,size);ctx.closePath();}
-  ctx.fill();ctx.restore();
-}
-function _fnfFrame(){
-  var st=fnfState;if(!st.active)return;
-  var now=performance.now();
-  if(now-st.lastFrame<16){st.raf=requestAnimationFrame(_fnfFrame);return;}
-  var dt=Math.min(50,now-st.lastFrame);st.lastFrame=now;
-  var canvas=document.getElementById("fnf-canvas");if(!canvas){st.active=false;return;}
-  var ctx=canvas.getContext("2d");
-  var W=canvas.width/(window.devicePixelRatio||1);
-  var H=canvas.height/(window.devicePixelRatio||1);
-  ctx.setTransform(1,0,0,1,0,0);
-  ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
-  ctx.clearRect(0,0,W,H);
-  var zoneY=H-100;
-  st.arrows.forEach(function(a){
-    var prog=(now-a.spawnAt)/a.fallTime;if(prog<0)prog=0;
-    var y=-40+prog*(zoneY+40);
-    a.y=y;
-    if(y>zoneY+60){a.missed=true;}
-    var isInZone=y>=zoneY-50&&y<=zoneY+50;
-    _fnfDrawArrow(ctx,a.x,y,26,a.dir,isInZone?"#4fc3f7":"#c9a0ff");
-  });
-  ctx.save();
-  ctx.fillStyle="rgba(79,195,247,.15)";
-  ctx.fillRect(0,zoneY-40,W,80);
-  ctx.strokeStyle="rgba(79,195,247,.85)";
-  ctx.lineWidth=4;
-  ctx.setLineDash([10,6]);
-  ctx.beginPath();ctx.moveTo(0,zoneY);ctx.lineTo(W,zoneY);ctx.stroke();
-  ctx.restore();
-  st.timeLeft-=dt/1000;
-  if(st.timeLeft<=0){st.timeLeft=0;_fnfEnd(false);return;}
-  var tEl=document.getElementById("fnf-time-left");if(tEl)tEl.textContent=st.timeLeft.toFixed(1);
-  if(now-st.lastSpawn>st.nextSpawnGap){
-    var dir=FNF_DIRS[Math.floor(Math.random()*4)];
-    var lane=Math.floor(Math.random()*4);
-    var laneW=W/4;
-    var x=laneW*lane+laneW/2;
-    st.arrows.push({dir:dir,x:x,y:-40,spawnAt:now,fallTime:st.fallTime,lane:lane,missed:false,hit:false});
-    st.lastSpawn=now;
-    st.nextSpawnGap=Math.max(400,900-st.score*10);
-    if(st.score>50)st.fallTime=1600;else if(st.score>20)st.fallTime=1900;
-  }
-  st.arrows=st.arrows.filter(function(a){
-    if(a.hit)return false;
-    if(now-a.spawnAt>a.fallTime+400){
-      st.miss++;st.combo=0;st.hp--;_fnfUpdateHeader();return false;
-    }
-    return true;
-  });
-  if(st.hp<=0){_fnfEnd(false);return;}
-  st.raf=requestAnimationFrame(_fnfFrame);
-}
-function _fnfUpdateHeader(){
-  var hp=document.getElementById("fnf-hp");if(hp)hp.textContent=Math.max(0,fnfState.hp)+" / "+fnfState.maxHp;
-  var sc=document.getElementById("fnf-score");if(sc)sc.textContent=fnfState.score;
-  var cb=document.getElementById("fnf-combo");if(cb)cb.textContent=fnfState.combo+"×";
-  var ms=document.getElementById("fnf-miss");if(ms)ms.textContent=fnfState.miss;
-}
-function _fnfTap(dir){
-  if(!fnfState.active)return;
-  var st=fnfState;
-  var canvas=document.getElementById("fnf-canvas");
-  var H=canvas?(canvas.height/(window.devicePixelRatio||1)):500;
-  var zoneY=H-100;
-  var best=null,bestDist=9999;
-  st.arrows.forEach(function(a){
-    if(a.hit)return;if(a.dir!==dir)return;
-    var d=Math.abs(a.y-zoneY);
-    if(d<bestDist){bestDist=d;best=a;}
-  });
-  var btn=document.querySelector('.fnf-arrow-btn[data-fnf-dir="'+dir+'"]');
-  if(best&&bestDist<=80){
-    best.hit=true;st.score++;st.combo++;
-    if(st.combo>st.maxCombo)st.maxCombo=st.combo;
-    if(btn){btn.classList.remove("hit");void btn.offsetWidth;btn.classList.add("hit");setTimeout(function(){btn.classList.remove("hit");},150);}
-    if(typeof playSound==="function")playSound("click");
-  }else{
-    st.combo=0;
-    if(btn){btn.classList.remove("miss");void btn.offsetWidth;btn.classList.add("miss");setTimeout(function(){btn.classList.remove("miss");},150);}
-  }
-  _fnfUpdateHeader();
-}
-function _fnfStart(){
-  var r=_fnfCanPlay();
-  if(!r.ok){var m=Math.floor(r.left/60000),s=Math.floor((r.left%60000)/1000);alert("Рано! Следующая битва через "+m+":"+(s<10?"0":"")+s);return;}
-  var overlay=document.getElementById("fnf-overlay");if(!overlay)return;
-  overlay.classList.remove("hidden");
-  if(typeof lockScroll==="function")lockScroll();
-  var canvas=document.getElementById("fnf-canvas");
-  if(canvas){var dpr=window.devicePixelRatio||1;canvas.width=canvas.clientWidth*dpr;canvas.height=canvas.clientHeight*dpr;}
-  var st=fnfState;
-  st.active=true;st.hp=50;st.maxHp=50;st.score=0;st.combo=0;st.maxCombo=0;st.miss=0;st.timeLeft=90;
-  st.arrows=[];st.fallTime=2200;st.lastSpawn=performance.now();st.nextSpawnGap=800;st.lastFrame=performance.now();
-  _fnfUpdateHeader();
-  var sb=document.getElementById("fnf-start-block");if(sb)sb.classList.add("hidden");
-  var rb=document.getElementById("fnf-result");if(rb)rb.classList.add("hidden");
-  if(st.raf)cancelAnimationFrame(st.raf);
-  st.raf=requestAnimationFrame(_fnfFrame);
-}
-function _fnfEnd(){
-  var st=fnfState;st.active=false;
-  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
-  var win=st.hp>0;
-  var rewards=[];
-  if(win){
-    var gems=Math.floor(st.score/5)+5;
-    if(st.combo>=20)gems*=2;
-    var sh=Math.floor(st.score/3);
-    var co=Math.floor(getCPS()*1800);
-    addCrystals(gems);shards+=sh;coins+=co;totalEarned+=co;
-    rewards.push("💎 +"+gems);rewards.push("🌑 +"+sh);rewards.push("💰 +"+formatNumber(co));
-    if(typeof playSound==="function")playSound("achievement");
-  }
-  var title=document.getElementById("fnf-result-title");
-  var text=document.getElementById("fnf-result-text");
-  if(title){title.textContent=win?"🏆 ПОБЕДА!":"💀 ПОРАЖЕНИЕ";title.className=win?"win":"lose";}
-  if(text){
-    var msg=(win?"Ты продержался до конца!":"Крохлюпик победил...")+"\n\n🎵 Счёт: "+st.score+"\n❌ Промахи: "+st.miss+"\n🔥 Макс. комбо: "+st.maxCombo+"×";
-    if(rewards.length)msg+="\n\nНаграда:\n"+rewards.join("\n");
-    text.textContent=msg;
-  }
-  var rb=document.getElementById("fnf-result");if(rb)rb.classList.remove("hidden");
-  _fnfSaveLastPlayed();
-  updateUI();saveGame();
-}
-function _fnfClose(){
-  var st=fnfState;st.active=false;
-  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
-  var overlay=document.getElementById("fnf-overlay");if(overlay)overlay.classList.add("hidden");
-  if(typeof unlockScroll==="function")unlockScroll();
-  var sb=document.getElementById("fnf-start-block");if(sb)sb.classList.remove("hidden");
-}
-window.fnfSetup=function(){
-  document.querySelectorAll(".fnf-arrow-btn").forEach(function(btn){
-    if(btn.__b)return;btn.__b=true;
-    btn.onclick=function(e){e.preventDefault();_fnfTap(btn.dataset.fnfDir);};
-  });
-  var start=document.getElementById("fnf-start-btn");
-  if(start&&!start.__b){start.__b=true;start.onclick=function(e){e.preventDefault();_fnfStart();};}
-  var close=document.getElementById("fnf-close");
-  if(close&&!close.__b){close.__b=true;close.onclick=function(e){e.preventDefault();_fnfClose();};}
-  var close2=document.getElementById("fnf-result-close");
-  if(close2&&!close2.__b){close2.__b=true;close2.onclick=function(e){e.preventDefault();_fnfClose();};}
-  if(!window.__fnfKeys){
-    window.__fnfKeys=true;
-    document.addEventListener("keydown",function(e){
-      if(!fnfState.active)return;
-      var k=e.key;
-      if(k==="ArrowLeft"||k==="a"||k==="A")_fnfTap("left");
-      else if(k==="ArrowRight"||k==="d"||k==="D")_fnfTap("right");
-      else if(k==="ArrowUp"||k==="w"||k==="W")_fnfTap("up");
-      else if(k==="ArrowDown"||k==="s"||k==="S")_fnfTap("down");
-    });
-  }
-  _fnfUpdateCooldownHint();
-  setInterval(_fnfUpdateCooldownHint,10000);
-};
-window.fnfOpen=function(){
-  var overlay=document.getElementById("fnf-overlay");if(!overlay)return;
-  var st=fnfState;st.active=false;
-  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
-  overlay.classList.remove("hidden");
-  if(typeof lockScroll==="function")lockScroll();
-  var sb=document.getElementById("fnf-start-block");if(sb)sb.classList.remove("hidden");
-  var rb=document.getElementById("fnf-result");if(rb)rb.classList.add("hidden");
-  _fnfUpdateCooldownHint();
-  if(typeof playSound==="function")playSound("ui");
-};
-window.fnfClose=_fnfClose;
 
-setTimeout(function(){
-  var row=document.getElementById("activity-row-3");
-  if(row)row.style.display="flex";
-  var btn=document.getElementById("fnf-btn");
-  if(btn&&!btn.__b){btn.__b=true;btn.onclick=function(e){e.preventDefault();window.fnfOpen();};}
-},3000);
+if(typeof installV89CpsClanBonus!=="function"){
+  window.installV89CpsClanBonus=function(){};
+  window.hookSeasonAccumulators=function(){};
+}
+
+if(typeof subscribeBannerInit!=="function"){
+  window.subscribeBannerInit=function(){};
+}
+
+if(typeof khrPetInit!=="function"){
+  window.khrPetInit=function(){};
+  window.khrShow=function(){};
+  window.khrPetHookTap=function(){};
+}
+
+if(typeof petRenderAll!=="function"){
+  window.petRenderAll=function(){};
+  window.petLoadFromSave=function(){};
+  window.petSaveToSave=function(){};
+  window.petGetIncomeBonus=function(){return 0;};
+  window.petGetGemTapChance=function(){return 0;};
+  window.petGetShardTapBonus=function(){return 0;};
+  window.petTotalCount=function(){return 0;};
+  window.petGetActive=function(){return null;};
+  window.petGenerateId=function(){return Date.now();};
+}
+
+if(typeof setupFriendsUI==="function"&&!window.__patchDone){
+  window.__patchDone=true;
+  console.log("[patch v108] Заглушки установлены");
+}
 
 // === СТАРТ ===
 initFirebase();
@@ -3419,198 +2736,3 @@ setTimeout(function(){khrPetInit();},5500);
 setTimeout(function(){if(typeof processIncomingGifts==="function")processIncomingGifts();},2500);
 (function(){var fr=document.getElementById("activity-row-3");if(fr)fr.style.display="none";var nc=0,nt=null;function h(){nc++;if(nt)clearTimeout(nt);nt=setTimeout(function(){nc=0;},2000);if(nc>=5){nc=0;if(nt)clearTimeout(nt);setTimeout(function(){try{playSound("achievement");vibrate(40);}catch(e){}if(typeof fnfOpen==="function")fnfOpen();},200);}}var p=document.getElementById("page-prev"),n=document.getElementById("page-next");if(p)p.addEventListener("click",h);if(n)n.addEventListener("click",h);})();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){});});}
-
-// ===== ФИКС v218: аукцион + клан онлайн + ники =====
-
-// 1) ПРИВЯЗКА КНОПОК АУКЦИОНА
-document.addEventListener("click",function(e){
-  var t=e.target;
-  if(!t)return;
-  if(t.classList&&t.classList.contains("friends-tab")&&t.dataset&&t.dataset.ftab==="auction"){
-    setTimeout(function(){
-      if(typeof auctionSetupTabs==="function")auctionSetupTabs();
-      if(typeof _auctionSubscribe==="function")_auctionSubscribe();
-    },60);
-  }
-},true);
-
-// 2) ОБНОВЛЕНИЕ СВОЕГО НИКА В КЛАНЕ
-setTimeout(function(){
-  if(!db||!profile.id||!profile.nickname)return;
-  db.ref("users/"+profile.id+"/clanId").once("value").then(function(s){
-    var cid=s.val();
-    if(!cid)return;
-    db.ref("clans/"+cid+"/members/"+profile.id+"/nickname").set(profile.nickname).catch(function(){});
-  }).catch(function(){});
-},4000);
-
-// 3) ОБНОВЛЁННЫЙ РЕНДЕР УЧАСТНИКОВ КЛАНА (с онлайн-статусом и подгрузкой ников)
-window.clanRenderMembers=function(mem){
-  var list=document.getElementById("clan-members-list");
-  if(!list)return;
-  list.innerHTML="";
-  var ids=Object.keys(mem);
-  ids.sort(function(a,b){
-    var order={owner:0,officer:1,member:2};
-    var ra=order[mem[a].role]||3, rb=order[mem[b].role]||3;
-    if(ra!==rb)return ra-rb;
-    return (mem[a].joinedAt||0)-(mem[b].joinedAt||0);
-  });
-  // Собираем тех, у кого пустой ник — потом подгрузим
-  var pending=[];
-  ids.forEach(function(uid){
-    var m=mem[uid]||{};
-    var row=document.createElement("div");row.className="clan-member-row";
-    row.dataset.uid=uid;
-    var dot=document.createElement("div");dot.className="clan-member-status";dot.textContent="●";
-    dot.style.color="#888";
-    var info=document.createElement("div");info.className="clan-member-info";
-    var roleClass="role-member",roleLabel="👤 "+t("clan.role_member");
-    if(m.role==="owner"){roleClass="role-owner";roleLabel="👑 "+t("clan.role_owner");}
-    else if(m.role==="officer"){roleClass="role-officer";roleLabel="🛡 "+t("clan.role_officer");}
-    var displayName=m.nickname&&m.nickname.length>0?m.nickname:"";
-    if(!displayName)pending.push(uid);
-    info.innerHTML='<div class="clan-member-name '+roleClass+'">'+(displayName?escapeHtml(displayName):'<span style="color:#666">…</span>')+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'')+'</div>'+
-      '<div class="clan-member-role">'+roleLabel+' <span class="clan-member-online" style="font-size:11px;color:#888"></span></div>';
-    row.appendChild(dot);row.appendChild(info);
-    if(uid!==profile.id){
-      var actions=document.createElement("div");actions.className="clan-member-actions";
-      if(typeof clanState!=="undefined"&&clanState.myRole==="owner"){
-        if(m.role==="member"){
-          var btnP=document.createElement("button");btnP.className="clan-mini-btn success";btnP.textContent="↑";btnP.title="Офицер";
-          btnP.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("officer");};
-          actions.appendChild(btnP);
-        }else if(m.role==="officer"){
-          var btnD=document.createElement("button");btnD.className="clan-mini-btn";btnD.textContent="↓";btnD.title="Снять";
-          btnD.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("member");};
-          actions.appendChild(btnD);
-        }
-      }
-      if(typeof clanState!=="undefined"&&(clanState.myRole==="owner"||clanState.myRole==="officer")){
-        var btnK=document.createElement("button");btnK.className="clan-mini-btn danger";btnK.textContent="✕";btnK.title="Кик";
-        btnK.onclick=function(){
-          if(!confirm(t("clan.kick_confirm")))return;
-          db.ref("clans/"+clanState.myClanId+"/members/"+uid).remove();
-          db.ref("users/"+uid+"/clanId").remove();
-        };
-        actions.appendChild(btnK);
-      }
-      row.appendChild(actions);
-    }
-    list.appendChild(row);
-  });
-  // Подгружаем ники + online для пустых
-  pending.forEach(function(uid){
-    db.ref("users/"+uid).once("value").then(function(s){
-      var u=s.val()||{};
-      var row=list.querySelector('.clan-member-row[data-uid="'+uid+'"]');
-      if(!row)return;
-      var nameEl=row.querySelector(".clan-member-name");
-      if(nameEl&&u.nickname){
-        var txt=u.nickname+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'');
-        nameEl.innerHTML=escapeHtml(u.nickname)+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'');
-      }
-      _clanUpdateOnline(row,u.lastSeen);
-    }).catch(function(){});
-  });
-  // Для всех — подгрузка lastSeen и онлайн
-  ids.forEach(function(uid){
-    if(pending.indexOf(uid)!==-1)return;
-    db.ref("users/"+uid+"/lastSeen").once("value").then(function(s){
-      var row=list.querySelector('.clan-member-row[data-uid="'+uid+'"]');
-      if(row)_clanUpdateOnline(row,s.val()||0);
-    }).catch(function(){});
-  });
-};
-
-function _clanUpdateOnline(row,lastSeen){
-  if(!row)return;
-  var dot=row.querySelector(".clan-member-status");
-  var onlineEl=row.querySelector(".clan-member-online");
-  if(!dot||!onlineEl)return;
-  var diff=Math.floor((Date.now()-(lastSeen||0))/1000);
-  var color="#888", text="⚪ "+t("friends.status_offline");
-  if(diff<90){color="#4caf50";text="🟢 "+t("friends.status_online");}
-  else if(diff<600){color="#ffd54f";text="🟡 "+t("friends.status_away");}
-  else if(lastSeen){text="⚪ "+t("friends.was_online").replace("{time}",formatTime(diff));}
-  dot.style.color=color;
-  onlineEl.textContent=text;
-}
-
-// 4) ЛС — перепривязка на случай если v207 перезаписан
-setTimeout(function(){
-  if(typeof dmSetupUI==="function")dmSetupUI();
-  document.addEventListener("click",function(e){
-    var t=e.target;
-    if(!t)return;
-    if(t.classList&&t.classList.contains("friend-action-btn")&&t.classList.contains("chat")){
-      var row=t.closest(".friend-row");
-      if(!row)return;
-      var nameEl=row.querySelector(".friend-name");
-      var idEl=row.querySelector(".friend-id");
-      if(!nameEl||!idEl)return;
-      var fname=nameEl.textContent.trim();
-      var shortId=idEl.textContent.trim();
-      // Ищем fid по shortId
-      if(typeof socialState!=="undefined"&&socialState.friendsList){
-        var foundId=null;
-        Object.keys(socialState.friendsList).forEach(function(k){
-          var f=socialState.friendsList[k];
-          if(f.shortId===shortId||f.nickname===fname)foundId=k;
-        });
-        if(foundId&&typeof dmOpen==="function"){
-          e.stopPropagation();
-          dmOpen(foundId,fname);
-        }
-      }
-    }
-  },true);
-},4000);
-
-// 5) ПЕРИОДИЧЕСКОЕ ОБНОВЛЕНИЕ ОНЛАЙН-СТАТУСА В КЛАНЕ
-setInterval(function(){
-  var m=document.getElementById("modal-clans");
-  if(!m||m.classList.contains("hidden"))return;
-  var rows=document.querySelectorAll('.clan-member-row[data-uid]');
-  rows.forEach(function(row){
-    var uid=row.dataset.uid;
-    if(!uid||!db)return;
-    db.ref("users/"+uid+"/lastSeen").once("value").then(function(s){
-      _clanUpdateOnline(row,s.val()||0);
-    }).catch(function(){});
-  });
-},15000);
-
-
-// ===== ФИКС АДМИН-КНОПКИ v216 =====
-setTimeout(function(){
-  var btn=document.getElementById("advanced-btn");
-  if(!btn)return;
-  var isAdmin=(typeof _adminIsMe==="function")&&_adminIsMe();
-  var unlocked=(typeof adminState!=="undefined")&&adminState.promoUnlocked;
-  if(isAdmin&&unlocked){
-    btn.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      // Пропускаем "Sure?" / "Really?" из старого обработчика
-      if(typeof window.adminOpen==="function")window.adminOpen();
-    };
-    btn.textContent="👑 Админ-консоль";
-  }
-},2500);
-
-// Перепривязка каждый раз при обновлении промокода
-var _adminBtnWatch=setInterval(function(){
-  var btn=document.getElementById("advanced-btn");
-  if(!btn)return;
-  var isAdmin=(typeof _adminIsMe==="function")&&_adminIsMe();
-  var unlocked=(typeof adminState!=="undefined")&&adminState.promoUnlocked;
-  if(isAdmin&&unlocked&&btn.textContent!=="👑 Админ-консоль"){
-    btn.textContent="👑 Админ-консоль";
-    btn.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(typeof window.adminOpen==="function")window.adminOpen();
-    };
-  }
-},2000);
