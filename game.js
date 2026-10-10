@@ -1,3 +1,26 @@
+// ===== ВИДИМЫЙ ЛОГ v226 (для отладки) =====
+window.__dbg = function(msg, isErr){
+  try{
+    var box = document.getElementById("__dbg-box");
+    if(!box){
+      box = document.createElement("div");
+      box.id = "__dbg-box";
+      box.style.cssText = "position:fixed;bottom:4px;left:4px;right:4px;max-height:200px;overflow:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:11px;padding:6px;border-radius:6px;z-index:999999;white-space:pre-wrap;word-break:break-all;line-height:1.3";
+      box.onclick = function(){ box.style.display = "none"; };
+      document.body.appendChild(box);
+      setTimeout(function(){ box.style.display = "none"; }, 15000);
+    }
+    var line = document.createElement("div");
+    line.textContent = (isErr ? "❌ " : "▶ ") + msg;
+    if(isErr) line.style.color = "#f66";
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+  }catch(e){}
+};
+window.addEventListener("error", function(e){
+  window.__dbg("JS ERROR: " + (e.message||"?") + " @ " + (e.filename||"") + ":" + (e.lineno||"?"), true);
+});
+window.__dbg("--- Загрузка game.js ---");
 // ===== КЭШ DOM =====
 var $el={};
 function $(id){if(!$el[id]||!$el[id].isConnected)$el[id]=document.getElementById(id);return $el[id];}
@@ -3248,75 +3271,10 @@ setTimeout(function(){khrPetInit();},5500);
 setTimeout(function(){if(typeof processIncomingGifts==="function")processIncomingGifts();},2500);
 (function(){var fr=document.getElementById("activity-row-3");if(fr)fr.style.display="none";var nc=0,nt=null;function h(){nc++;if(nt)clearTimeout(nt);nt=setTimeout(function(){nc=0;},2000);if(nc>=5){nc=0;if(nt)clearTimeout(nt);setTimeout(function(){try{playSound("achievement");vibrate(40);}catch(e){}if(typeof fnfOpen==="function")fnfOpen();},200);}}var p=document.getElementById("page-prev"),n=document.getElementById("page-next");if(p)p.addEventListener("click",h);if(n)n.addEventListener("click",h);})();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){});});}
-.getElementById("clan-members-list");
-    if(!list)return;
-    list.innerHTML="";
-    var ids=Object.keys(mem||{});
-    ids.sort(function(a,b){
-      var order={owner:0,officer:1,member:2};
-      var ra=order[mem[a].role]||3, rb=order[mem[b].role]||3;
-      if(ra!==rb)return ra-rb;
-      return (mem[a].joinedAt||0)-(mem[b].joinedAt||0);
-    });
-    ids.forEach(function(uid){
-      var m=mem[uid]||{};
-      var row=document.createElement("div");row.className="clan-member-row";
-      row.dataset.uid=uid;
-      var dot=document.createElement("div");dot.className="clan-member-status";dot.textContent="●";dot.style.color="#888";
-      var info=document.createElement("div");info.className="clan-member-info";
-      var roleClass="role-member",roleLabel="👤 "+t("clan.role_member");
-      if(m.role==="owner"){roleClass="role-owner";roleLabel="👑 "+t("clan.role_owner");}
-      else if(m.role==="officer"){roleClass="role-officer";roleLabel="🛡 "+t("clan.role_officer");}
-      var displayName=m.nickname||"";
-      var isAnon=!displayName||displayName==="Аноним"||displayName==="Anon";
-      info.innerHTML='<div class="clan-member-name '+roleClass+' clan-member-name-'+uid+'">'+(displayName?escapeHtml(displayName):'<span style="color:#666">…</span>')+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'')+'</div>'+
-        '<div class="clan-member-role">'+roleLabel+' <span class="clan-member-online" style="font-size:11px;color:#888"></span></div>';
-      row.appendChild(dot);row.appendChild(info);
-      if(uid!==profile.id){
-        var actions=document.createElement("div");actions.className="clan-member-actions";
-        if(typeof clanState!=="undefined"&&clanState.myRole==="owner"){
-          if(m.role==="member"){
-            var btnP=document.createElement("button");btnP.className="clan-mini-btn success";btnP.textContent="↑";
-            btnP.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("officer");};
-            actions.appendChild(btnP);
-          }else if(m.role==="officer"){
-            var btnD=document.createElement("button");btnD.className="clan-mini-btn";btnD.textContent="↓";
-            btnD.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("member");};
-            actions.appendChild(btnD);
-          }
-        }
-        if(typeof clanState!=="undefined"&&(clanState.myRole==="owner"||clanState.myRole==="officer")){
-          var btnK=document.createElement("button");btnK.className="clan-mini-btn danger";btnK.textContent="✕";
-          btnK.onclick=function(){
-            if(!confirm(t("clan.kick_confirm")))return;
-            db.ref("clans/"+clanState.myClanId+"/members/"+uid).remove();
-            db.ref("users/"+uid+"/clanId").remove();
-          };
-          actions.appendChild(btnK);
-        }
-        row.appendChild(actions);
-      }
-      list.appendChild(row);
-      // Подтягиваем ник + онлайн из users/{uid}
-      if(isAnon||!m.nickname){
-        db.ref("users/"+uid).once("value").then(function(s){
-          var u=s.val()||{};
-          var el=row.querySelector(".clan-member-name-"+uid);
-          if(el&&u.nickname&&u.nickname.length>0){
-            el.innerHTML=escapeHtml(u.nickname)+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'');
-            // Обновляем и в Firebase чтобы больше не тянуть
-            if(typeof clanState!=="undefined"&&clanState.myClanId){
-              db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/nickname").set(u.nickname).catch(function(){});
-            }
-          }
-          _updateOnlineDot(row,u.lastSeen);
-        }).catch(function(){});
-      }else{
-        db.ref("users/"+uid+"/lastSeen").once("value").then(function(s){
-
-// ===== BOOTSTRAP v226 — запуск всех модулей после загрузки =====
+// ===== BOOTSTRAP v226 — с выводом на экран =====
 (function(){
   function boot(){
+    __dbg("BOOT START");
     var list = [
       ["setupFriendsUI",   window.setupFriendsUI],
       ["friendsSetupUI",   window.friendsSetupUI],
@@ -3330,24 +3288,13 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
     ];
     list.forEach(function(pair){
       try{
-        if(typeof pair[1] === "function"){ pair[1](); console.log("[boot] OK:", pair[0]); }
-        else { console.log("[boot] skip:", pair[0]); }
-      }catch(e){ console.log("[boot] ERR:", pair[0], e.message); }
+        if(typeof pair[1] === "function"){ pair[1](); __dbg("OK: " + pair[0]); }
+        else { __dbg("skip: " + pair[0]); }
+      }catch(e){ __dbg("ERR " + pair[0] + ": " + e.message, true); }
     });
-    // Авто-запуск друзей если открыт профиль
-    try{ if(typeof socialInit === "function") socialInit(); }catch(e){}
+    __dbg("BOOT DONE");
   }
-
-  // Запуск после полной загрузки окна + задержка чтобы DOM/модули успели
   if(document.readyState === "complete"){ setTimeout(boot, 800); }
   else { window.addEventListener("load", function(){ setTimeout(boot, 800); }); }
-
-  // Повторный запуск при открытии модалок (на случай, если DOM позже)
-  document.addEventListener("click", function(e){
-    var t = e.target;
-    if(!t || !t.dataset) return;
-    if(t.dataset.tab === "friends" && typeof setupFriendsUI === "function"){
-      try{ setupFriendsUI(); }catch(err){}
-    }
-  }, true);
 })();
+__dbg("--- bootstrap зарегистрирован ---");
