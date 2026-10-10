@@ -3248,53 +3248,7 @@ setTimeout(function(){khrPetInit();},5500);
 setTimeout(function(){if(typeof processIncomingGifts==="function")processIncomingGifts();},2500);
 (function(){var fr=document.getElementById("activity-row-3");if(fr)fr.style.display="none";var nc=0,nt=null;function h(){nc++;if(nt)clearTimeout(nt);nt=setTimeout(function(){nc=0;},2000);if(nc>=5){nc=0;if(nt)clearTimeout(nt);setTimeout(function(){try{playSound("achievement");vibrate(40);}catch(e){}if(typeof fnfOpen==="function")fnfOpen();},200);}}var p=document.getElementById("page-prev"),n=document.getElementById("page-next");if(p)p.addEventListener("click",h);if(n)n.addEventListener("click",h);})();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){});});}
-// ===== ФИКС v222 — подтягивание ников в чате клана =====
-(function(){
-  var _origClanRenderChat=window.clanRenderChat;
-  window.clanRenderChat=function(val){
-    var box=document.getElementById("clan-chat-messages");
-    if(!box)return;
-    var atBottom=box.scrollTop+box.clientHeight>=box.scrollHeight-40;
-    box.innerHTML="";
-    if(!val||Object.keys(val).length===0){
-      box.innerHTML='<p class="clan-empty-msg">'+t("clan.no_messages")+'</p>';
-      return;
-    }
-    var ids=Object.keys(val).sort(function(a,b){return (val[a].ts||0)-(val[b].ts||0);});
-    var myId=profile.id;
-    ids.forEach(function(mid){
-      var m=val[mid];
-      var div=document.createElement("div");
-      var isMine=m.authorId===myId;
-      div.className="clan-chat-msg"+(isMine?" own":"");
-      var dt=new Date(m.ts||0);
-      var time=("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2);
-      var authorName=m.author||"Аноним";
-      var isAnon=(authorName==="Аноним"||authorName==="Anon"||!authorName);
-      div.innerHTML='<div class="clan-chat-author'+(isMine?" mine":"")+' clan-chat-author-'+mid+'">'+escapeHtml(authorName)+'</div>'+
-        '<div class="clan-chat-text">'+escapeHtml(m.text||"")+'</div>'+
-        '<div class="clan-chat-time">'+time+'</div>';
-      box.appendChild(div);
-      // Подтягиваем ник из users/{uid}/nickname если в сообщении анон
-      if(isAnon&&m.authorId){
-        db.ref("users/"+m.authorId+"/nickname").once("value").then(function(s){
-          var n=s.val();
-          if(n&&n.length>0){
-            var el=box.querySelector(".clan-chat-author-"+m.authorId);
-            if(el)el.textContent=n;
-          }
-        }).catch(function(){});
-      }
-    });
-    if(atBottom)box.scrollTop=box.scrollHeight;
-  };
-})();
-
-// То же самое для рендера участников клана
-(function(){
-  var _origClanRenderMembers=window.clanRenderMembers;
-  window.clanRenderMembers=function(mem){
-    var list=document.getElementById("clan-members-list");
+.getElementById("clan-members-list");
     if(!list)return;
     list.innerHTML="";
     var ids=Object.keys(mem||{});
@@ -3359,43 +3313,41 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
         }).catch(function(){});
       }else{
         db.ref("users/"+uid+"/lastSeen").once("value").then(function(s){
-          _updateOnlineDot(row,s.val()||0);
-        }).catch(function(){});
-      }
-    });
-  };
-  function _updateOnlineDot(row,lastSeen){
-    var dot=row.querySelector(".clan-member-status");
-    var onlineEl=row.querySelector(".clan-member-online");
-    if(!dot||!onlineEl)return;
-    var diff=Math.floor((Date.now()-(lastSeen||0))/1000);
-    var color="#888", text="⚪ "+t("friends.status_offline");
-    if(diff<90){color="#4caf50";text="🟢 "+t("friends.status_online");}
-    else if(diff<600){color="#ffd54f";text="🟡 "+t("friends.status_away");}
-    else if(lastSeen){text="⚪ "+t("friends.was_online").replace("{time}",formatTime(diff));}
-    dot.style.color=color;
-    onlineEl.textContent=text;
-  }
-})();
 
-// Обновление онлайн-статуса каждые 15 сек
-setInterval(function(){
-  var m=document.getElementById("modal-clans");
-  if(!m||m.classList.contains("hidden"))return;
-  document.querySelectorAll('.clan-member-row[data-uid]').forEach(function(row){
-    var uid=row.dataset.uid;
-    if(!uid||!db)return;
-    db.ref("users/"+uid+"/lastSeen").once("value").then(function(s){
-      var dot=row.querySelector(".clan-member-status");
-      var onlineEl=row.querySelector(".clan-member-online");
-      if(!dot||!onlineEl)return;
-      var diff=Math.floor((Date.now()-(s.val()||0))/1000);
-      var color="#888", text="⚪ "+t("friends.status_offline");
-      if(diff<90){color="#4caf50";text="🟢 "+t("friends.status_online");}
-      else if(diff<600){color="#ffd54f";text="🟡 "+t("friends.status_away");}
-      else if(s.val()){text="⚪ "+t("friends.was_online").replace("{time}",formatTime(diff));}
-      dot.style.color=color;
-      onlineEl.textContent=text;
-    }).catch(function(){});
-  });
-},15000);
+// ===== BOOTSTRAP v226 — запуск всех модулей после загрузки =====
+(function(){
+  function boot(){
+    var list = [
+      ["setupFriendsUI",   window.setupFriendsUI],
+      ["friendsSetupUI",   window.friendsSetupUI],
+      ["clanSetupUI",      window.clanSetupUI],
+      ["dmSetupUI",        window.dmSetupUI],
+      ["fnfSetupUI",       window.fnfSetupUI],
+      ["auctionSetupUI",   window.auctionSetupUI],
+      ["compSetupUI",      window.compSetupUI],
+      ["adminSetup",       window.adminSetup],
+      ["seasonSetupUI",    window.seasonSetupUI]
+    ];
+    list.forEach(function(pair){
+      try{
+        if(typeof pair[1] === "function"){ pair[1](); console.log("[boot] OK:", pair[0]); }
+        else { console.log("[boot] skip:", pair[0]); }
+      }catch(e){ console.log("[boot] ERR:", pair[0], e.message); }
+    });
+    // Авто-запуск друзей если открыт профиль
+    try{ if(typeof socialInit === "function") socialInit(); }catch(e){}
+  }
+
+  // Запуск после полной загрузки окна + задержка чтобы DOM/модули успели
+  if(document.readyState === "complete"){ setTimeout(boot, 800); }
+  else { window.addEventListener("load", function(){ setTimeout(boot, 800); }); }
+
+  // Повторный запуск при открытии модалок (на случай, если DOM позже)
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if(!t || !t.dataset) return;
+    if(t.dataset.tab === "friends" && typeof setupFriendsUI === "function"){
+      try{ setupFriendsUI(); }catch(err){}
+    }
+  }, true);
+})();
