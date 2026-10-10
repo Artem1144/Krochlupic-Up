@@ -30,14 +30,7 @@ body.blood-moon #click-btn:not(.has-emoji){box-shadow:0 6px 0 #4a0000,0 0 30px #
 body.blood-moon #counter{color:#ff5252}
 
 /* === ФОНЫ === */
-#bg-canvas{
-  position:fixed;inset:0;width:100%;height:100%;
-  z-index:0;pointer-events:none;display:none;
-  contain:strict;
-  will-change:transform;
-  transform:translateZ(0);
-  backface-visibility:hidden;
-}
+#bg-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none;contain:strict;will-change:transform;transform:translateZ(0);backface-visibility:hidden}
 body.has-bg #bg-canvas{display:block}
 .page{position:relative;z-index:1}
 body.bg-space{background:linear-gradient(180deg,#0a0a2e 0%,#050518 50%,#000 100%)!important}
@@ -304,7 +297,6 @@ body.no-krohlupic .krohlupic-pet{display:none!important}
 .bg-preview.bloodmoon{background:linear-gradient(180deg,#3a0a0a,#000)}
 .bg-preview.volcano{background:linear-gradient(180deg,#3a1000,#000)}
 .bg-preview.nebula{background:linear-gradient(180deg,#1a0a2e,#0a0518)}
-
 /* === БАННЕРЫ === */
 #event-banner{position:fixed;top:0;left:0;right:0;height:28px;max-height:28px;padding:0 10px;font-weight:bold;font-size:11px;color:#fff;z-index:999;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:eventIn .5s ease-out;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 @keyframes eventIn{from{transform:translateY(-30px)}to{transform:translateY(0)}}
@@ -497,17 +489,18 @@ body.boost-active #event-banner{top:28px}
 .contact-url{font-size:12px;color:#7fb8e6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .contact-link.support .contact-url{color:#e0c25a}
 
-/* === БУСТЕРЫ === */
+/* === БУСТЕРЫ (С ФИКСОМ ВЕРТИКАЛЬНОГО ТЕКСТА) === */
 .boosters-list{display:flex;flex-direction:column;gap:10px;padding:5px 0}
-.booster-card{display:flex;align-items:center;gap:12px;background:#16213e;border:2px solid #7b1fa2;border-radius:12px;padding:12px 15px}
+.booster-card{display:flex;align-items:center;gap:12px;background:#16213e;border:2px solid #7b1fa2;border-radius:12px;padding:12px 15px;flex-wrap:wrap;min-width:0;overflow:hidden}
+.booster-card>div{min-width:0;flex-shrink:1}
 .booster-card.empty{opacity:.55;border-color:#3a3a3a;background:#0e1a30}
 .booster-card.active-booster{border-color:#4caf50}
 .booster-icon{font-size:36px;flex-shrink:0}
-.booster-info{flex:1;min-width:0;text-align:left}
-.booster-name{font-size:15px;color:#e0c25a;font-weight:bold;margin-bottom:3px}
-.booster-desc{font-size:12px;color:#aaa}
-.booster-count{font-size:13px;color:#4fc3f7;font-weight:bold;margin-top:3px}
-.booster-activate-btn{background:linear-gradient(135deg,#7b1fa2,#c2185b);border:none;color:#fff;padding:9px 14px;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #4a148c;flex-shrink:0;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.booster-info{flex:1;min-width:0;text-align:left;overflow:hidden}
+.booster-name{font-size:15px;color:#e0c25a;font-weight:bold;margin-bottom:3px;white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+.booster-desc{font-size:12px;color:#aaa;white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+.booster-count{font-size:13px;color:#4fc3f7;font-weight:bold;margin-top:3px;white-space:normal}
+.booster-activate-btn{background:linear-gradient(135deg,#7b1fa2,#c2185b);border:none;color:#fff;padding:9px 14px;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer;box-shadow:0 3px 0 #4a148c;flex-shrink:0;text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:normal;word-break:break-word}
 .booster-activate-btn:disabled{background:#444;color:#888;box-shadow:none}
 .booster-active-banner{background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;padding:12px 15px;border-radius:10px;font-weight:bold;font-size:14px;text-align:center;margin-bottom:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
@@ -518,7 +511,7 @@ body.boost-active #event-banner{top:28px}
 .krohlupic-bubble .krohlupic-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .krohlupic-bubble .krohlupic-text{font-size:15px;color:#fff8e1;line-height:1.45;text-align:left;font-weight:600;min-width:0}
 
-/* === ПИТОМЦЫ === */
+/* === ПИТОМЦЫ (С ФИКСОМ) === */
 #pets-page{max-width:500px;margin:0 auto;padding:15px;text-align:left}
 #pets-title{text-align:center;color:#e0c25a;font-size:26px;margin:10px 0 20px}
 .pets-top-bar{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#16213e,#0e1a30);border:2px solid #3a7bd5;border-radius:12px;padding:10px 14px;margin-bottom:15px;gap:10px}
@@ -573,19 +566,19 @@ body.boost-active #event-banner{top:28px}
 .feed-btn b{color:#ffd54f}
 .pet-deactivate-btn{display:block;width:100%;margin-top:10px;padding:10px;background:#253a5c;border:1px solid #3a7bd5;color:#b8b8b8;border-radius:8px;font-size:13px;font-weight:bold;cursor:pointer}
 .pets-storage-list{display:flex;flex-direction:column;gap:10px}
-.pet-card{display:flex;gap:10px;align-items:center;background:linear-gradient(135deg,#16213e,#0e1a30);border:2px solid #253a5c;border-radius:12px;padding:10px 12px}
+.pet-card{display:flex;gap:10px;align-items:center;background:linear-gradient(135deg,#16213e,#0e1a30);border:2px solid #253a5c;border-radius:12px;padding:10px 12px;flex-wrap:wrap;min-width:0;overflow:hidden}
+.pet-card-emoji{font-size:42px;flex-shrink:0;line-height:1}
+.pet-card-info{flex:1;min-width:0;overflow:hidden;word-break:break-word;overflow-wrap:anywhere}
+.pet-card-name{font-size:15px;color:#fff;font-weight:bold;margin-bottom:2px;white-space:normal}
+.pet-card-bonus{font-size:12px;color:#4caf50;font-weight:600;white-space:normal}
+.pet-card-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0;width:100%;max-width:200px;margin-left:auto}
 .pet-card.common{border-left:5px solid #4caf50}
 .pet-card.rare{border-left:5px solid #2196f3}
 .pet-card.epic{border-left:5px solid #9c27b0}
-.pet-card-emoji{font-size:42px;flex-shrink:0}
-.pet-card-info{flex:1;min-width:0}
-.pet-card-name{font-size:15px;color:#fff;font-weight:bold;margin-bottom:2px}
 .pet-card-rarity{font-size:11px;font-weight:600;margin-bottom:3px}
 .pet-card-rarity.common{color:#4caf50}
 .pet-card-rarity.rare{color:#4fc3f7}
 .pet-card-rarity.epic{color:#ba68c8}
-.pet-card-bonus{font-size:12px;color:#4caf50;font-weight:600}
-.pet-card-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
 .pet-card-btn{padding:7px 11px;border:none;border-radius:7px;font-size:12px;font-weight:bold;cursor:pointer;white-space:nowrap;touch-action:manipulation}
 .pet-activate-btn{background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;box-shadow:0 2px 0 #1b5e20}
 .pet-sell-btn{background:linear-gradient(135deg,#8b0000,#c62828);color:#fff;box-shadow:0 2px 0 #4a0000}
@@ -662,7 +655,6 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 .friend-action-btn.decline{background:linear-gradient(135deg,#8b0000,#c62828);border-color:#c62828}
 .friend-action-btn.chat{background:linear-gradient(135deg,#1976d2,#42a5f5);border-color:#4fc3f7;position:relative;padding:6px 10px}
 .friend-action-btn.gift{background:linear-gradient(135deg,#e91e63,#ff5252);border-color:#ff5252;padding:6px 8px}
-.friend-unread-badge{position:absolute;top:-5px;right:-5px;background:#ff5252;color:#fff;border-radius:10px;font-size:10px;font-weight:bold;padding:1px 5px;min-width:16px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.5);pointer-events:none}
 .friends-hint{text-align:center;color:#aaa;font-size:13px;margin:0 0 12px}
 .friends-hint b{color:#ffd54f;font-family:monospace}
 .friends-search-row{display:flex;gap:8px;margin-bottom:12px}
@@ -679,7 +671,6 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 .friend-rating-name{font-size:13px;color:#e0c25a;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .friend-rating-cps{font-size:11px;color:#7fb8e6;margin-top:2px}
 .friend-rating-score{font-size:13px;color:#4fc3f7;font-weight:bold;flex-shrink:0;text-align:right}
-
 /* === БАННЕРЫ ПРОФИЛЯ === */
 .profile-banner-display{text-align:center;padding:12px 16px;border-radius:10px;font-size:15px;font-weight:bold;color:#fff;margin-bottom:14px;text-shadow:0 1px 3px rgba(0,0,0,.5);letter-spacing:1px}
 .profile-banner-display.banner-novice{background:linear-gradient(135deg,#6b7280,#374151)}
@@ -847,7 +838,7 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 .admin-log-item .cmd{color:#4fc3f7;font-weight:bold}
 .admin-log-item .author{color:#e0c25a;font-size:10px}
 
-/* === FNF-БИТВА === */
+/* === FNF-БИТВА (С ФИКСОМ) === */
 #fnf-overlay{position:fixed;inset:0;background:#000;z-index:9000;display:flex;align-items:center;justify-content:center;touch-action:none}
 #fnf-scene{width:100%;max-width:600px;height:100vh;max-height:900px;display:flex;flex-direction:column;background:linear-gradient(180deg,#1a0520,#0a0518);position:relative;overflow:hidden}
 #fnf-header{padding:10px 15px;background:linear-gradient(180deg,#2a0a3a,#1a0520);border-bottom:2px solid #7b1fa2;text-align:center;z-index:5}
@@ -864,9 +855,9 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 #fnf-scene::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(0deg, rgba(120,40,180,0.35) 0%, transparent 100%);pointer-events:none;z-index:1;animation:fnfFogPulse 4s ease-in-out infinite}
 @keyframes fnfFogPulse{0%,100%{opacity:0.7}50%{opacity:1}}
 #fnf-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:3}
-#fnf-zone{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(0deg,rgba(123,31,162,.3),transparent);border-top:2px dashed rgba(201,160,255,.4);pointer-events:none;display:flex;justify-content:space-around;align-items:center;z-index:2}
-#fnf-controls{position:absolute;bottom:0;left:0;right:0;height:90px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:8px;background:linear-gradient(0deg,#1a0520,transparent);z-index:10}
-.fnf-arrow-btn{background:linear-gradient(135deg,#4a148c,#7b1fa2);border:2px solid #c9a0ff;color:#fff;border-radius:12px;font-size:32px;font-weight:bold;cursor:pointer;touch-action:manipulation;text-shadow:0 0 10px rgba(201,160,255,.6);box-shadow:0 4px 0 #2a0a3a;transition:transform .05s,box-shadow .05s}
+#fnf-zone{position:absolute;bottom:calc(120px + env(safe-area-inset-bottom,0px));left:0;right:0;height:80px;background:transparent;pointer-events:none;z-index:2}
+#fnf-controls{position:absolute;bottom:env(safe-area-inset-bottom,0px);left:0;right:0;height:calc(120px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 8px calc(18px + env(safe-area-inset-bottom,0px)) 8px;background:linear-gradient(0deg,#1a0520 0%,rgba(26,5,32,.85) 60%,transparent 100%);z-index:10}
+.fnf-arrow-btn{background:linear-gradient(135deg,#4a148c,#7b1fa2);border:2px solid #c9a0ff;color:#fff;border-radius:14px;font-size:38px;font-weight:bold;cursor:pointer;touch-action:manipulation;text-shadow:0 0 10px rgba(201,160,255,.6);box-shadow:0 4px 0 #2a0a3a;transition:transform .05s,box-shadow .05s;min-height:64px;display:flex;align-items:center;justify-content:center}
 .fnf-arrow-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #2a0a3a}
 .fnf-arrow-btn.hit{background:linear-gradient(135deg,#4caf50,#8bc34a);border-color:#e0ffb0;box-shadow:0 4px 0 #1b5e20,0 0 20px rgba(76,175,80,.8)}
 .fnf-arrow-btn.miss{background:linear-gradient(135deg,#b71c1c,#ff5252);border-color:#ffb0b0;box-shadow:0 4px 0 #4a0000,0 0 20px rgba(255,82,82,.8)}
@@ -977,7 +968,7 @@ body.super-storm #counter{color:#ff1744;text-shadow:0 0 12px rgba(255,23,68,.8),
 .auction-filter-row{display:flex;gap:6px;margin-bottom:10px}
 .auction-filter{flex:1;padding:7px 4px;background:#0e1a30;border:2px solid #253a5c;color:#888;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;touch-action:manipulation}
 .auction-filter.active{border-color:#e0c25a;color:#e0c25a;background:#16213e}
-.auction-card{background:#0e1a30;border:2px solid #253a5c;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.auction-card{background:#0e1a30;border:2px solid #253a5c;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .auction-card.rarity-common{border-left:5px solid #4caf50}
 .auction-card.rarity-rare{border-left:5px solid #2196f3}
 .auction-card.rarity-epic{border-left:5px solid #9c27b0}
@@ -1090,9 +1081,9 @@ body{padding:10px}
 .admin-quick-btn{font-size:10px}
 #fnf-title{font-size:14px}
 #fnf-stats-row{font-size:11px;gap:12px}
-.fnf-arrow-btn{font-size:26px}
-#fnf-controls{height:80px}
-#fnf-zone{height:70px}
+.fnf-arrow-btn{font-size:32px;min-height:58px}
+#fnf-controls{height:calc(110px + env(safe-area-inset-bottom,0px))}
+#fnf-zone{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 #fnf-start-btn{padding:14px 30px;font-size:16px}
 #fnf-result-title{font-size:26px}
 .subscribe-banner-box{padding:20px 16px 16px;border-radius:14px}
