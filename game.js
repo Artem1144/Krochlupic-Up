@@ -3787,6 +3787,821 @@ setTimeout(function(){
   console.log("[v205] Кнопка create активна");
 }, 1200);
 
+// ===== МОДУЛЬ ЛС v207 =====
+window.dmState=window.dmState||{friendId:null,friendName:"",unread:{},messages:[]};
+
+var _dmRef=null,_dmUnreadRef=null,_dmLastSend=0;
+var DM_MAX_LEN=120;
+
+function _dmChatId(a,b){
+  var ids=[String(a),String(b)].sort();
+  return ids[0]+"__"+ids[1];
+}
+function _dmOpen(fid,fname){
+  if(!db){alert("Firebase недоступен");return;}
+  if(!profile.id){alert("Сначала задай ник");return;}
+  dmState.friendId=fid;
+  dmState.friendName=fname||"Anon";
+  var m=document.getElementById("modal-dm");
+  if(!m)return;
+  var nameEl=document.getElementById("dm-name"); if(nameEl)nameEl.textContent=fname||"Anon";
+  var avEl=document.getElementById("dm-avatar"); if(avEl)avEl.textContent="🙂";
+  var stEl=document.getElementById("dm-status"); if(stEl)stEl.textContent="…";
+  var inp=document.getElementById("dm-input"); if(inp)inp.value="";
+  var counter=document.getElementById("dm-counter"); if(counter)counter.textContent="0/"+DM_MAX_LEN;
+  m.classList.remove("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+  db.ref("users/"+fid+"/lastSeen").once("value").then(function(s){
+    var t=s.val()||0;
+    var diff=Math.floor((Date.now()-t)/1000);
+    var st="⚪ оффлайн";
+    if(diff<90)st="🟢 в сети";
+    else if(diff<600)st="🟡 недавно";
+    else if(t)st="⚪ был "+ (typeof formatTime==="function"?formatTime(diff):diff+"с") +" назад";
+    if(stEl)stEl.textContent=st;
+  });
+  _dmSubscribe(fid);
+  _dmMarkRead(fid);
+}
+function _dmClose(){
+  var m=document.getElementById("modal-dm");
+  if(m)m.classList.add("hidden");
+  if(_dmRef){_dmRef.off();_dmRef=null;}
+  dmState.friendId=null;
+  if(typeof syncScrollLock==="function")syncScrollLock();
+}
+function _dmMarkRead(fid){
+  if(!profile.id)return;
+  db.ref("dms/"+_dmChatId(profile.id,fid)+"/read/"+profile.id).set(Date.now()).catch(function(){});
+  db.ref("dmRead/"+profile.id+"/"+fid).set(Date.now()).catch(function(){});
+}
+function _dmSubscribe(fid){
+  if(_dmRef)_dmRef.off();
+  var chatId=_dmChatId(profile.id,fid);
+  _dmRef=db.ref("dms/"+chatId+"/messages").limitToLast(100);
+  _dmRef.on("value",function(snap){
+    var val=snap.val()||{};
+    var arr=Object.keys(val).map(function(k){var m=val[k];m._id=k;return m;});
+    arr.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+    dmState.messages=arr;
+    _dmRenderMessages();
+    _dmMarkRead(fid);
+  });
+}
+function _dmRenderMessages(){
+  var box=document.getElementById("dm-messages");
+  if(!box)return;
+  var atBottom=box.scrollTop+box.clientHeight>=box.scrollHeight-40;
+  box.innerHTML="";
+  if(dmState.messages.length===0){
+    box.innerHTML='<div class="dm-empty">Пока пусто. Напиши первым!</div>';
+    return;
+  }
+  dmState.messages.forEach(function(m){
+    var div=document.createElement("div");
+    div.className="dm-msg"+(m.from===profile.id?" mine":"");
+    var dt=new Date(m.ts||0);
+    var time=("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2);
+    var author=m.from===profile.id?"Ты":(m.fromName||"Anon");
+    div.innerHTML='<div class="dm-msg-author">'+escapeHtml(author)+'</div>'+
+      '<div class="dm-msg-text">'+escapeHtml(m.text||"")+'</div>'+
+      '<div class="dm-msg-time">'+time+'</div>';
+    div.onclick=function(){
+      if(!confirm("Удалить это сообщение?"))return;
+      db.ref("dms/"+_dmChatId(profile.id,dmState.friendId)+"/messages/"+m._id).remove();
+    };
+    box.appendChild(div);
+  });
+  if(atBottom)box.scrollTop=box.scrollHeight;
+}
+function _dmSend(){
+  if(!dmState.friendId){alert("Открой чат с другом");return;}
+  var inp=document.getElementById("dm-input");
+  if(!inp)return;
+  var text=(inp.value||"").trim();
+  if(!text)return;
+  if(text.length>DM_MAX_LEN)text=text.slice(0,DM_MAX_LEN);
+  var now=Date.now();
+  if(now-_dmLastSend<800){alert("Слишком часто! Подожди секунду");return;}
+  _dmLastSend=now;
+  var chatId=_dmChatId(profile.id,dmState.friendId);
+  db.ref("dms/"+chatId+"/messages").push({
+    from:profile.id,
+    fromName:profile.nickname||"Anon",
+    text:text,
+    ts:now
+  }).then(function(){
+    inp.value="";
+    var counter=document.getElementById("dm-counter");
+    if(counter)counter.textContent="0/"+DM_MAX_LEN;
+    db.ref("dms/"+chatId+"/read/"+profile.id).set(now);
+  }).catch(function(e){alert("Ошибка: "+e.message);});
+}
+function _dmClearHistory(){
+  if(!dmState.friendId)return;
+  if(!confirm("Очистить историю? У всех участников."))return;
+  var chatId=_dmChatId(profile.id,dmState.friendId);
+  db.ref("dms/"+chatId+"/messages").remove().then(function(){
+    alert("История очищена");
+  });
+}
+function _dmUpdateUnread(){
+  if(!db||!profile.id)return;
+  if(_dmUnreadRef)_dmUnreadRef.off();
+  _dmUnreadRef=db.ref("dms");
+  _dmUnreadRef.on("value",function(snap){
+    var all=snap.val()||{};
+    var total=0;
+    Object.keys(all).forEach(function(chatId){
+      if(chatId.indexOf(profile.id)===-1)return;
+      var msgs=(all[chatId]&&all[chatId].messages)||{};
+      var myRead=(all[chatId]&&all[chatId].read&&all[chatId].read[profile.id])||0;
+      Object.keys(msgs).forEach(function(mid){
+        var m=msgs[mid];
+        if(m.from!==profile.id&&(m.ts||0)>myRead)total++;
+      });
+    });
+    var badge=document.getElementById("dm-side-badge");
+    var btn=document.getElementById("dm-side-btn");
+    if(total>0){
+      if(badge){badge.textContent=total>9?"9+":total;badge.classList.remove("hidden");}
+      if(btn)btn.classList.remove("hidden");
+    }else{
+      if(badge)badge.classList.add("hidden");
+      if(btn)btn.classList.add("hidden");
+    }
+  });
+}
+window.dmSetupUI=function(){
+  var m=document.getElementById("modal-dm");
+  if(!m)return;
+  var closeBtn=m.querySelector('[data-close="modal-dm"]');
+  if(closeBtn&&!closeBtn.__b){closeBtn.__b=true;closeBtn.onclick=_dmClose;}
+  var sendBtn=document.getElementById("dm-send");
+  if(sendBtn&&!sendBtn.__b){sendBtn.__b=true;sendBtn.onclick=function(e){e.preventDefault();_dmSend();};}
+  var inp=document.getElementById("dm-input");
+  if(inp&&!inp.__b){
+    inp.__b=true;
+    inp.addEventListener("input",function(){
+      var counter=document.getElementById("dm-counter");
+      if(counter){
+        var len=(inp.value||"").length;
+        counter.textContent=len+"/"+DM_MAX_LEN;
+        counter.classList.remove("warn","danger");
+        if(len>100)counter.classList.add("warn");
+        if(len>=DM_MAX_LEN)counter.classList.add("danger");
+      }
+    });
+    inp.addEventListener("keydown",function(e){
+      if(e.key==="Enter"){e.preventDefault();_dmSend();}
+    });
+  }
+  var clearBtn=document.getElementById("dm-clear-btn");
+  if(clearBtn&&!clearBtn.__b){clearBtn.__b=true;clearBtn.onclick=function(e){e.preventDefault();_dmClearHistory();};}
+};
+window.dmOpen=_dmOpen;
+window.dmClose=_dmClose;
+window.dmUpdateSideBadge=_dmUpdateUnread;
+window.dmSubscribeUnreadForAll=_dmUpdateUnread;
+window.dmUnsubAllUnread=function(){if(_dmUnreadRef)_dmUnreadRef.off();};
+
+setTimeout(function(){
+  if(typeof dmSetupUI==="function")dmSetupUI();
+  if(db&&profile.id)_dmUpdateUnread();
+},2500);
+
+// ===== МОДУЛЬ FNF v208 =====
+window.fnfState=window.fnfState||{active:false,hp:50,maxHp:50,score:0,combo:0,maxCombo:0,miss:0,timeLeft:90,arrows:[],fallTime:2200,raf:null,lastSpawn:0,nextSpawnGap:800,lastFrame:0,hits:0,cooldownUntil:0};
+
+var FNF_DIRS=["left","up","down","right"];
+var FNF_HIT_WINDOW=280;
+var FNF_COOLDOWN_MS=30*60*1000;
+
+function _fnfLastPlayed(){try{return parseInt(localStorage.getItem("fnfLastPlayed")||"0");}catch(e){return 0;}}
+function _fnfSaveLastPlayed(){try{localStorage.setItem("fnfLastPlayed",String(Date.now()));}catch(e){}}
+function _fnfCanPlay(){
+  var left=FNF_COOLDOWN_MS-(Date.now()-_fnfLastPlayed());
+  return {ok:left<=0,left:left};
+}
+function _fnfUpdateCooldownHint(){
+  var el=document.getElementById("fnf-cooldown");
+  if(!el)return;
+  var r=_fnfCanPlay();
+  if(r.ok){el.textContent="";el.style.color="#4caf50";}
+  else{
+    var m=Math.floor(r.left/60000),s=Math.floor((r.left%60000)/1000);
+    el.textContent="⏳ Следующая битва через "+m+":"+(s<10?"0":"")+s;
+    el.style.color="#ffd54f";
+  }
+}
+function _fnfDrawArrow(ctx,x,y,size,dir,color){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.fillStyle=color||"#c9a0ff";
+  ctx.beginPath();
+  if(dir==="up"){
+    ctx.moveTo(0,-size);ctx.lineTo(size,size*0.6);ctx.lineTo(size*0.4,size*0.6);
+    ctx.lineTo(size*0.4,size);ctx.lineTo(-size*0.4,size);ctx.lineTo(-size*0.4,size*0.6);
+    ctx.lineTo(-size,size*0.6);ctx.closePath();
+  }else if(dir==="down"){
+    ctx.moveTo(0,size);ctx.lineTo(size,-size*0.6);ctx.lineTo(size*0.4,-size*0.6);
+    ctx.lineTo(size*0.4,-size);ctx.lineTo(-size*0.4,-size);ctx.lineTo(-size*0.4,-size*0.6);
+    ctx.lineTo(-size,-size*0.6);ctx.closePath();
+  }else if(dir==="left"){
+    ctx.moveTo(-size,0);ctx.lineTo(size*0.6,-size);ctx.lineTo(size*0.6,-size*0.4);
+    ctx.lineTo(size,-size*0.4);ctx.lineTo(size,size*0.4);ctx.lineTo(size*0.6,size*0.4);
+    ctx.lineTo(size*0.6,size);ctx.closePath();
+  }else if(dir==="right"){
+    ctx.moveTo(size,0);ctx.lineTo(-size*0.6,-size);ctx.lineTo(-size*0.6,-size*0.4);
+    ctx.lineTo(-size,-size*0.4);ctx.lineTo(-size,size*0.4);ctx.lineTo(-size*0.6,size*0.4);
+    ctx.lineTo(-size*0.6,size);ctx.closePath();
+  }
+  ctx.fill();
+  ctx.restore();
+}
+function _fnfFrame(){
+  var st=fnfState;
+  if(!st.active)return;
+  var now=performance.now();
+  if(now-st.lastFrame<16){st.raf=requestAnimationFrame(_fnfFrame);return;}
+  var dt=Math.min(50,now-st.lastFrame);
+  st.lastFrame=now;
+  var canvas=document.getElementById("fnf-canvas");
+  if(!canvas){st.active=false;return;}
+  var ctx=canvas.getContext("2d");
+  var W=canvas.width/ (window.devicePixelRatio||1);
+  var H=canvas.height/(window.devicePixelRatio||1);
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+  ctx.clearRect(0,0,W,H);
+  var zoneY=H-100;
+  // Отрисовка стрелок
+  st.arrows.forEach(function(a){
+    var prog=(now-a.spawnAt)/a.fallTime;
+    if(prog<0)prog=0;
+    var y=prog*(zoneY-40)+20;
+    a.y=y;
+    if(y>zoneY+40){a.missed=true;}
+    var isInZone=y>=zoneY-50&&y<=zoneY+50;
+    _fnfDrawArrow(ctx,a.x,y,26,a.dir,isInZone?"#4fc3f7":"#c9a0ff");
+  });
+  // Зона-подсказка по краям
+  ctx.save();
+  ctx.strokeStyle="rgba(201,160,255,.4)";
+  ctx.lineWidth=2;
+  ctx.setLineDash([6,6]);
+  ctx.beginPath();ctx.moveTo(0,zoneY);ctx.lineTo(W,zoneY);ctx.stroke();
+  ctx.restore();
+  // Обновление таймера
+  st.timeLeft-=dt/1000;
+  if(st.timeLeft<=0){st.timeLeft=0;_fnfEnd(false);return;}
+  var timerEl=document.getElementById("fnf-time-left");
+  if(timerEl)timerEl.textContent=st.timeLeft.toFixed(1);
+  // Спавн новых стрелок
+  if(now-st.lastSpawn>st.nextSpawnGap){
+    var dir=FNF_DIRS[Math.floor(Math.random()*4)];
+    var lane=Math.floor(Math.random()*4);
+    var laneW=W/4;
+    var x=laneW*lane+laneW/2;
+    st.arrows.push({dir:dir,x:x,y:-40,spawnAt:now,fallTime:st.fallTime,lane:lane,missed:false,hit:false});
+    st.lastSpawn=now;
+    st.nextSpawnGap=Math.max(400,900-st.score*10);
+    // Сложнее со временем
+    if(st.score>50)st.fallTime=1600;
+    else if(st.score>20)st.fallTime=1900;
+  }
+  // Чистка улетевших
+  st.arrows=st.arrows.filter(function(a){
+    if(a.hit)return false;
+    if(now-a.spawnAt>a.fallTime+400&&!a.hit){
+      // Промах
+      st.miss++;
+      st.combo=0;
+      st.hp--;
+      _fnfUpdateHeader();
+      return false;
+    }
+    return true;
+  });
+  st.raf=requestAnimationFrame(_fnfFrame);
+}
+function _fnfUpdateHeader(){
+  var hp=document.getElementById("fnf-hp");
+  if(hp)hp.textContent=Math.max(0,fnfState.hp)+" / "+fnfState.maxHp;
+  var sc=document.getElementById("fnf-score");
+  if(sc)sc.textContent=fnfState.score;
+  var cb=document.getElementById("fnf-combo");
+  if(cb)cb.textContent=fnfState.combo+"×";
+  var ms=document.getElementById("fnf-miss");
+  if(ms)ms.textContent=fnfState.miss;
+}
+function _fnfTap(dir){
+  if(!fnfState.active)return;
+  var st=fnfState;
+  var zoneY=(document.getElementById("fnf-canvas")?(document.getElementById("fnf-canvas").height/(window.devicePixelRatio||1))-100:400);
+  var best=null,bestDist=9999;
+  st.arrows.forEach(function(a){
+    if(a.hit)return;
+    if(a.dir!==dir)return;
+    var d=Math.abs(a.y-zoneY);
+    if(d<bestDist){bestDist=d;best=a;}
+  });
+  var btn=document.querySelector('.fnf-arrow-btn[data-fnf-dir="'+dir+'"]');
+  if(best&&bestDist<=60){
+    best.hit=true;
+    st.score++;
+    st.combo++;
+    if(st.combo>st.maxCombo)st.maxCombo=st.combo;
+    if(btn){
+      btn.classList.remove("hit");void btn.offsetWidth;btn.classList.add("hit");
+      setTimeout(function(){btn.classList.remove("hit");},150);
+    }
+    if(typeof playSound==="function")playSound("click");
+  }else{
+    st.combo=0;
+    if(btn){
+      btn.classList.remove("miss");void btn.offsetWidth;btn.classList.add("miss");
+      setTimeout(function(){btn.classList.remove("miss");},150);
+    }
+  }
+  _fnfUpdateHeader();
+}
+function _fnfStart(){
+  var r=_fnfCanPlay();
+  if(!r.ok){
+    var m=Math.floor(r.left/60000),s=Math.floor((r.left%60000)/1000);
+    alert("Рано! Следующая битва через "+m+":"+(s<10?"0":"")+s);
+    return;
+  }
+  var overlay=document.getElementById("fnf-overlay");
+  if(!overlay)return;
+  overlay.classList.remove("hidden");
+  if(typeof lockScroll==="function")lockScroll();
+  var canvas=document.getElementById("fnf-canvas");
+  if(canvas){
+    var dpr=window.devicePixelRatio||1;
+    canvas.width=canvas.clientWidth*dpr;
+    canvas.height=canvas.clientHeight*dpr;
+  }
+  var st=fnfState;
+  st.active=true;st.hp=50;st.maxHp=50;st.score=0;st.combo=0;st.maxCombo=0;st.miss=0;st.timeLeft=90;
+  st.arrows=[];st.fallTime=2200;st.lastSpawn=performance.now();st.nextSpawnGap=800;st.lastFrame=performance.now();
+  _fnfUpdateHeader();
+  var startBlock=document.getElementById("fnf-start-block");
+  if(startBlock)startBlock.classList.add("hidden");
+  var resBlock=document.getElementById("fnf-result");
+  if(resBlock)resBlock.classList.add("hidden");
+  if(st.raf)cancelAnimationFrame(st.raf);
+  st.raf=requestAnimationFrame(_fnfFrame);
+}
+function _fnfEnd(win){
+  var st=fnfState;
+  st.active=false;
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  var actualWin=st.hp>0;
+  var rewards=[];
+  if(actualWin){
+    var gems=Math.floor(st.score/5)+5;
+    if(st.combo>=20)gems*=2;
+    var shards=Math.floor(st.score/3);
+    var coins=Math.floor(getCPS()*1800);
+    addCrystals(gems);shards+=shards;coins+=coins;totalEarned+=coins;
+    rewards.push("💎 +"+gems);
+    rewards.push("🌑 +"+shards);
+    rewards.push("💰 +"+formatNumber(coins));
+    if(typeof playSound==="function")playSound("achievement");
+  }
+  var title=document.getElementById("fnf-result-title");
+  var text=document.getElementById("fnf-result-text");
+  if(title){
+    title.textContent=actualWin?"🏆 ПОБЕДА!":"💀 ПОРАЖЕНИЕ";
+    title.className=actualWin?"win":"lose";
+  }
+  if(text){
+    var msg=(actualWin?"Ты продержался до конца!":"Крохлюпик победил...")+"\n\n🎵 Счёт: "+st.score+"\n❌ Промахи: "+st.miss+"\n🔥 Макс. комбо: "+st.maxCombo+"×";
+    if(rewards.length)msg+="\n\nНаграда:\n"+rewards.join("\n");
+    text.textContent=msg;
+  }
+  var resBlock=document.getElementById("fnf-result");
+  if(resBlock)resBlock.classList.remove("hidden");
+  _fnfSaveLastPlayed();
+  updateUI();saveGame();
+}
+function _fnfClose(){
+  var st=fnfState;
+  st.active=false;
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  var overlay=document.getElementById("fnf-overlay");
+  if(overlay)overlay.classList.add("hidden");
+  if(typeof unlockScroll==="function")unlockScroll();
+  var startBlock=document.getElementById("fnf-start-block");
+  if(startBlock)startBlock.classList.remove("hidden");
+}
+window.fnfSetup=function(){
+  document.querySelectorAll(".fnf-arrow-btn").forEach(function(btn){
+    if(btn.__b)return;btn.__b=true;
+    btn.onclick=function(e){e.preventDefault();_fnfTap(btn.dataset.fnfDir);};
+  });
+  var start=document.getElementById("fnf-start-btn");
+  if(start&&!start.__b){start.__b=true;start.onclick=function(e){e.preventDefault();_fnfStart();};}
+  var close=document.getElementById("fnf-close");
+  if(close&&!close.__b){close.__b=true;close.onclick=function(e){e.preventDefault();_fnfClose();};}
+  var close2=document.getElementById("fnf-result-close");
+  if(close2&&!close2.__b){close2.__b=true;close2.onclick=function(e){e.preventDefault();_fnfClose();};}
+  // Клавиатура для ПК
+  if(!window.__fnfKeys){
+    window.__fnfKeys=true;
+    document.addEventListener("keydown",function(e){
+      if(!fnfState.active)return;
+      var k=e.key;
+      if(k==="ArrowLeft"||k==="a"||k==="A")_fnfTap("left");
+      else if(k==="ArrowRight"||k==="d"||k==="D")_fnfTap("right");
+      else if(k==="ArrowUp"||k==="w"||k==="W")_fnfTap("up");
+      else if(k==="ArrowDown"||k==="s"||k==="S")_fnfTap("down");
+    });
+  }
+  _fnfUpdateCooldownHint();
+  setInterval(_fnfUpdateCooldownHint,10000);
+};
+window.fnfOpen=function(){
+  var overlay=document.getElementById("fnf-overlay");
+  if(!overlay)return;
+  var st=fnfState;
+  st.active=false;
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  overlay.classList.remove("hidden");
+  if(typeof lockScroll==="function")lockScroll();
+  var startBlock=document.getElementById("fnf-start-block");
+  if(startBlock)startBlock.classList.remove("hidden");
+  var resBlock=document.getElementById("fnf-result");
+  if(resBlock)resBlock.classList.add("hidden");
+  _fnfUpdateCooldownHint();
+  if(typeof playSound==="function")playSound("ui");
+};
+window.fnfClose=_fnfClose;
+
+// Показать кнопку FNF
+setTimeout(function(){
+  var row=document.getElementById("activity-row-3");
+  if(row)row.style.display="flex";
+  var btn=document.getElementById("fnf-btn");
+  if(btn&&!btn.__b){btn.__b=true;btn.onclick=function(e){e.preventDefault();window.fnfOpen();};}
+},3000);
+
+// ===== МОДУЛЬ СОРЕВНОВАНИЯ v209 =====
+window.compState=window.compState||{
+  mode:null, // "idle" | "waiting" | "playing" | "done"
+  roomId:null,
+  role:null, // "host" | "guest"
+  duration:10,
+  myTaps:0,
+  oppTaps:0,
+  myReady:false,
+  oppReady:false,
+  startAt:0,
+  endAt:0,
+  tickTimer:null,
+  roomRef:null,
+  myId:null,
+  oppId:null,
+  oppName:"???",
+  countdownTimer:null
+};
+
+var COMP_QUICK_POOL="competitions/quickPool";
+var COMP_ROOMS="competitions/rooms";
+var COMP_CODES="competitions/codes";
+
+function _compGenCode(){
+  var c="ABCDEFGHJKMNPQRSTUVWXYZ23456789",s="";
+  for(var i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];
+  return s;
+}
+function _compUi(sel){return document.getElementById(sel);}
+function _compShow(view){
+  ["comp-main","comp-waiting"].forEach(function(id){
+    var el=_compUi(id);
+    if(el)el.classList.add("hidden");
+  });
+  var el=_compUi(view);
+  if(el)el.classList.remove("hidden");
+}
+function _compReset(){
+  if(compState.roomRef){compState.roomRef.off();compState.roomRef=null;}
+  if(compState.tickTimer){clearInterval(compState.tickTimer);compState.tickTimer=null;}
+  if(compState.countdownTimer){clearInterval(compState.countdownTimer);compState.countdownTimer=null;}
+  compState.mode="idle";
+  compState.roomId=null;
+  compState.role=null;
+  compState.myTaps=0;
+  compState.oppTaps=0;
+  compState.myReady=false;
+  compState.oppReady=false;
+}
+function _compOpen(){
+  var m=_compUi("modal-competition");
+  if(!m)return;
+  _compReset();
+  m.classList.remove("hidden");
+  if(typeof lockScroll==="function")lockScroll();
+}
+function _compClose(){
+  var m=_compUi("modal-competition");
+  if(m)m.classList.add("hidden");
+  if(compState.roomRef){compState.roomRef.off();compState.roomRef=null;}
+  if(compState.tickTimer){clearInterval(compState.tickTimer);compState.tickTimer=null;}
+  if(compState.countdownTimer){clearInterval(compState.countdownTimer);compState.countdownTimer=null;}
+  if(typeof unlockScroll==="function")unlockScroll();
+}
+function _compBind(){
+  var leaveBtn=_compUi("comp-leave-btn");
+  if(leaveBtn&&!leaveBtn.__b){leaveBtn.__b=true;leaveBtn.onclick=function(e){e.preventDefault();_compLeaveRoom();_compClose();};}
+  var quickBtn=_compUi("comp-quick-btn");
+  if(quickBtn&&!quickBtn.__b){quickBtn.__b=true;quickBtn.onclick=function(e){e.preventDefault();_compQuick();};}
+  var createBtn=_compUi("comp-create-btn");
+  if(createBtn&&!createBtn.__b){createBtn.__b=true;createBtn.onclick=function(e){e.preventDefault();_compCreate();};}
+  var joinBtn=_compUi("comp-join-btn");
+  if(joinBtn&&!joinBtn.__b){joinBtn.__b=true;joinBtn.onclick=function(e){e.preventDefault();_compJoin();};}
+  var copyBtn=_compUi("comp-copy-code");
+  if(copyBtn&&!copyBtn.__b){copyBtn.__b=true;copyBtn.onclick=function(e){
+    e.preventDefault();
+    var code=_compUi("comp-room-code")?_compUi("comp-room-code").textContent:"";
+    if(!code)return;
+    try{navigator.clipboard.writeText(code);alert("📋 "+code);}catch(err){prompt("Скопируй:",code);}
+  };}
+  var cancelBtn=_compUi("comp-cancel-btn");
+  if(cancelBtn&&!cancelBtn.__b){cancelBtn.__b=true;cancelBtn.onclick=function(e){e.preventDefault();_compLeaveRoom();_compShow("comp-main");};}
+  var tapBtn=_compUi("comp-tap-btn");
+  if(tapBtn&&!tapBtn.__b){tapBtn.__b=true;tapBtn.onclick=function(e){
+    e.preventDefault();
+    if(compState.mode!=="playing")return;
+    compState.myTaps++;
+    var tapsEl=_compUi("comp-me-taps");
+    if(tapsEl){tapsEl.textContent=compState.myTaps;tapsEl.classList.remove("pulse");void tapsEl.offsetWidth;tapsEl.classList.add("pulse");}
+    var myId=profile.id;
+    if(compState.roomId)db.ref(COMP_ROOMS+"/"+compState.roomId+"/taps/"+myId).set(compState.myTaps);
+    if(typeof playSound==="function")playSound("click");
+  };}
+  var resultClose=_compUi("comp-result-close");
+  if(resultClose&&!resultClose.__b){resultClose.__b=true;resultClose.onclick=function(e){e.preventDefault();_compShow("comp-main");};}
+  // Кнопка "Соревнования" из вкладки друзей
+  var tab=document.querySelector('.friends-tab[data-ftab="comp"]');
+  if(tab&&!tab.__b){tab.__b=true;tab.addEventListener("click",function(){_compBind();});}
+}
+function _compQuick(){
+  if(!db){alert("Firebase недоступен");return;}
+  var myId=profile.id;
+  compState.mode="waiting";
+  compState.role="host";
+  compState.duration=10;
+  _compShow("comp-waiting");
+  var codeEl=_compUi("comp-room-code");
+  var hintEl=_compUi("comp-waiting-hint");
+  if(codeEl)codeEl.textContent="...";
+  if(hintEl)hintEl.textContent="⏳ Ищем соперника...";
+  db.ref(COMP_QUICK_POOL).once("value").then(function(snap){
+    var pool=snap.val()||{};
+    var waitingId=null;
+    Object.keys(pool).forEach(function(uid){
+      if(waitingId)return;
+      if(uid===myId)return;
+      var t=pool[uid]&&pool[uid].ts||0;
+      if(Date.now()-t<60000)waitingId=uid;
+    });
+    if(waitingId){
+      // Нашли соперника — я host, он guest
+      var roomId="r_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+      var oppNickname=pool[waitingId].nickname||"Anon";
+      var room={
+        hostId:myId,
+        hostName:profile.nickname||"Anon",
+        guestId:waitingId,
+        guestName:oppNickname,
+        duration:10,
+        status:"ready",
+        createdAt:Date.now(),
+        startAt:0,
+        taps:{}
+      };
+      db.ref(COMP_ROOMS+"/"+roomId).set(room).then(function(){
+        db.ref(COMP_QUICK_POOL+"/"+waitingId).remove();
+        _compJoinRoom(roomId,"host");
+      });
+    }else{
+      // Никого нет — ставим себя в очередь
+      db.ref(COMP_QUICK_POOL+"/"+myId).set({nickname:profile.nickname||"Anon",ts:Date.now()});
+      if(codeEl)codeEl.textContent="поиск";
+      if(hintEl)hintEl.textContent="⏳ Ищем соперника... (оставь вкладку открытой)";
+      // Ждём пока кто-то другой создаст комнату с нами
+      var waitRef=db.ref(COMP_ROOMS).orderByChild("guestId").equalTo(myId);
+      waitRef.on("child_added",function(snap){
+        var r=snap.val();
+        if(!r||r.status!=="ready")return;
+        waitRef.off();
+        db.ref(COMP_QUICK_POOL+"/"+myId).remove();
+        _compJoinRoom(snap.key,"guest");
+      });
+      setTimeout(function(){
+        if(compState.mode==="waiting"){
+          db.ref(COMP_QUICK_POOL+"/"+myId).remove();
+          _compReset();
+          _compShow("comp-main");
+          alert("Соперник не найден. Попробуй позже.");
+        }
+      },45000);
+    }
+  });
+}
+function _compCreate(){
+  if(!db){alert("Firebase недоступен");return;}
+  var dur=parseInt(document.querySelector(".comp-dur-btn.active").dataset.dur)||10;
+  var myId=profile.id;
+  var roomId="r_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+  var code=_compGenCode();
+  var room={
+    hostId:myId,
+    hostName:profile.nickname||"Anon",
+    guestId:null,
+    guestName:"",
+    duration:dur,
+    status:"waiting",
+    createdAt:Date.now(),
+    startAt:0,
+    taps:{},
+    code:code
+  };
+  db.ref(COMP_ROOMS+"/"+roomId).set(room).then(function(){
+    db.ref(COMP_CODES+"/"+code).set(roomId);
+    _compShow("comp-waiting");
+    var codeEl=_compUi("comp-room-code");
+    if(codeEl)codeEl.textContent=code;
+    var hintEl=_compUi("comp-waiting-hint");
+    if(hintEl)hintEl.textContent="Отправь код другу";
+    compState.mode="waiting";
+    compState.role="host";
+    compState.duration=dur;
+    _compSubscribeRoom(roomId,"host",myId,null);
+  });
+}
+function _compJoin(){
+  if(!db){alert("Firebase недоступен");return;}
+  var inp=_compUi("comp-code-input");
+  var code=(inp?inp.value:"").trim().toUpperCase();
+  if(code.length!==4){alert("Код должен быть 4 символа");return;}
+  var myId=profile.id;
+  db.ref(COMP_CODES+"/"+code).once("value").then(function(s){
+    var roomId=s.val();
+    if(!roomId){alert("Комната не найдена");return;}
+    db.ref(COMP_ROOMS+"/"+roomId).once("value").then(function(rs){
+      var r=rs.val();
+      if(!r){alert("Комната удалена");return;}
+      if(r.status!=="waiting"){alert("Комната недоступна");return;}
+      if(r.hostId===myId){alert("Это твоя комната");return;}
+      if(r.guestId){alert("Комната уже занята");return;}
+      db.ref(COMP_ROOMS+"/"+roomId+"/guestId").set(myId);
+      db.ref(COMP_ROOMS+"/"+roomId+"/guestName").set(profile.nickname||"Anon");
+      db.ref(COMP_ROOMS+"/"+roomId+"/status").set("ready");
+      compState.duration=r.duration||10;
+      _compSubscribeRoom(roomId,"guest",myId,null);
+      _compShow("comp-waiting");
+      var codeEl=_compUi("comp-room-code");
+      if(codeEl)codeEl.textContent=code;
+      var hintEl=_compUi("comp-waiting-hint");
+      if(hintEl)hintEl.textContent="⏳ Соперник присоединился, старт...";
+    });
+  });
+}
+function _compSubscribeRoom(roomId,role,myId,oppId){
+  compState.roomId=roomId;
+  compState.role=role;
+  compState.myId=myId;
+  if(compState.roomRef)compState.roomRef.off();
+  compState.roomRef=db.ref(COMP_ROOMS+"/"+roomId);
+  compState.roomRef.on("value",function(snap){
+    var r=snap.val();
+    if(!r){
+      if(compState.mode!=="done"){alert("Комната закрыта");_compShow("comp-main");_compReset();}
+      return;
+    }
+    var meIsHost=(r.hostId===myId);
+    var oppId=r.hostId===myId?r.guestId:r.hostId;
+    var oppName=r.hostId===myId?(r.guestName||"???"):(r.hostName||"???");
+    compState.oppId=oppId;
+    compState.oppName=oppName;
+    var nameEl=_compUi("comp-opp-name");
+    if(nameEl)nameEl.textContent=oppName;
+    var meNameEl=_compUi("comp-me-name");
+    if(meNameEl)meNameEl.textContent=profile.nickname||"Я";
+    var avEl=_compUi("comp-me-avatar");
+    if(avEl)avEl.textContent="🙂";
+    var oppAvEl=_compUi("comp-opp-avatar");
+    if(oppAvEl)oppAvEl.textContent="🎯";
+    var taps=r.taps||{};
+    var oppTaps=taps[oppId]||0;
+    var myTaps=taps[myId]||0;
+    compState.myTaps=myTaps;
+    compState.oppTaps=oppTaps;
+    var mtEl=_compUi("comp-me-taps");
+    if(mtEl)mtEl.textContent=myTaps;
+    var otEl=_compUi("comp-opp-taps");
+    if(otEl)otEl.textContent=oppTaps;
+    // Оба готовы — старт
+    if(r.status==="ready"&&r.hostId&&r.guestId&&compState.mode!=="playing"&&compState.mode!=="done"){
+      if(meIsHost){
+        var startAt=Date.now()+3200;
+        db.ref(COMP_ROOMS+"/"+roomId+"/startAt").set(startAt);
+        db.ref(COMP_ROOMS+"/"+roomId+"/status").set("playing");
+      }
+    }
+    if(r.status==="playing"&&r.startAt){
+      var now=Date.now();
+      if(now<r.startAt){
+        // Обратный отсчёт
+        compState.mode="countdown";
+        var cdEl=_compUi("comp-countdown");
+        var cdNum=_compUi("comp-countdown-num");
+        if(cdEl)cdEl.classList.remove("hidden");
+        var sec=Math.ceil((r.startAt-now)/1000);
+        if(cdNum)cdNum.textContent=sec;
+      }else if(now<r.startAt+r.duration*1000){
+        var cdEl2=_compUi("comp-countdown");
+        if(cdEl2)cdEl2.classList.add("hidden");
+        if(compState.mode!=="playing"){
+          compState.mode="playing";
+          var tapBtn=_compUi("comp-tap-btn");
+          if(tapBtn)tapBtn.disabled=false;
+        }
+        var left=(r.startAt+r.duration*1000-now)/1000;
+        var timerEl=_compUi("comp-timer");
+        if(timerEl)timerEl.textContent=left.toFixed(1);
+      }else{
+        // Конец
+        if(compState.mode!=="done"){
+          compState.mode="done";
+          var tapBtn2=_compUi("comp-tap-btn");
+          if(tapBtn2)tapBtn2.disabled=true;
+          _compFinish(r);
+        }
+      }
+    }
+  });
+}
+function _compFinish(r){
+  var myId=profile.id;
+  var myTaps=r.taps[myId]||compState.myTaps;
+  var oppId=compState.oppId;
+  var oppTaps=r.taps[oppId]||0;
+  var resultEl=_compUi("comp-result");
+  var titleEl=_compUi("comp-result-title");
+  var textEl=_compUi("comp-result-text");
+  var win=myTaps>oppTaps;
+  var tie=myTaps===oppTaps;
+  if(titleEl){
+    if(tie){titleEl.textContent="🤝 НИЧЬЯ";titleEl.className="tie";}
+    else if(win){titleEl.textContent="🏆 ПОБЕДА";titleEl.className="win";}
+    else{titleEl.textContent="💀 ПОРАЖЕНИЕ";titleEl.className="lose";}
+  }
+  var rewardText="";
+  if(!tie){
+    var pct=0.01;
+    var amount=Math.floor(coins*pct);
+    if(win){
+      coins+=amount;totalEarned+=amount;
+      rewardText="💰 +"+formatNumber(amount)+" монет (1% своего баланса)";
+    }else{
+      var lost=Math.min(coins,amount);
+      coins-=lost;
+      rewardText="💸 −"+formatNumber(lost)+" монет (1% своего баланса)";
+    }
+  }else{
+    rewardText="Никто ничего не получает";
+  }
+  if(textEl){
+    textEl.innerHTML="Ты: "+myTaps+" тапов<br>"+escapeHtml(compState.oppName)+": "+oppTaps+" тапов<br><br>"+rewardText;
+  }
+  if(resultEl)resultEl.classList.remove("hidden");
+  if(typeof playSound==="function")playSound(win?"achievement":"ui");
+  updateUI();saveGame();
+  if(compState.roomRef){
+    setTimeout(function(){
+      if(compState.roomId){
+        db.ref(COMP_ROOMS+"/"+compState.roomId).remove();
+        if(r.code)db.ref(COMP_CODES+"/"+r.code).remove();
+      }
+    },3000);
+  }
+}
+function _compLeaveRoom(){
+  if(compState.roomRef&&compState.roomId){
+    db.ref(COMP_ROOMS+"/"+compState.roomId).remove();
+    db.ref(COMP_CODES+"/"+compState.roomId).remove();
+  }
+  if(compState.myId)db.ref(COMP_QUICK_POOL+"/"+compState.myId).remove();
+  _compReset();
+}
+window.compSetupUI=function(){_compBind();};
+window.compOnFriendsCompOpen=function(){_compBind();_compShow("comp-main");};
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
