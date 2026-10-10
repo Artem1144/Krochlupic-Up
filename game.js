@@ -2663,6 +2663,226 @@ if(typeof setupFriendsUI==="function"&&!window.__patchDone){
   console.log("[patch v108] Заглушки установлены");
 }
 
+// ===== МОДУЛЬ ДРУЗЬЯ v225 =====
+window.socialState=window.socialState||{friendsList:{},incoming:{},outgoing:{}};
+var _socialFriendsRef=null,_socialIncomingRef=null,_socialOutgoingRef=null;
+
+function _shortIdFromProfile(){
+  if(!profile.id)return "----";
+  var h=0;for(var i=0;i<profile.id.length;i++)h=(h*31+profile.id.charCodeAt(i))|0;
+  var c="ABCDEFGHJKMNPQRSTUVWXYZ23456789",s="",v=Math.abs(h);
+  for(var k=0;k<4;k++){s+=c[v%c.length];v=Math.floor(v/c.length);}
+  return s;
+}
+function _getMyShortId(){return (profile.nickname||"Anon")+"#"+_shortIdFromProfile();}
+function _parseShortId(s){
+  if(!s)return null;
+  s=String(s).trim().toUpperCase();
+  var m=s.match(/^(.+)#([A-Z0-9]{4})$/);
+  if(!m)return null;
+  return {nick:m[1],code:m[2]};
+}
+function _socialPublishMe(){
+  if(!db||!profile.id||!profile.nickname)return;
+  ensureProfileId();
+  var code=_shortIdFromProfile();
+  db.ref("shortIds/"+code).set(profile.id).catch(function(){});
+  db.ref("users/"+profile.id+"/nickname").set(profile.nickname).catch(function(){});
+  db.ref("users/"+profile.id+"/shortId").set(code).catch(function(){});
+  db.ref("users/"+profile.id+"/lastSeen").set(Date.now()).catch(function(){});
+}
+function _socialHeartbeat(){
+  if(!db||!profile.id)return;
+  db.ref("users/"+profile.id+"/lastSeen").set(Date.now()).catch(function(){});
+}
+function _socialStatusText(lastSeen){
+  if(!lastSeen)return "⚪ оффлайн";
+  var diff=Math.floor((Date.now()-lastSeen)/1000);
+  if(diff<90)return "🟢 в сети";
+  if(diff<600)return "🟡 недавно";
+  return "⚪ был "+formatTime(diff)+" назад";
+}
+function _socialRenderFriendList(){
+  var list=document.getElementById("friends-list");
+  var empty=document.getElementById("friends-list-empty");
+  var cnt=document.getElementById("friends-count");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(socialState.friendsList||{});
+  if(cnt)cnt.textContent=ids.length;
+  if(ids.length===0){if(empty)empty.classList.remove("hidden");return;}
+  if(empty)empty.classList.add("hidden");
+  ids.forEach(function(fid){
+    var info=socialState.friendsList[fid]||{};
+    var row=document.createElement("div");row.className="friend-row";
+    var dot=document.createElement("div");dot.className="friend-status-dot";dot.textContent="●";
+    var infoDiv=document.createElement("div");infoDiv.className="friend-info";
+    infoDiv.innerHTML='<div class="friend-name">'+escapeHtml(info.nickname||"Anon")+'</div>'+
+      '<div class="friend-id">'+escapeHtml(info.shortId||"----")+'</div>'+
+      '<div class="friend-status-text">'+_socialStatusText(info.lastSeen)+'</div>';
+    var btnChat=document.createElement("button");btnChat.className="friend-action-btn chat";btnChat.textContent="💬";
+    btnChat.onclick=function(){if(typeof dmOpen==="function")dmOpen(fid,info.nickname||"Anon");};
+    var btnDel=document.createElement("button");btnDel.className="friend-action-btn decline";btnDel.textContent="✕";
+    btnDel.onclick=function(){
+      if(!confirm("Удалить из друзей?"))return;
+      db.ref("friends/"+profile.id+"/list/"+fid).remove();
+      db.ref("friends/"+fid+"/list/"+profile.id).remove();
+    };
+    row.appendChild(dot);row.appendChild(infoDiv);row.appendChild(btnChat);row.appendChild(btnDel);
+    list.appendChild(row);
+  });
+}
+function _socialRenderIncoming(){
+  var list=document.getElementById("friends-incoming-list");
+  var empty=document.getElementById("friends-incoming-empty");
+  var badge=document.getElementById("friends-req-badge");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(socialState.incoming||{});
+  if(badge){if(ids.length>0){badge.textContent=ids.length;badge.classList.remove("hidden");}else badge.classList.add("hidden");}
+  if(ids.length===0){if(empty)empty.classList.remove("hidden");return;}
+  if(empty)empty.classList.add("hidden");
+  ids.forEach(function(fid){
+    var info=socialState.incoming[fid]||{};
+    var row=document.createElement("div");row.className="friend-row";
+    var infoDiv=document.createElement("div");infoDiv.className="friend-info";
+    infoDiv.innerHTML='<div class="friend-name">'+escapeHtml(info.nickname||"Anon")+'</div>'+
+      '<div class="friend-id">'+escapeHtml(info.shortId||"----")+'</div>';
+    var btnA=document.createElement("button");btnA.className="friend-action-btn accept";btnA.textContent="✓";
+    btnA.onclick=function(){
+      db.ref("friends/"+profile.id+"/list/"+fid).set({nickname:info.nickname||"Anon",shortId:info.shortId||"----",addedAt:Date.now()});
+      db.ref("friends/"+fid+"/list/"+profile.id).set({nickname:profile.nickname,shortId:_shortIdFromProfile(),addedAt:Date.now()});
+      db.ref("friends/"+profile.id+"/incoming/"+fid).remove();
+      db.ref("friends/"+fid+"/outgoing/"+profile.id).remove();
+    };
+    var btnD=document.createElement("button");btnD.className="friend-action-btn decline";btnD.textContent="✕";
+    btnD.onclick=function(){
+      db.ref("friends/"+profile.id+"/incoming/"+fid).remove();
+      db.ref("friends/"+fid+"/outgoing/"+profile.id).remove();
+    };
+    row.appendChild(infoDiv);row.appendChild(btnA);row.appendChild(btnD);
+    list.appendChild(row);
+  });
+}
+function _socialRenderOutgoing(){
+  var list=document.getElementById("friends-outgoing-list");
+  var empty=document.getElementById("friends-outgoing-empty");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(socialState.outgoing||{});
+  if(ids.length===0){if(empty)empty.classList.remove("hidden");return;}
+  if(empty)empty.classList.add("hidden");
+  ids.forEach(function(fid){
+    var info=socialState.outgoing[fid]||{};
+    var row=document.createElement("div");row.className="friend-row";
+    var infoDiv=document.createElement("div");infoDiv.className="friend-info";
+    infoDiv.innerHTML='<div class="friend-name">'+escapeHtml(info.nickname||"Anon")+'</div>'+
+      '<div class="friend-id">'+escapeHtml(info.shortId||"----")+'</div>'+
+      '<div class="friend-status-text">⏳ Ожидание</div>';
+    row.appendChild(infoDiv);
+    list.appendChild(row);
+  });
+}
+function _socialSubscribeFriends(){
+  if(!db||!profile.id)return;
+  if(_socialFriendsRef)_socialFriendsRef.off();
+  if(_socialIncomingRef)_socialIncomingRef.off();
+  if(_socialOutgoingRef)_socialOutgoingRef.off();
+  _socialFriendsRef=db.ref("friends/"+profile.id+"/list");
+  _socialFriendsRef.on("value",function(snap){
+    var val=snap.val()||{};
+    var ids=Object.keys(val);
+    socialState.friendsList={};
+    ids.forEach(function(fid){
+      socialState.friendsList[fid]=val[fid]||{};
+      db.ref("users/"+fid+"/lastSeen").once("value").then(function(s){
+        if(socialState.friendsList[fid])socialState.friendsList[fid].lastSeen=s.val()||0;
+        _socialRenderFriendList();
+      }).catch(function(){});
+    });
+    _socialRenderFriendList();
+  });
+  _socialIncomingRef=db.ref("friends/"+profile.id+"/incoming");
+  _socialIncomingRef.on("value",function(snap){socialState.incoming=snap.val()||{};_socialRenderIncoming();});
+  _socialOutgoingRef=db.ref("friends/"+profile.id+"/outgoing");
+  _socialOutgoingRef.on("value",function(snap){socialState.outgoing=snap.val()||{};_socialRenderOutgoing();});
+}
+function _socialDoSearch(){
+  var input=document.getElementById("friends-search-input");
+  var result=document.getElementById("friends-search-result");
+  if(!input||!result)return;
+  result.innerHTML="";
+  var parsed=_parseShortId(input.value);
+  if(!parsed){result.innerHTML='<p class="friends-empty" style="color:#ff5252">Введи ID вида Artem#A4K2</p>';return;}
+  if(!db){result.innerHTML='<p class="friends-empty" style="color:#ff5252">Firebase недоступен</p>';return;}
+  result.innerHTML='<p class="friends-empty">⏳ Поиск...</p>';
+  db.ref("shortIds/"+parsed.code).once("value").then(function(snap){
+    var uid=snap.val();
+    if(!uid){result.innerHTML='<p class="friends-empty" style="color:#ff5252">❌ Игрок не найден</p>';return;}
+    if(uid===profile.id){result.innerHTML='<p class="friends-empty" style="color:#ff5252">Это ты 🙂</p>';return;}
+    db.ref("users/"+uid).once("value").then(function(us){
+      var u=us.val()||{};
+      var nick=u.nickname||parsed.nick;
+      var alreadyFriend=!!(socialState.friendsList&&socialState.friendsList[uid]);
+      var alreadySent=!!(socialState.outgoing&&socialState.outgoing[uid]);
+      var html='<div class="friend-row"><div class="friend-info">'+
+        '<div class="friend-name">'+escapeHtml(nick)+'</div>'+
+        '<div class="friend-id">'+escapeHtml(parsed.code)+'</div>'+
+        '<div class="friend-status-text">'+_socialStatusText(u.lastSeen)+'</div>'+
+        '</div>';
+      if(alreadyFriend){html+='<div class="friend-action-btn chat">✓ Друг</div>';}
+      else if(alreadySent){html+='<div class="friend-action-btn">⏳ Отправлено</div>';}
+      else{html+='<button class="friend-action-btn accept" id="friends-add-btn">➕ Добавить</button>';}
+      html+='</div>';
+      result.innerHTML=html;
+      var addBtn=document.getElementById("friends-add-btn");
+      if(addBtn)addBtn.onclick=function(){
+        db.ref("friends/"+uid+"/incoming/"+profile.id).set({nickname:profile.nickname,shortId:_shortIdFromProfile(),ts:Date.now()});
+        db.ref("friends/"+profile.id+"/outgoing/"+uid).set({nickname:nick,shortId:parsed.code,ts:Date.now()});
+        addBtn.outerHTML='<div class="friend-action-btn">⏳ Отправлено</div>';
+      };
+    });
+  }).catch(function(e){result.innerHTML='<p class="friends-empty" style="color:#ff5252">❌ '+e.message+'</p>';});
+}
+window.setupFriendsUI=function(){
+  var idEl=document.getElementById("friends-my-id");
+  if(idEl){if(!profile.id)ensureProfileId();idEl.textContent=_getMyShortId();}
+  var cp=document.getElementById("friends-copy-id");
+  if(cp&&!cp.__b){cp.__b=true;cp.onclick=function(){
+    var txt=_getMyShortId();
+    try{navigator.clipboard.writeText(txt);alert("📋 "+txt);}catch(e){prompt("Скопируй:",txt);}
+  };}
+  document.querySelectorAll(".friends-tab").forEach(function(tb){
+    if(tb.__b)return;tb.__b=true;
+    tb.onclick=function(){
+      document.querySelectorAll(".friends-tab").forEach(function(x){x.classList.remove("active");});
+      tb.classList.add("active");
+      var pane=tb.dataset.ftab;
+      document.querySelectorAll(".friends-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("friends-pane-"+pane);if(pv)pv.classList.remove("hidden");
+    };
+  });
+  var sb=document.getElementById("friends-search-btn");
+  if(sb&&!sb.__b){sb.__b=true;sb.onclick=function(e){e.preventDefault();_socialDoSearch();};}
+  var si=document.getElementById("friends-search-input");
+  if(si&&!si.__b){si.__b=true;si.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();_socialDoSearch();}};}
+};
+window.openFriendsModal=function(){
+  var m=document.getElementById("modal-friends");if(!m)return;
+  if(typeof playSound==="function")playSound("ui");
+  setupFriendsUI();
+  if(db&&profile.id){_socialPublishMe();_socialSubscribeFriends();}
+  m.classList.remove("hidden");
+  if(typeof syncScrollLock==="function")syncScrollLock();
+  _socialRenderFriendList();_socialRenderIncoming();_socialRenderOutgoing();
+};
+window.closeFriendsModal=function(){var m=document.getElementById("modal-friends");if(m)m.classList.add("hidden");};
+window.socialInit=function(){if(db&&profile.id){_socialPublishMe();_socialSubscribeFriends();}};
+window.processIncomingGifts=function(){};
+setInterval(_socialHeartbeat,30000);
+setTimeout(function(){if(db&&profile.id)_socialPublishMe();},3000);
+setTimeout(function(){if(db&&profile.id)_socialSubscribeFriends();},4000);
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
