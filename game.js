@@ -3066,7 +3066,7 @@ function clanSendChat(text){
   });
 }
 function clanRenderChat(){
-  var el = document.getElementById("clan-chat"); if(!el) return;
+  var el = document.getElementById("clan-chat-messages"); if(!el) return;
   var msgs = Object.keys(CLAN_STATE.chat||{}).map(function(k){ return CLAN_STATE.chat[k]; }).sort(function(a,b){ return a.ts-b.ts; });
   el.innerHTML = msgs.map(function(m){ return "<div style='padding:4px 8px'><b>"+(m.nick||"Аноним")+"</b>: "+m.text+"</div>"; }).join("");
   el.scrollTop = el.scrollHeight;
@@ -3190,9 +3190,10 @@ function fnfUpdateHud(){
   if(s) s.textContent = "Очки: " + FNF_STATE.score + " | Комбо: " + FNF_STATE.combo;
 }
 function fnfSetupUI(){
-  ["left","down","up","right"].forEach(function(dir, i){
-    var b = document.getElementById("fnf-btn-"+dir);
-    if(b) b.onclick = function(){ fnfPress(i); };
+  var map = { left:0, down:1, up:2, right:3 };
+  document.querySelectorAll("[data-fnf-dir]").forEach(function(b){
+    var lane = map[b.dataset.fnfDir];
+    if(typeof lane === "number") b.onclick = function(){ fnfPress(lane); };
   });
   var c = document.getElementById("fnf-close"); if(c) c.onclick = fnfClose;
   fnfLog("setupUI done");
@@ -3246,7 +3247,7 @@ startCooldownUI();
 startGoldenSecretSchedule();
 setupFriendsUI();
 clanSetupUI();
-clanSetupEditorUI();
+// clanSetupEditorUI();
 fnfSetup();
 adminSetup();
 auctionSetupTabs();
@@ -3271,30 +3272,3 @@ setTimeout(function(){khrPetInit();},5500);
 setTimeout(function(){if(typeof processIncomingGifts==="function")processIncomingGifts();},2500);
 (function(){var fr=document.getElementById("activity-row-3");if(fr)fr.style.display="none";var nc=0,nt=null;function h(){nc++;if(nt)clearTimeout(nt);nt=setTimeout(function(){nc=0;},2000);if(nc>=5){nc=0;if(nt)clearTimeout(nt);setTimeout(function(){try{playSound("achievement");vibrate(40);}catch(e){}if(typeof fnfOpen==="function")fnfOpen();},200);}}var p=document.getElementById("page-prev"),n=document.getElementById("page-next");if(p)p.addEventListener("click",h);if(n)n.addEventListener("click",h);})();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){});});}
-// ===== BOOTSTRAP v226 — с выводом на экран =====
-(function(){
-  function boot(){
-    __dbg("BOOT START");
-    var list = [
-      ["setupFriendsUI",   window.setupFriendsUI],
-      ["friendsSetupUI",   window.friendsSetupUI],
-      ["clanSetupUI",      window.clanSetupUI],
-      ["dmSetupUI",        window.dmSetupUI],
-      ["fnfSetupUI",       window.fnfSetupUI],
-      ["auctionSetupUI",   window.auctionSetupUI],
-      ["compSetupUI",      window.compSetupUI],
-      ["adminSetup",       window.adminSetup],
-      ["seasonSetupUI",    window.seasonSetupUI]
-    ];
-    list.forEach(function(pair){
-      try{
-        if(typeof pair[1] === "function"){ pair[1](); __dbg("OK: " + pair[0]); }
-        else { __dbg("skip: " + pair[0]); }
-      }catch(e){ __dbg("ERR " + pair[0] + ": " + e.message, true); }
-    });
-    __dbg("BOOT DONE");
-  }
-  if(document.readyState === "complete"){ setTimeout(boot, 800); }
-  else { window.addEventListener("load", function(){ setTimeout(boot, 800); }); }
-})();
-__dbg("--- bootstrap зарегистрирован ---");
