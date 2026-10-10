@@ -2591,6 +2591,279 @@ window.renderBannerList=function(){
 };
 
 // ===== УСЛОВНЫЕ ЗАГЛУШКИ =====
+// ===== МОДУЛЬ АУКЦИОН v217 =====
+window.auctionState=window.auctionState||{myLots:{},marketLots:{},selectedPetId:null,filter:"all"};
+var AUCTION_COMMISSION=0.05;
+var _auctionRef=null,_auctionPendingRef=null;
+
+function _auctionRarityOf(type){
+  var t=PET_TYPES[type];
+  return t?(t.rarity||"common"):"common";
+}
+function _auctionRenderMyLots(){
+  var list=document.getElementById("auction-my-list");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(auctionState.myLots||{});
+  if(ids.length===0){list.innerHTML='<p class="auction-empty">У тебя нет активных лотов</p>';return;}
+  ids.forEach(function(lid){
+    var lot=auctionState.myLots[lid];
+    var ty=PET_TYPES[lot.type]||{emoji:"❓",name:"Неизвестный",rarityLabel:"",rarity:"common"};
+    var card=document.createElement("div");
+    card.className="auction-card mine rarity-"+ty.rarity;
+    card.innerHTML='<div class="auction-card-emoji">'+ty.emoji+'</div>'+
+      '<div class="auction-card-info">'+
+      '<div class="auction-card-name">'+escapeHtml(ty.name)+'</div>'+
+      '<div class="auction-card-rarity '+ty.rarity+'">'+(ty.rarityLabel||"")+'</div>'+
+      '<div class="auction-card-time">⏳ Активен</div>'+
+      '</div>'+
+      '<div class="auction-card-price">'+formatNumber(lot.price||0)+'<small>монет</small></div>'+
+      '<button class="auction-card-cancel">✕</button>';
+    card.querySelector(".auction-card-cancel").onclick=function(e){
+      e.preventDefault();
+      _auctionCancel(lid,lot);
+    };
+    list.appendChild(card);
+  });
+}
+function _auctionCancel(lid,lot){
+  if(!confirm(t("auction.cancel_confirm")))return;
+  if(petTotalCount()>=PET_STORAGE_MAX){alert(t("auction.err_storage_full"));return;}
+  if(!db)return;
+  db.ref("auction/lots/"+lid).remove().then(function(){
+    petsState.storage.push({id:petGenerateId(),type:lot.type});
+    if(typeof petRenderAll==="function")petRenderAll();
+    if(typeof saveGame==="function")saveGame();
+    updateUI();
+  }).catch(function(e){alert("Ошибка: "+e.message);});
+}
+function _auctionRenderMarket(){
+  var list=document.getElementById("auction-market-list");
+  if(!list)return;
+  list.innerHTML="";
+  var all=Object.keys(auctionState.marketLots||{});
+  var filtered=all.filter(function(lid){
+    var l=auctionState.marketLots[lid];
+    if(l.sellerId===profile.id)return false;
+    if(auctionState.filter==="all")return true;
+    return _auctionRarityOf(l.type)===auctionState.filter;
+  });
+  if(filtered.length===0){list.innerHTML='<p class="auction-empty">Лотов нет. Загляни позже!</p>';return;}
+  filtered.sort(function(a,b){return (auctionState.marketLots[a].createdAt||0)-(auctionState.marketLots[b].createdAt||0);});
+  filtered.forEach(function(lid){
+    var lot=auctionState.marketLots[lid];
+    var ty=PET_TYPES[lot.type]||{emoji:"❓",name:"Неизвестный",rarityLabel:"",rarity:"common"};
+    var card=document.createElement("div");
+    card.className="auction-card rarity-"+ty.rarity;
+    card.innerHTML='<div class="auction-card-emoji">'+ty.emoji+'</div>'+
+      '<div class="auction-card-info">'+
+      '<div class="auction-card-name">'+escapeHtml(ty.name)+'</div>'+
+      '<div class="auction-card-rarity '+ty.rarity+'">'+(ty.rarityLabel||"")+'</div>'+
+      '<div class="auction-card-seller">Продавец: '+escapeHtml(lot.sellerName||"Anon")+'</div>'+
+      '</div>'+
+      '<div class="auction-card-price">'+formatNumber(lot.price||0)+'<small>монет</small></div>'+
+      '<button class="auction-card-buy">Купить</button>';
+    card.querySelector(".auction-card-buy").onclick=function(e){e.preventDefault();_auctionBuy(lid,lot);};
+    list.appendChild(card);
+  });
+}
+function _auctionBuy(lid,lot){
+  if(!db)return;
+  if(coins<lot.price){alert(t("auction.err_no_coins"));return;}
+  if(petTotalCount()>=PET_STORAGE_MAX){alert(t("auction.err_storage_full"));return;}
+  var petName=(PET_TYPES[lot.type]||{name:"?"}).name;
+  if(!confirm(t("auction.confirm_buy").replace("{pet}",petName).replace("{price}",formatNumber(lot.price))))return;
+  // Сначала атомарно удаляем лот — если он уже куплен, ошибка
+  db.ref("auction/lots/"+lid).transaction(function(cur){
+    if(!cur)return null; // кто-то уже купил
+    return undefined; // удаляем
+  },function(err,committed,snap){
+    if(err||!committed){alert("Этот лот уже куплен");return;}
+    coins-=lot.price;totalEarned-=lot.price;
+    var sellerProfit=Math.floor(lot.price*(1-AUCTION_COMMISSION));
+    db.ref("users/"+lot.sellerId+"/pendingCoins").transaction(function(cur){
+      return (cur||0)+sellerProfit;
+    });
+    petsState.storage.push({id:petGenerateId(),type:lot.type});
+    if(typeof petRenderAll==="function")petRenderAll();
+    if(typeof saveGame==="function")saveGame();
+    if(typeof playSound==="function")playSound("achievement");
+    if(typeof vibrate==="function")vibrate(40);
+    alert("✅ Куплено! "+petName+" в хранилище");
+    updateUI();
+  });
+}
+function _auctionRenderPetPicker(){
+  var picker=document.getElementById("auction-pet-picker");
+  if(!picker)return;
+  picker.innerHTML="";
+  auctionState.selectedPetId=null;
+  if(petsState.storage.length===0){
+    picker.innerHTML='<p class="auction-empty">Нет питомцев в хранилище</p>';
+    return;
+  }
+  petsState.storage.forEach(function(pet){
+    var ty=PET_TYPES[pet.type]||{emoji:"❓",name:"Неизвестный",rarityLabel:"",rarity:"common"};
+    var opt=document.createElement("div");
+    opt.className="auction-pet-option";
+    opt.dataset.pid=pet.id;
+    opt.innerHTML='<div class="auction-pet-option-emoji">'+ty.emoji+'</div>'+
+      '<div class="auction-pet-option-info">'+
+      '<div class="auction-pet-option-name">'+escapeHtml(ty.name)+'</div>'+
+      '<div class="auction-pet-option-rarity">'+(ty.rarityLabel||"")+'</div>'+
+      '</div>';
+    opt.onclick=function(){
+      document.querySelectorAll(".auction-pet-option").forEach(function(x){x.classList.remove("active");});
+      opt.classList.add("active");
+      auctionState.selectedPetId=pet.id;
+    };
+    picker.appendChild(opt);
+  });
+}
+function _auctionOpenCreate(){
+  if(!db){alert("Firebase недоступен");return;}
+  if(!hasProfile()){alert("Сначала задай ник");return;}
+  if(petsState.storage.length===0){alert("В хранилище нет питомцев");return;}
+  _auctionRenderPetPicker();
+  var $inp=document.getElementById("auction-price-input");
+  if($inp)$inp.value="";
+  var $err=document.getElementById("auction-create-error");
+  if($err)$err.textContent="";
+  var m=document.getElementById("modal-auction-create");
+  if(m){m.classList.remove("hidden");if(typeof syncScrollLock==="function")syncScrollLock();}
+}
+function _auctionSubmit(){
+  var $err=document.getElementById("auction-create-error");
+  if(!auctionState.selectedPetId){
+    if($err)$err.textContent=t("auction.err_price");
+    alert("Выбери питомца из списка");
+    return;
+  }
+  var $inp=document.getElementById("auction-price-input");
+  var $unit=document.getElementById("auction-price-unit");
+  var price=parseFloat($inp?$inp.value:"0");
+  var mult=parseFloat($unit?$unit.value:"1");
+  if(!price||price<=0||isNaN(price)){
+    if($err)$err.textContent=t("auction.err_price");
+    return;
+  }
+  var total=Math.floor(price*mult);
+  var idx=-1;
+  for(var i=0;i<petsState.storage.length;i++){
+    if(petsState.storage[i].id===auctionState.selectedPetId){idx=i;break;}
+  }
+  if(idx<0){alert("Питомец не найден");return;}
+  var pet=petsState.storage[idx];
+  var lid="lot_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+  var lot={
+    sellerId:profile.id,
+    sellerName:profile.nickname||"Anon",
+    type:pet.type,
+    price:total,
+    createdAt:Date.now()
+  };
+  db.ref("auction/lots/"+lid).set(lot).then(function(){
+    petsState.storage.splice(idx,1);
+    if(typeof petRenderAll==="function")petRenderAll();
+    if(typeof saveGame==="function")saveGame();
+    var m=document.getElementById("modal-auction-create");
+    if(m)m.classList.add("hidden");
+    if(typeof syncScrollLock==="function")syncScrollLock();
+    alert("✅ Лот выставлен за "+formatNumber(total)+" монет");
+  }).catch(function(e){if($err)$err.textContent="Ошибка: "+e.message;});
+}
+function _auctionSubscribe(){
+  if(!db||!profile.id)return;
+  if(_auctionRef)_auctionRef.off();
+  _auctionRef=db.ref("auction/lots");
+  _auctionRef.on("value",function(snap){
+    var all=snap.val()||{};
+    auctionState.marketLots=all;
+    auctionState.myLots={};
+    Object.keys(all).forEach(function(lid){
+      if(all[lid].sellerId===profile.id)auctionState.myLots[lid]=all[lid];
+    });
+    _auctionRenderMyLots();
+    _auctionRenderMarket();
+  });
+  // Возврат денег за проданное
+  if(_auctionPendingRef)_auctionPendingRef.off();
+  _auctionPendingRef=db.ref("users/"+profile.id+"/pendingCoins");
+  _auctionPendingRef.on("value",function(snap){
+    var v=snap.val()||0;
+    if(v>0){
+      coins+=v;totalEarned+=v;
+      db.ref("users/"+profile.id+"/pendingCoins").remove();
+      setTimeout(function(){
+        var p=document.createElement("div");
+        p.className="achievement-popup";
+        p.textContent="💰 +"+formatNumber(v)+" монет с аукциона!";
+        document.body.appendChild(p);
+        setTimeout(function(){p.remove();},5000);
+      },500);
+      updateUI();saveGame();
+    }
+  });
+}
+window.auctionSetupTabs=function(){
+  var $my=document.getElementById("auction-my-btn");
+  var $mk=document.getElementById("auction-market-btn");
+  var $mp=document.getElementById("auction-my-pane");
+  var $kp=document.getElementById("auction-market-pane");
+  if($my&&!$my.__b){$my.__b=true;$my.onclick=function(e){
+    e.preventDefault();
+    $my.classList.add("active");if($mk)$mk.classList.remove("active");
+    if($mp)$mp.classList.remove("hidden");if($kp)$kp.classList.add("hidden");
+  };}
+  if($mk&&!$mk.__b){$mk.__b=true;$mk.onclick=function(e){
+    e.preventDefault();
+    $mk.classList.add("active");if($my)$my.classList.remove("active");
+    if($kp)$kp.classList.remove("hidden");if($mp)$mp.classList.add("hidden");
+    _auctionRenderMarket();
+  };}
+  document.querySelectorAll(".auction-filter").forEach(function(f){
+    if(f.__b)return;f.__b=true;
+    f.onclick=function(e){
+      e.preventDefault();
+      document.querySelectorAll(".auction-filter").forEach(function(x){x.classList.remove("active");});
+      f.classList.add("active");
+      auctionState.filter=f.dataset.af||"all";
+      _auctionRenderMarket();
+    };
+  });
+  var $cb=document.getElementById("auction-create-btn");
+  if($cb&&!$cb.__b){$cb.__b=true;$cb.onclick=function(e){e.preventDefault();_auctionOpenCreate();};}
+  var $sub=document.getElementById("auction-create-submit");
+  if($sub&&!$sub.__b){$sub.__b=true;$sub.onclick=function(e){e.preventDefault();_auctionSubmit();};}
+  var $cn=document.getElementById("auction-create-cancel");
+  if($cn&&!$cn.__b){$cn.__b=true;$cn.onclick=function(e){
+    e.preventDefault();
+    var m=document.getElementById("modal-auction-create");
+    if(m)m.classList.add("hidden");
+    if(typeof syncScrollLock==="function")syncScrollLock();
+  };}
+  var $cls=document.querySelector('[data-close="modal-auction-create"]');
+  if($cls&&!$cls.__b){$cls.__b=true;$cls.onclick=function(e){
+    e.preventDefault();
+    var m=document.getElementById("modal-auction-create");
+    if(m)m.classList.add("hidden");
+    if(typeof syncScrollLock==="function")syncScrollLock();
+  };}
+  // Принудительная привязка таба Аукцион в модалке Друзей
+  document.querySelectorAll('.friends-tab[data-ftab="auction"]').forEach(function(t){
+    t.onclick=function(){
+      document.querySelectorAll(".friends-tab").forEach(function(x){x.classList.remove("active");});
+      t.classList.add("active");
+      document.querySelectorAll(".friends-pane").forEach(function(p){p.classList.add("hidden");});
+      var pv=document.getElementById("friends-pane-auction");
+      if(pv)pv.classList.remove("hidden");
+      if(typeof auctionSetupTabs==="function")auctionSetupTabs();
+      _auctionSubscribe();
+    };
+  });
+};
+window.installAuctionHooks=function(){_auctionSubscribe();};
+setTimeout(function(){_auctionSubscribe();},3000);
 if(typeof auctionSetupTabs!=="function"){window.auctionState={myLots:{},marketLots:{}};window.auctionSetupTabs=function(){};window.installAuctionHooks=function(){};}
 // ===== МОДУЛЬ АДМИН-КОНСОЛЬ v215 =====
 window.adminState=window.adminState||{promoUnlocked:false,boost:{active:false,mult:1,endsAt:0,label:""},listeners:{boost:null,messages:null},lastCmdTime:0};
