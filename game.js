@@ -2883,6 +2883,298 @@ setInterval(_socialHeartbeat,30000);
 setTimeout(function(){if(db&&profile.id)_socialPublishMe();},3000);
 setTimeout(function(){if(db&&profile.id)_socialSubscribeFriends();},4000);
 
+// ===== МОДУЛЬ ДРУЗЬЯ v1 — состояние и хелперы =====
+var FRIENDS_STATE = { list:{}, incoming:{}, outgoing:{}, searchResult:null, loaded:false };
+function friendsGetUid(){
+  if(typeof getUserId === "function"){ try{ var u=getUserId(); if(u) return u; }catch(e){} }
+  if(typeof userId !== "undefined" && userId) return userId;
+  if(typeof myId !== "undefined" && myId) return myId;
+  return null;
+}
+function friendsGetDb(){
+  if(typeof db !== "undefined" && db) return db;
+  if(typeof firebase !== "undefined" && firebase.database) return firebase.database();
+  return null;
+}
+function friendsLog(){ console.log("[Friends v1] " + Array.prototype.slice.call(arguments).join(" ")); }
+function friendsLoadAll(cb){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef){ friendsLog("no uid/db"); if(cb)cb(); return; }
+  dbRef.ref("/friends/"+uid).once("value").then(function(snap){
+    var d = snap.val() || {};
+    FRIENDS_STATE.list = d.list || {};
+    FRIENDS_STATE.incoming = d.incoming || {};
+    FRIENDS_STATE.outgoing = d.outgoing || {};
+    FRIENDS_STATE.loaded = true;
+    friendsLog("loaded list=" + Object.keys(FRIENDS_STATE.list).length);
+    if(typeof friendsRenderUI === "function") friendsRenderUI();
+    if(typeof friendsRenderIncoming === "function") friendsRenderIncoming();
+    if(cb) cb();
+  }).catch(function(e){ friendsLog("err "+e.message); if(cb)cb(); });
+}
+friendsLog("helpers ready");
+
+// ===== ДРУЗЬЯ v1.1 — поиск/заявки/рендер =====
+function friendsSearch(code, cb){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !code){ if(cb)cb(null); return; }
+  dbRef.ref("/shortIds/"+code.toUpperCase()).once("value").then(function(s){
+    var tid = s.val();
+    if(!tid || tid === uid){ if(cb)cb(null); return; }
+    dbRef.ref("/users/"+tid).once("value").then(function(u){
+      var d = u.val() || {};
+      FRIENDS_STATE.searchResult = { id:tid, nickname:d.nickname||"Аноним", shortId:d.shortId||code };
+      if(cb) cb(FRIENDS_STATE.searchResult);
+    });
+  }).catch(function(e){ friendsLog("search "+e.message); if(cb)cb(null); });
+}
+function friendsSendRequest(tid, cb){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !tid){ if(cb)cb(false); return; }
+  dbRef.ref("/friends/"+uid+"/outgoing/"+tid).set(true);
+  dbRef.ref("/friends/"+tid+"/incoming/"+uid).set(true);
+  friendsLog("req -> "+tid); if(cb) cb(true);
+}
+function friendsAccept(from){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !from) return;
+  dbRef.ref("/friends/"+uid+"/incoming/"+from).remove();
+  dbRef.ref("/friends/"+from+"/outgoing/"+uid).remove();
+  dbRef.ref("/friends/"+uid+"/list/"+from).set(true);
+  dbRef.ref("/friends/"+from+"/list/"+uid).set(true);
+  friendsLog("accept "+from); friendsLoadAll();
+}
+function friendsDecline(from){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !from) return;
+  dbRef.ref("/friends/"+uid+"/incoming/"+from).remove();
+  dbRef.ref("/friends/"+from+"/outgoing/"+uid).remove();
+  friendsLoadAll();
+}
+function friendsRemove(fid){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !fid) return;
+  dbRef.ref("/friends/"+uid+"/list/"+fid).remove();
+  dbRef.ref("/friends/"+fid+"/list/"+uid).remove();
+  friendsLoadAll();
+}
+function friendsRenderUI(){
+  var el = document.getElementById("friends-list"); if(!el) return;
+  var ids = Object.keys(FRIENDS_STATE.list||{});
+  el.innerHTML = ids.length ? ids.map(function(id){
+    return "<div style='display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(255,255,255,.1)'><span>👤 "+id.slice(0,10)+"</span><button onclick=\"friendsRemove('"+id+"')\">✖</button></div>";
+  }).join("") : "<div style='opacity:.7;padding:10px'>Нет друзей</div>";
+}
+function friendsRenderIncoming(){
+  var el = document.getElementById("friends-incoming"); if(!el) return;
+  var ids = Object.keys(FRIENDS_STATE.incoming||{});
+  el.innerHTML = ids.length ? ids.map(function(id){
+    return "<div style='display:flex;justify-content:space-between;padding:8px'><span>👤 "+id.slice(0,10)+"</span><span><button onclick=\"friendsAccept('"+id+"')\">✔</button> <button onclick=\"friendsDecline('"+id+"')\">✖</button></span></div>";
+  }).join("") : "<div style='opacity:.7;padding:10px'>Нет заявок</div>";
+}
+function friendsSetupUI(){
+  var sb = document.getElementById("friends-search-btn");
+  var si = document.getElementById("friends-search-input");
+  if(sb && si){ sb.onclick = function(){
+    var c = si.value.trim(); if(!c) return;
+    friendsSearch(c, function(r){
+      var box = document.getElementById("friends-search-result"); if(!box) return;
+      box.innerHTML = r ? "<div style='padding:8px'>Найден: "+r.nickname+" <button onclick=\"friendsSendRequest('"+r.id+"')\">➕</button></div>" : "<div style='color:#f66;padding:8px'>Не найдено</div>";
+    });
+  }; }
+  friendsLoadAll();
+  friendsLog("setupUI done");
+    }
+
+// ===== МОДУЛЬ КЛАНЫ v1 =====
+var CLAN_STATE = { myClan:null, members:{}, chat:{}, clanId:null };
+function clanLog(){ console.log("[Clan v1] " + Array.prototype.slice.call(arguments).join(" ")); }
+function clanSlug(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,""); }
+function clanCreate(name, tag, desc, type, cb){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef){ if(cb)cb(false); return; }
+  var cid = "c_" + Date.now(), key = clanSlug(tag);
+  dbRef.ref("/clanTags/"+key).once("value").then(function(s){
+    if(s.val()){ alert("Тег занят"); if(cb)cb(false); return; }
+    var upd = {};
+    upd["/clans/"+cid] = { name:name, tag:tag, description:desc||"", type:type||"open", ownerId:uid, invested:0, createdAt:Date.now() };
+    upd["/clanTags/"+key] = cid;
+    upd["/clans/"+cid+"/members/"+uid] = { nickname:"", role:"owner", joinedAt:Date.now() };
+    upd["/users/"+uid+"/clanId"] = cid;
+    dbRef.ref().update(upd).then(function(){ clanLog("created "+cid); clanLoadMy(); if(cb)cb(true); });
+  });
+}
+function clanJoin(cid){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !cid) return;
+  dbRef.ref("/clans/"+cid+"/members/"+uid).set({ nickname:"", role:"member", joinedAt:Date.now() });
+  dbRef.ref("/users/"+uid+"/clanId").set(cid);
+  clanLoadMy();
+}
+function clanLeave(){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !CLAN_STATE.clanId) return;
+  dbRef.ref("/clans/"+CLAN_STATE.clanId+"/members/"+uid).remove();
+  dbRef.ref("/users/"+uid+"/clanId").remove();
+  CLAN_STATE.myClan = null; CLAN_STATE.clanId = null; clanRenderUI();
+}
+function clanLoadMy(){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef) return;
+  dbRef.ref("/users/"+uid+"/clanId").once("value").then(function(s){
+    var cid = s.val();
+    if(!cid){ CLAN_STATE.myClan = null; CLAN_STATE.clanId = null; clanRenderUI(); return; }
+    CLAN_STATE.clanId = cid;
+    dbRef.ref("/clans/"+cid).once("value").then(function(c){
+      CLAN_STATE.myClan = c.val();
+      if(CLAN_STATE.myClan) CLAN_STATE.members = CLAN_STATE.myClan.members || {};
+      dbRef.ref("/clans/"+cid+"/chat").limitToLast(50).on("value", function(ch){
+        CLAN_STATE.chat = ch.val() || {}; clanRenderChat();
+      });
+      clanRenderUI();
+    });
+  });
+}
+function clanSendChat(text){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !CLAN_STATE.clanId || !text) return;
+  dbRef.ref("/users/"+uid+"/nickname").once("value").then(function(s){
+    dbRef.ref("/clans/"+CLAN_STATE.clanId+"/chat").push({ uid:uid, nick:s.val()||"Аноним", text:text, ts:Date.now() });
+  });
+}
+function clanRenderChat(){
+  var el = document.getElementById("clan-chat"); if(!el) return;
+  var msgs = Object.keys(CLAN_STATE.chat||{}).map(function(k){ return CLAN_STATE.chat[k]; }).sort(function(a,b){ return a.ts-b.ts; });
+  el.innerHTML = msgs.map(function(m){ return "<div style='padding:4px 8px'><b>"+(m.nick||"Аноним")+"</b>: "+m.text+"</div>"; }).join("");
+  el.scrollTop = el.scrollHeight;
+}
+function clanRenderUI(){
+  var info = document.getElementById("clan-info"); if(!info) return;
+  if(!CLAN_STATE.myClan){ info.innerHTML = "<div>Вы не в клане</div>"; return; }
+  var c = CLAN_STATE.myClan;
+  info.innerHTML = "<div><b>["+c.tag+"] "+c.name+"</b></div><div style='font-size:12px;opacity:.8'>"+Object.keys(CLAN_STATE.members).length+" участников</div>";
+}
+function clanSetupUI(){
+  clanLoadMy();
+  var sb = document.getElementById("clan-chat-send"), si = document.getElementById("clan-chat-input");
+  if(sb && si) sb.onclick = function(){ var v = si.value.trim(); if(v){ clanSendChat(v); si.value=""; } };
+  var cb = document.getElementById("clan-create-btn");
+  if(cb) cb.onclick = function(){
+    var n = prompt("Название:"); if(!n) return;
+    var t = prompt("Тег (до 5):"); if(!t) return;
+    clanCreate(n, t, prompt("Описание:")||"", "open");
+  };
+  clanLog("setupUI done");
+}
+
+// ===== МОДУЛЬ ЛС v1 =====
+var DM_STATE = { current:null, messages:{} };
+function dmLog(){ console.log("[DM v1] " + Array.prototype.slice.call(arguments).join(" ")); }
+function dmOpen(fid){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !fid) return;
+  DM_STATE.current = fid;
+  var key = [uid, fid].sort().join("__");
+  dbRef.ref("/dms/"+key).limitToLast(100).on("value", function(s){
+    DM_STATE.messages = s.val() || {}; dmRender();
+  });
+  dmLog("open "+fid);
+}
+function dmSend(text){
+  var uid = friendsGetUid(), dbRef = friendsGetDb();
+  if(!uid || !dbRef || !DM_STATE.current || !text) return;
+  var key = [uid, DM_STATE.current].sort().join("__");
+  dbRef.ref("/users/"+uid+"/nickname").once("value").then(function(s){
+    dbRef.ref("/dms/"+key).push({ from:uid, nick:s.val()||"Аноним", text:text, ts:Date.now() });
+  });
+}
+function dmRender(){
+  var el = document.getElementById("dm-messages"); if(!el) return;
+  var uid = friendsGetUid();
+  var list = Object.keys(DM_STATE.messages||{}).map(function(k){ return DM_STATE.messages[k]; }).sort(function(a,b){ return a.ts-b.ts; });
+  el.innerHTML = list.map(function(m){
+    var own = m.from === uid;
+    return "<div style='padding:4px 8px;text-align:"+(own?"right":"left")+"'><b>"+(own?"Я":m.nick)+"</b>: "+m.text+"</div>";
+  }).join("");
+  el.scrollTop = el.scrollHeight;
+}
+function dmSetupUI(){
+  var sb = document.getElementById("dm-send-btn"), si = document.getElementById("dm-input");
+  if(sb && si) sb.onclick = function(){ var v = si.value.trim(); if(v){ dmSend(v); si.value=""; } };
+  dmLog("setupUI done");
+}
+
+// ===== МОДУЛЬ FNF v1 =====
+var FNF_BPM = 120; // ⚠️ ПОСТАВЬ РЕАЛЬНЫЙ BPM (см. tunebat.com)
+var FNF_BEATS_PER_ARROW = 2;
+var FNF_FALL_BEATS = 4;
+var FNF_STATE = { running:false, arrows:[], score:0, combo:0, rafId:null };
+function fnfLog(){ console.log("[FNF v1] " + Array.prototype.slice.call(arguments).join(" ")); }
+function fnfOpen(){
+  var ov = document.getElementById("fnf-overlay"); if(!ov){ fnfLog("no overlay"); return; }
+  ov.style.display = "flex";
+  FNF_STATE.running = true; FNF_STATE.score = 0; FNF_STATE.combo = 0; FNF_STATE.arrows = [];
+  fnfSpawnLoop(); fnfLog("open");
+}
+function fnfClose(){
+  FNF_STATE.running = false;
+  if(FNF_STATE.rafId) cancelAnimationFrame(FNF_STATE.rafId);
+  var ov = document.getElementById("fnf-overlay"); if(ov) ov.style.display = "none";
+}
+function fnfSpawnLoop(){
+  var beatMs = 60000 / FNF_BPM;
+  var interval = beatMs * FNF_BEATS_PER_ARROW;
+  var last = 0;
+  function tick(now){
+    if(!FNF_STATE.running) return;
+    if(now - last >= interval){
+      last = now;
+      FNF_STATE.arrows.push({ dir: Math.floor(Math.random()*4), spawnAt: now });
+    }
+    fnfDraw();
+    FNF_STATE.rafId = requestAnimationFrame(tick);
+  }
+  FNF_STATE.rafId = requestAnimationFrame(tick);
+}
+function fnfDraw(){
+  var zone = document.getElementById("fnf-zone"); if(!zone) return;
+  var beatMs = 60000 / FNF_BPM, fallMs = beatMs * FNF_FALL_BEATS, now = performance.now();
+  var sym = { 0:"◀", 1:"▼", 2:"▲", 3:"▶" }, html = "";
+  FNF_STATE.arrows.forEach(function(a){
+    var age = now - a.spawnAt; if(age > fallMs) return;
+    var pct = age / fallMs, top = pct * 100, left = 10 + a.dir * 22;
+    html += "<div style='position:absolute;top:"+top+"%;left:"+left+"%;font-size:28px'>"+sym[a.dir]+"</div>";
+  });
+  zone.innerHTML = html;
+  FNF_STATE.arrows = FNF_STATE.arrows.filter(function(a){ return now - a.spawnAt <= fallMs; });
+}
+function fnfPress(lane){
+  if(!FNF_STATE.running) return;
+  var beatMs = 60000 / FNF_BPM, fallMs = beatMs * FNF_FALL_BEATS, now = performance.now();
+  var hit = null, best = Infinity;
+  FNF_STATE.arrows.forEach(function(a){
+    if(a.dir !== lane) return;
+    var d = Math.abs((now - a.spawnAt) - fallMs);
+    if(d < best && d < 250){ best = d; hit = a; }
+  });
+  if(hit){
+    FNF_STATE.arrows = FNF_STATE.arrows.filter(function(a){ return a !== hit; });
+    FNF_STATE.score += 10; FNF_STATE.combo++; fnfUpdateHud();
+  }
+}
+function fnfUpdateHud(){
+  var s = document.getElementById("fnf-score");
+  if(s) s.textContent = "Очки: " + FNF_STATE.score + " | Комбо: " + FNF_STATE.combo;
+}
+function fnfSetupUI(){
+  ["left","down","up","right"].forEach(function(dir, i){
+    var b = document.getElementById("fnf-btn-"+dir);
+    if(b) b.onclick = function(){ fnfPress(i); };
+  });
+  var c = document.getElementById("fnf-close"); if(c) c.onclick = fnfClose;
+  fnfLog("setupUI done");
+}
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
