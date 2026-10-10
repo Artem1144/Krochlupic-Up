@@ -3419,6 +3419,169 @@ setTimeout(function(){khrPetInit();},5500);
 setTimeout(function(){if(typeof processIncomingGifts==="function")processIncomingGifts();},2500);
 (function(){var fr=document.getElementById("activity-row-3");if(fr)fr.style.display="none";var nc=0,nt=null;function h(){nc++;if(nt)clearTimeout(nt);nt=setTimeout(function(){nc=0;},2000);if(nc>=5){nc=0;if(nt)clearTimeout(nt);setTimeout(function(){try{playSound("achievement");vibrate(40);}catch(e){}if(typeof fnfOpen==="function")fnfOpen();},200);}}var p=document.getElementById("page-prev"),n=document.getElementById("page-next");if(p)p.addEventListener("click",h);if(n)n.addEventListener("click",h);})();
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("service-worker.js").catch(function(e){});});}
+
+// ===== ФИКС v218: аукцион + клан онлайн + ники =====
+
+// 1) ПРИВЯЗКА КНОПОК АУКЦИОНА
+document.addEventListener("click",function(e){
+  var t=e.target;
+  if(!t)return;
+  if(t.classList&&t.classList.contains("friends-tab")&&t.dataset&&t.dataset.ftab==="auction"){
+    setTimeout(function(){
+      if(typeof auctionSetupTabs==="function")auctionSetupTabs();
+      if(typeof _auctionSubscribe==="function")_auctionSubscribe();
+    },60);
+  }
+},true);
+
+// 2) ОБНОВЛЕНИЕ СВОЕГО НИКА В КЛАНЕ
+setTimeout(function(){
+  if(!db||!profile.id||!profile.nickname)return;
+  db.ref("users/"+profile.id+"/clanId").once("value").then(function(s){
+    var cid=s.val();
+    if(!cid)return;
+    db.ref("clans/"+cid+"/members/"+profile.id+"/nickname").set(profile.nickname).catch(function(){});
+  }).catch(function(){});
+},4000);
+
+// 3) ОБНОВЛЁННЫЙ РЕНДЕР УЧАСТНИКОВ КЛАНА (с онлайн-статусом и подгрузкой ников)
+window.clanRenderMembers=function(mem){
+  var list=document.getElementById("clan-members-list");
+  if(!list)return;
+  list.innerHTML="";
+  var ids=Object.keys(mem);
+  ids.sort(function(a,b){
+    var order={owner:0,officer:1,member:2};
+    var ra=order[mem[a].role]||3, rb=order[mem[b].role]||3;
+    if(ra!==rb)return ra-rb;
+    return (mem[a].joinedAt||0)-(mem[b].joinedAt||0);
+  });
+  // Собираем тех, у кого пустой ник — потом подгрузим
+  var pending=[];
+  ids.forEach(function(uid){
+    var m=mem[uid]||{};
+    var row=document.createElement("div");row.className="clan-member-row";
+    row.dataset.uid=uid;
+    var dot=document.createElement("div");dot.className="clan-member-status";dot.textContent="●";
+    dot.style.color="#888";
+    var info=document.createElement("div");info.className="clan-member-info";
+    var roleClass="role-member",roleLabel="👤 "+t("clan.role_member");
+    if(m.role==="owner"){roleClass="role-owner";roleLabel="👑 "+t("clan.role_owner");}
+    else if(m.role==="officer"){roleClass="role-officer";roleLabel="🛡 "+t("clan.role_officer");}
+    var displayName=m.nickname&&m.nickname.length>0?m.nickname:"";
+    if(!displayName)pending.push(uid);
+    info.innerHTML='<div class="clan-member-name '+roleClass+'">'+(displayName?escapeHtml(displayName):'<span style="color:#666">…</span>')+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'')+'</div>'+
+      '<div class="clan-member-role">'+roleLabel+' <span class="clan-member-online" style="font-size:11px;color:#888"></span></div>';
+    row.appendChild(dot);row.appendChild(info);
+    if(uid!==profile.id){
+      var actions=document.createElement("div");actions.className="clan-member-actions";
+      if(typeof clanState!=="undefined"&&clanState.myRole==="owner"){
+        if(m.role==="member"){
+          var btnP=document.createElement("button");btnP.className="clan-mini-btn success";btnP.textContent="↑";btnP.title="Офицер";
+          btnP.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("officer");};
+          actions.appendChild(btnP);
+        }else if(m.role==="officer"){
+          var btnD=document.createElement("button");btnD.className="clan-mini-btn";btnD.textContent="↓";btnD.title="Снять";
+          btnD.onclick=function(){db.ref("clans/"+clanState.myClanId+"/members/"+uid+"/role").set("member");};
+          actions.appendChild(btnD);
+        }
+      }
+      if(typeof clanState!=="undefined"&&(clanState.myRole==="owner"||clanState.myRole==="officer")){
+        var btnK=document.createElement("button");btnK.className="clan-mini-btn danger";btnK.textContent="✕";btnK.title="Кик";
+        btnK.onclick=function(){
+          if(!confirm(t("clan.kick_confirm")))return;
+          db.ref("clans/"+clanState.myClanId+"/members/"+uid).remove();
+          db.ref("users/"+uid+"/clanId").remove();
+        };
+        actions.appendChild(btnK);
+      }
+      row.appendChild(actions);
+    }
+    list.appendChild(row);
+  });
+  // Подгружаем ники + online для пустых
+  pending.forEach(function(uid){
+    db.ref("users/"+uid).once("value").then(function(s){
+      var u=s.val()||{};
+      var row=list.querySelector('.clan-member-row[data-uid="'+uid+'"]');
+      if(!row)return;
+      var nameEl=row.querySelector(".clan-member-name");
+      if(nameEl&&u.nickname){
+        var txt=u.nickname+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'');
+        nameEl.innerHTML=escapeHtml(u.nickname)+(uid===profile.id?' <span style="color:#4fc3f7">(ты)</span>':'');
+      }
+      _clanUpdateOnline(row,u.lastSeen);
+    }).catch(function(){});
+  });
+  // Для всех — подгрузка lastSeen и онлайн
+  ids.forEach(function(uid){
+    if(pending.indexOf(uid)!==-1)return;
+    db.ref("users/"+uid+"/lastSeen").once("value").then(function(s){
+      var row=list.querySelector('.clan-member-row[data-uid="'+uid+'"]');
+      if(row)_clanUpdateOnline(row,s.val()||0);
+    }).catch(function(){});
+  });
+};
+
+function _clanUpdateOnline(row,lastSeen){
+  if(!row)return;
+  var dot=row.querySelector(".clan-member-status");
+  var onlineEl=row.querySelector(".clan-member-online");
+  if(!dot||!onlineEl)return;
+  var diff=Math.floor((Date.now()-(lastSeen||0))/1000);
+  var color="#888", text="⚪ "+t("friends.status_offline");
+  if(diff<90){color="#4caf50";text="🟢 "+t("friends.status_online");}
+  else if(diff<600){color="#ffd54f";text="🟡 "+t("friends.status_away");}
+  else if(lastSeen){text="⚪ "+t("friends.was_online").replace("{time}",formatTime(diff));}
+  dot.style.color=color;
+  onlineEl.textContent=text;
+}
+
+// 4) ЛС — перепривязка на случай если v207 перезаписан
+setTimeout(function(){
+  if(typeof dmSetupUI==="function")dmSetupUI();
+  document.addEventListener("click",function(e){
+    var t=e.target;
+    if(!t)return;
+    if(t.classList&&t.classList.contains("friend-action-btn")&&t.classList.contains("chat")){
+      var row=t.closest(".friend-row");
+      if(!row)return;
+      var nameEl=row.querySelector(".friend-name");
+      var idEl=row.querySelector(".friend-id");
+      if(!nameEl||!idEl)return;
+      var fname=nameEl.textContent.trim();
+      var shortId=idEl.textContent.trim();
+      // Ищем fid по shortId
+      if(typeof socialState!=="undefined"&&socialState.friendsList){
+        var foundId=null;
+        Object.keys(socialState.friendsList).forEach(function(k){
+          var f=socialState.friendsList[k];
+          if(f.shortId===shortId||f.nickname===fname)foundId=k;
+        });
+        if(foundId&&typeof dmOpen==="function"){
+          e.stopPropagation();
+          dmOpen(foundId,fname);
+        }
+      }
+    }
+  },true);
+},4000);
+
+// 5) ПЕРИОДИЧЕСКОЕ ОБНОВЛЕНИЕ ОНЛАЙН-СТАТУСА В КЛАНЕ
+setInterval(function(){
+  var m=document.getElementById("modal-clans");
+  if(!m||m.classList.contains("hidden"))return;
+  var rows=document.querySelectorAll('.clan-member-row[data-uid]');
+  rows.forEach(function(row){
+    var uid=row.dataset.uid;
+    if(!uid||!db)return;
+    db.ref("users/"+uid+"/lastSeen").once("value").then(function(s){
+      _clanUpdateOnline(row,s.val()||0);
+    }).catch(function(){});
+  });
+},15000);
+
+
 // ===== ФИКС АДМИН-КНОПКИ v216 =====
 setTimeout(function(){
   var btn=document.getElementById("advanced-btn");
