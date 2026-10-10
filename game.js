@@ -2605,6 +2605,207 @@ setInterval(function(){
   var kb=document.querySelector(".krohlupic-bubble.show");if(kb){if(!kb.__wdT2)kb.__wdT2=now;if(now-kb.__wdT2>12000){try{kb.remove();}catch(e){}}}
 },2000);
 
+// ===== МОДУЛЬ FNF v214 =====
+window.fnfState=window.fnfState||{active:false,hp:50,maxHp:50,score:0,combo:0,maxCombo:0,miss:0,timeLeft:90,arrows:[],fallTime:2200,raf:null,lastSpawn:0,nextSpawnGap:800,lastFrame:0};
+
+var FNF_DIRS=["left","up","down","right"];
+var FNF_COOLDOWN_MS=30*60*1000;
+
+function _fnfLastPlayed(){try{return parseInt(localStorage.getItem("fnfLastPlayed")||"0");}catch(e){return 0;}}
+function _fnfSaveLastPlayed(){try{localStorage.setItem("fnfLastPlayed",String(Date.now()));}catch(e){}}
+function _fnfCanPlay(){var left=FNF_COOLDOWN_MS-(Date.now()-_fnfLastPlayed());return {ok:left<=0,left:left};}
+function _fnfUpdateCooldownHint(){
+  var el=document.getElementById("fnf-cooldown");
+  if(!el)return;
+  var r=_fnfCanPlay();
+  if(r.ok){el.textContent="";el.style.color="#4caf50";}
+  else{var m=Math.floor(r.left/60000),s=Math.floor((r.left%60000)/1000);el.textContent="⏳ Следующая битва через "+m+":"+(s<10?"0":"")+s;el.style.color="#ffd54f";}
+}
+function _fnfDrawArrow(ctx,x,y,size,dir,color){
+  ctx.save();ctx.translate(x,y);ctx.fillStyle=color||"#c9a0ff";ctx.beginPath();
+  if(dir==="up"){ctx.moveTo(0,-size);ctx.lineTo(size,size*0.6);ctx.lineTo(size*0.4,size*0.6);ctx.lineTo(size*0.4,size);ctx.lineTo(-size*0.4,size);ctx.lineTo(-size*0.4,size*0.6);ctx.lineTo(-size,size*0.6);ctx.closePath();}
+  else if(dir==="down"){ctx.moveTo(0,size);ctx.lineTo(size,-size*0.6);ctx.lineTo(size*0.4,-size*0.6);ctx.lineTo(size*0.4,-size);ctx.lineTo(-size*0.4,-size);ctx.lineTo(-size*0.4,-size*0.6);ctx.lineTo(-size,-size*0.6);ctx.closePath();}
+  else if(dir==="left"){ctx.moveTo(-size,0);ctx.lineTo(size*0.6,-size);ctx.lineTo(size*0.6,-size*0.4);ctx.lineTo(size,-size*0.4);ctx.lineTo(size,size*0.4);ctx.lineTo(size*0.6,size*0.4);ctx.lineTo(size*0.6,size);ctx.closePath();}
+  else if(dir==="right"){ctx.moveTo(size,0);ctx.lineTo(-size*0.6,-size);ctx.lineTo(-size*0.6,-size*0.4);ctx.lineTo(-size,-size*0.4);ctx.lineTo(-size,size*0.4);ctx.lineTo(-size*0.6,size*0.4);ctx.lineTo(-size*0.6,size);ctx.closePath();}
+  ctx.fill();ctx.restore();
+}
+function _fnfFrame(){
+  var st=fnfState;if(!st.active)return;
+  var now=performance.now();
+  if(now-st.lastFrame<16){st.raf=requestAnimationFrame(_fnfFrame);return;}
+  var dt=Math.min(50,now-st.lastFrame);st.lastFrame=now;
+  var canvas=document.getElementById("fnf-canvas");if(!canvas){st.active=false;return;}
+  var ctx=canvas.getContext("2d");
+  var W=canvas.width/(window.devicePixelRatio||1);
+  var H=canvas.height/(window.devicePixelRatio||1);
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(window.devicePixelRatio||1,window.devicePixelRatio||1);
+  ctx.clearRect(0,0,W,H);
+  var zoneY=H-100;
+  st.arrows.forEach(function(a){
+    var prog=(now-a.spawnAt)/a.fallTime;if(prog<0)prog=0;
+    var y=-40+prog*(zoneY+40);
+    a.y=y;
+    if(y>zoneY+60){a.missed=true;}
+    var isInZone=y>=zoneY-50&&y<=zoneY+50;
+    _fnfDrawArrow(ctx,a.x,y,26,a.dir,isInZone?"#4fc3f7":"#c9a0ff");
+  });
+  ctx.save();
+  ctx.fillStyle="rgba(79,195,247,.15)";
+  ctx.fillRect(0,zoneY-40,W,80);
+  ctx.strokeStyle="rgba(79,195,247,.85)";
+  ctx.lineWidth=4;
+  ctx.setLineDash([10,6]);
+  ctx.beginPath();ctx.moveTo(0,zoneY);ctx.lineTo(W,zoneY);ctx.stroke();
+  ctx.restore();
+  st.timeLeft-=dt/1000;
+  if(st.timeLeft<=0){st.timeLeft=0;_fnfEnd(false);return;}
+  var tEl=document.getElementById("fnf-time-left");if(tEl)tEl.textContent=st.timeLeft.toFixed(1);
+  if(now-st.lastSpawn>st.nextSpawnGap){
+    var dir=FNF_DIRS[Math.floor(Math.random()*4)];
+    var lane=Math.floor(Math.random()*4);
+    var laneW=W/4;
+    var x=laneW*lane+laneW/2;
+    st.arrows.push({dir:dir,x:x,y:-40,spawnAt:now,fallTime:st.fallTime,lane:lane,missed:false,hit:false});
+    st.lastSpawn=now;
+    st.nextSpawnGap=Math.max(400,900-st.score*10);
+    if(st.score>50)st.fallTime=1600;else if(st.score>20)st.fallTime=1900;
+  }
+  st.arrows=st.arrows.filter(function(a){
+    if(a.hit)return false;
+    if(now-a.spawnAt>a.fallTime+400){
+      st.miss++;st.combo=0;st.hp--;_fnfUpdateHeader();return false;
+    }
+    return true;
+  });
+  if(st.hp<=0){_fnfEnd(false);return;}
+  st.raf=requestAnimationFrame(_fnfFrame);
+}
+function _fnfUpdateHeader(){
+  var hp=document.getElementById("fnf-hp");if(hp)hp.textContent=Math.max(0,fnfState.hp)+" / "+fnfState.maxHp;
+  var sc=document.getElementById("fnf-score");if(sc)sc.textContent=fnfState.score;
+  var cb=document.getElementById("fnf-combo");if(cb)cb.textContent=fnfState.combo+"×";
+  var ms=document.getElementById("fnf-miss");if(ms)ms.textContent=fnfState.miss;
+}
+function _fnfTap(dir){
+  if(!fnfState.active)return;
+  var st=fnfState;
+  var canvas=document.getElementById("fnf-canvas");
+  var H=canvas?(canvas.height/(window.devicePixelRatio||1)):500;
+  var zoneY=H-100;
+  var best=null,bestDist=9999;
+  st.arrows.forEach(function(a){
+    if(a.hit)return;if(a.dir!==dir)return;
+    var d=Math.abs(a.y-zoneY);
+    if(d<bestDist){bestDist=d;best=a;}
+  });
+  var btn=document.querySelector('.fnf-arrow-btn[data-fnf-dir="'+dir+'"]');
+  if(best&&bestDist<=80){
+    best.hit=true;st.score++;st.combo++;
+    if(st.combo>st.maxCombo)st.maxCombo=st.combo;
+    if(btn){btn.classList.remove("hit");void btn.offsetWidth;btn.classList.add("hit");setTimeout(function(){btn.classList.remove("hit");},150);}
+    if(typeof playSound==="function")playSound("click");
+  }else{
+    st.combo=0;
+    if(btn){btn.classList.remove("miss");void btn.offsetWidth;btn.classList.add("miss");setTimeout(function(){btn.classList.remove("miss");},150);}
+  }
+  _fnfUpdateHeader();
+}
+function _fnfStart(){
+  var r=_fnfCanPlay();
+  if(!r.ok){var m=Math.floor(r.left/60000),s=Math.floor((r.left%60000)/1000);alert("Рано! Следующая битва через "+m+":"+(s<10?"0":"")+s);return;}
+  var overlay=document.getElementById("fnf-overlay");if(!overlay)return;
+  overlay.classList.remove("hidden");
+  if(typeof lockScroll==="function")lockScroll();
+  var canvas=document.getElementById("fnf-canvas");
+  if(canvas){var dpr=window.devicePixelRatio||1;canvas.width=canvas.clientWidth*dpr;canvas.height=canvas.clientHeight*dpr;}
+  var st=fnfState;
+  st.active=true;st.hp=50;st.maxHp=50;st.score=0;st.combo=0;st.maxCombo=0;st.miss=0;st.timeLeft=90;
+  st.arrows=[];st.fallTime=2200;st.lastSpawn=performance.now();st.nextSpawnGap=800;st.lastFrame=performance.now();
+  _fnfUpdateHeader();
+  var sb=document.getElementById("fnf-start-block");if(sb)sb.classList.add("hidden");
+  var rb=document.getElementById("fnf-result");if(rb)rb.classList.add("hidden");
+  if(st.raf)cancelAnimationFrame(st.raf);
+  st.raf=requestAnimationFrame(_fnfFrame);
+}
+function _fnfEnd(){
+  var st=fnfState;st.active=false;
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  var win=st.hp>0;
+  var rewards=[];
+  if(win){
+    var gems=Math.floor(st.score/5)+5;
+    if(st.combo>=20)gems*=2;
+    var sh=Math.floor(st.score/3);
+    var co=Math.floor(getCPS()*1800);
+    addCrystals(gems);shards+=sh;coins+=co;totalEarned+=co;
+    rewards.push("💎 +"+gems);rewards.push("🌑 +"+sh);rewards.push("💰 +"+formatNumber(co));
+    if(typeof playSound==="function")playSound("achievement");
+  }
+  var title=document.getElementById("fnf-result-title");
+  var text=document.getElementById("fnf-result-text");
+  if(title){title.textContent=win?"🏆 ПОБЕДА!":"💀 ПОРАЖЕНИЕ";title.className=win?"win":"lose";}
+  if(text){
+    var msg=(win?"Ты продержался до конца!":"Крохлюпик победил...")+"\n\n🎵 Счёт: "+st.score+"\n❌ Промахи: "+st.miss+"\n🔥 Макс. комбо: "+st.maxCombo+"×";
+    if(rewards.length)msg+="\n\nНаграда:\n"+rewards.join("\n");
+    text.textContent=msg;
+  }
+  var rb=document.getElementById("fnf-result");if(rb)rb.classList.remove("hidden");
+  _fnfSaveLastPlayed();
+  updateUI();saveGame();
+}
+function _fnfClose(){
+  var st=fnfState;st.active=false;
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  var overlay=document.getElementById("fnf-overlay");if(overlay)overlay.classList.add("hidden");
+  if(typeof unlockScroll==="function")unlockScroll();
+  var sb=document.getElementById("fnf-start-block");if(sb)sb.classList.remove("hidden");
+}
+window.fnfSetup=function(){
+  document.querySelectorAll(".fnf-arrow-btn").forEach(function(btn){
+    if(btn.__b)return;btn.__b=true;
+    btn.onclick=function(e){e.preventDefault();_fnfTap(btn.dataset.fnfDir);};
+  });
+  var start=document.getElementById("fnf-start-btn");
+  if(start&&!start.__b){start.__b=true;start.onclick=function(e){e.preventDefault();_fnfStart();};}
+  var close=document.getElementById("fnf-close");
+  if(close&&!close.__b){close.__b=true;close.onclick=function(e){e.preventDefault();_fnfClose();};}
+  var close2=document.getElementById("fnf-result-close");
+  if(close2&&!close2.__b){close2.__b=true;close2.onclick=function(e){e.preventDefault();_fnfClose();};}
+  if(!window.__fnfKeys){
+    window.__fnfKeys=true;
+    document.addEventListener("keydown",function(e){
+      if(!fnfState.active)return;
+      var k=e.key;
+      if(k==="ArrowLeft"||k==="a"||k==="A")_fnfTap("left");
+      else if(k==="ArrowRight"||k==="d"||k==="D")_fnfTap("right");
+      else if(k==="ArrowUp"||k==="w"||k==="W")_fnfTap("up");
+      else if(k==="ArrowDown"||k==="s"||k==="S")_fnfTap("down");
+    });
+  }
+  _fnfUpdateCooldownHint();
+  setInterval(_fnfUpdateCooldownHint,10000);
+};
+window.fnfOpen=function(){
+  var overlay=document.getElementById("fnf-overlay");if(!overlay)return;
+  var st=fnfState;st.active=false;
+  if(st.raf){cancelAnimationFrame(st.raf);st.raf=null;}
+  overlay.classList.remove("hidden");
+  if(typeof lockScroll==="function")lockScroll();
+  var sb=document.getElementById("fnf-start-block");if(sb)sb.classList.remove("hidden");
+  var rb=document.getElementById("fnf-result");if(rb)rb.classList.add("hidden");
+  _fnfUpdateCooldownHint();
+  if(typeof playSound==="function")playSound("ui");
+};
+window.fnfClose=_fnfClose;
+
+setTimeout(function(){
+  var row=document.getElementById("activity-row-3");
+  if(row)row.style.display="flex";
+  var btn=document.getElementById("fnf-btn");
+  if(btn&&!btn.__b){btn.__b=true;btn.onclick=function(e){e.preventDefault();window.fnfOpen();};}
+},3000);
+
 // === СТАРТ ===
 initFirebase();
 initSounds();
